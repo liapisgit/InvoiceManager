@@ -1,18 +1,21 @@
 import { TextField as MuiTextField } from '@mui/material';
 
-const TextField = ({ label, value, onChange, type = 'text', ...props }) => {
+const DatePicker = ({ label, value, onChange, ...props }) => {
   return (
     <MuiTextField
       label={label}
+      type="date"
       value={value}
       onChange={onChange}
-      type={type}
       variant="outlined"
       fullWidth
-      margin="normal"
+      margin="dense"
+      InputLabelProps={{
+        shrink: true,
+      }}
       {...props}
     />
   );
 };
 
-export default TextField;
+export default DatePicker;

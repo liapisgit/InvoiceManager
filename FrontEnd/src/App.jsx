@@ -103,15 +103,6 @@ function App() {
         </ToggleButtonGroup>
       </Box>
 
-      <Box sx={{ px: 3, pt: 3, pb: 2 }}>
-        <Typography sx={{ fontSize: 24, fontWeight: 600, color: "text.primary", lineHeight: 1.2 }}>
-          Invoices
-        </Typography>
-        <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
-          Upload and review invoices
-        </Typography>
-      </Box>
-
       <Container maxWidth="md" className="app-root">
         <Paper elevation={0} className="forms-group">
         <Box className="forms-group__header">

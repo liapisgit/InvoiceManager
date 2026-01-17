@@ -17,7 +17,7 @@ i18n.use(initReactI18next).init({
     el: {
       translation: {
         app: {
-          title: "Invoice Manager",
+          title: "INVOICE MANAGER",
           subtitle: "Συμπλήρωση και επαλήθευση τιμολογίων.",
           invoices: "Τιμολόγια",
           entries_one: "{{count}} καταχώρηση",
@@ -74,7 +74,7 @@ i18n.use(initReactI18next).init({
     en: {
       translation: {
         app: {
-          title: "Invoice Manager",
+          title: "INVOICE MANAGER",
           subtitle: "Fill in and review your invoices.",
           invoices: "Invoices",
           entries_one: "{{count}} entry",

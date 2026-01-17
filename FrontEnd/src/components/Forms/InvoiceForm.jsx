@@ -68,7 +68,7 @@ export default function InvoiceForm({
 
     // Required text fields
     if (isEmpty(formData.project)) e.project = t("validation.required");
-    if (isEmpty(formData.comments)) e.comments = t("validation.required");
+    // Comments are optional
     if (isEmpty(formData.vendorName)) e.vendorName = t("validation.required");
 
     // Required numeric-ish fields
@@ -109,11 +109,11 @@ export default function InvoiceForm({
     () =>
       Boolean(
         formData.file ||
-          formData.isPaid ||
-          Object.entries(formData).some(([key, value]) => {
-            if (key === "file" || key === "isPaid") return false;
-            return String(value ?? "").trim().length > 0;
-          })
+        formData.isPaid ||
+        Object.entries(formData).some(([key, value]) => {
+          if (key === "file" || key === "isPaid") return false;
+          return String(value ?? "").trim().length > 0;
+        })
       ),
     [formData]
   );
@@ -227,8 +227,6 @@ export default function InvoiceForm({
           size="small"
         />
 
-        <Box className="invoice-card__spacer" />
-
         <TextField
           label={t("fields.mark")}
           value={formData.mark}
@@ -260,22 +258,7 @@ export default function InvoiceForm({
           size="small"
         />
 
-        <Box className="invoice-card__spacer" />
 
-        <Box className="invoice-card__inline">
-          <Checkbox
-            label={t("fields.isPaid")}
-            checked={formData.isPaid}
-            onChange={(e) => setField("isPaid", e.target.checked)}
-            onBlur={() => markTouched("isPaid")}
-            size="small"
-          />
-          {showError("isPaid") && errors.isPaid ? (
-            <Typography variant="caption" color="error">
-              {errors.isPaid}
-            </Typography>
-          ) : null}
-        </Box>
 
         <TextField
           label={t("fields.vendorName")}
@@ -298,7 +281,20 @@ export default function InvoiceForm({
           size="small"
         />
 
-        <Box className="invoice-card__spacer" />
+        <Box className="invoice-card__row-checkbox">
+          <Checkbox
+            label={t("fields.isPaid")}
+            checked={formData.isPaid}
+            onChange={(e) => setField("isPaid", e.target.checked)}
+            onBlur={() => markTouched("isPaid")}
+            size="small"
+          />
+          {showError("isPaid") && errors.isPaid ? (
+            <Typography variant="caption" color="error">
+              {errors.isPaid}
+            </Typography>
+          ) : null}
+        </Box>
 
         <TextField
           label={t("fields.comments")}

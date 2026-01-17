@@ -10,6 +10,9 @@ const TextField = ({ label, value, onChange, type = 'text', ...props }) => {
       variant="outlined"
       fullWidth
       margin="dense"
+      InputLabelProps={{
+        shrink: true,
+      }}
       {...props}
     />
   );

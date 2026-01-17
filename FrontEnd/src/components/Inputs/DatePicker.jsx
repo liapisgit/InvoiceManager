@@ -1,10 +1,10 @@
 import { TextField as MuiTextField } from '@mui/material';
 
-const DatePicker = ({ label, value, onChange, ...props }) => {
+const DatePicker = ({ label, value, onChange, placeholder = "dd/mm/yyyy", ...props }) => {
   return (
     <MuiTextField
       label={label}
-      type="date"
+      type="text"
       value={value}
       onChange={onChange}
       variant="outlined"
@@ -12,6 +12,10 @@ const DatePicker = ({ label, value, onChange, ...props }) => {
       margin="dense"
       InputLabelProps={{
         shrink: true,
+      }}
+      inputProps={{
+        inputMode: "numeric",
+        placeholder,
       }}
       {...props}
     />

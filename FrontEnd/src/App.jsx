@@ -14,7 +14,6 @@ import InvoiceForm from "./components/Forms/InvoiceForm";
 import "./App.css";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 
 function App() {
   const [forms, setForms] = useState([{}]);
@@ -65,36 +64,56 @@ function App() {
   };
 
   return (
-    <Container maxWidth="md" className="app-root">
-      <Box className="app-header">
-        <Box>
-          <Box className="app-titleRow">
-            <Box className="app-titleIcon">
-              <ReceiptLongIcon fontSize="small" />
-            </Box>
-            <Typography variant="h5" component="h1" className="app-title">
-              {t("app.title")}
-            </Typography>
-          </Box>
-          <Typography variant="subtitle1" color="text.secondary" className="app-subtitle">
-            {t("app.subtitle")}
-          </Typography>
-        </Box>
-        <Box className="lang-panel">
-          <ToggleButtonGroup
-            size="small"
-            color="primary"
-            value={i18n.language}
-            exclusive
-            onChange={(_, value) => value && handleLanguageChange(value)}
-          >
-            <ToggleButton value="el">EL</ToggleButton>
-            <ToggleButton value="en">EN</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+    <>
+      <Box
+        sx={{
+          height: 56,
+          px: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          bgcolor: "#fff",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Typography sx={{ fontSize: 14, fontWeight: 500, color: "text.secondary", letterSpacing: 0 }}>
+          Invoice Manager
+        </Typography>
+        <ToggleButtonGroup
+          size="small"
+          value={i18n.language}
+          exclusive
+          onChange={(_, value) => value && handleLanguageChange(value)}
+          sx={{
+            "& .MuiToggleButton-root": {
+              fontSize: 13,
+              color: "text.secondary",
+              minWidth: 34,
+              px: 1,
+              py: 0.25,
+            },
+            "& .MuiToggleButtonGroup-grouped": {
+              borderColor: "divider",
+            },
+          }}
+        >
+          <ToggleButton value="el">EL</ToggleButton>
+          <ToggleButton value="en">EN</ToggleButton>
+        </ToggleButtonGroup>
       </Box>
 
-      <Paper elevation={0} className="forms-group">
+      <Box sx={{ px: 3, pt: 3, pb: 2 }}>
+        <Typography sx={{ fontSize: 24, fontWeight: 600, color: "text.primary", lineHeight: 1.2 }}>
+          Invoices
+        </Typography>
+        <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
+          Upload and review invoices
+        </Typography>
+      </Box>
+
+      <Container maxWidth="md" className="app-root">
+        <Paper elevation={0} className="forms-group">
         <Box className="forms-group__header">
           <Typography variant="subtitle1">{t("app.invoices")}</Typography>
           <Typography variant="caption" color="text.secondary">
@@ -120,25 +139,26 @@ function App() {
             {t("app.addInvoice")}
           </Button>
         </Box>
-      </Paper>
+        </Paper>
 
-      <Box className="app-actions">
-        <Button variant="contained" onClick={handleComplete} disabled={!allValid}>
-          {t("app.completeReview")}
-        </Button>
-      </Box>
+        <Box className="app-actions">
+          <Button variant="contained" onClick={handleComplete} disabled={!allValid}>
+            {t("app.completeReview")}
+          </Button>
+        </Box>
 
-      <Snackbar
-        open={showSuccess}
-        autoHideDuration={6000}
-        onClose={handleCloseSuccess}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: "100%" }}>
-          {t("app.success")}
-        </Alert>
-      </Snackbar>
-    </Container>
+        <Snackbar
+          open={showSuccess}
+          autoHideDuration={6000}
+          onClose={handleCloseSuccess}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: "100%" }}>
+            {t("app.success")}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </>
   );
 }
 

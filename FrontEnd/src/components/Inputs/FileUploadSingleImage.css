@@ -1,4 +1,4 @@
-.fu-root { margin-top: 16px; }
+.fu-root { margin-top: 6px; }
 .fu-header { margin-bottom: 8px; }
 
 .fu-dropzone {
@@ -70,7 +70,7 @@
 .fu-fileMeta { min-width: 0; flex: 1; }
 .fu-fileName { font-weight: 600; }
 .fu-metaRow { margin-top: 4px; }
-.fu-reading { color: rgba(0,0,0,0.6); }
+.fu-reading { color: #6b7280; }
 
 .fu-removeBtn {
   border: 1px solid #e6e8ed !important;
@@ -80,7 +80,7 @@
 .fu-hint {
   display: block;
   margin-top: 8px;
-  color: rgba(0,0,0,0.6);
+  color: #6b7280;
 }
 
 .fu-error {

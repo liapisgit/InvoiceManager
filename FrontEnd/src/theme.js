@@ -57,9 +57,6 @@ const theme = createTheme({
             borderColor: "#2F6FED",
             borderWidth: 2,
           },
-          "&.Mui-focused": {
-            boxShadow: "0 0 0 3px rgba(47, 111, 237, 0.15)",
-          },
         },
       },
     },
@@ -72,6 +69,11 @@ const theme = createTheme({
         },
         containedPrimary: {
           boxShadow: "none",
+          "&.Mui-disabled": {
+            color: "#9CA3AF",
+            backgroundColor: "#E5E7EB",
+            opacity: 1,
+          },
         },
         outlined: {
           borderColor: "#D1D5DB",

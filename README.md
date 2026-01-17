@@ -1,1 +1,9 @@
-This is an Invoice App. It cosists of a main form where the user can edit and approve an invoice's information.
+1. Multiple invoice Files
+2. Add the following fields: 
+ΑΦΜ, Σειρά, Αριθμός , ΜΑΡΚ, ΕΡΓΟ, ΙΒΑΝ, ΗΜΕΡΟΜΗΝΙΑ, ΠΛΗΡΩΜΗ, ΣΧΟΛΙΑ, ΠΡΟΜΗΘΕΥΤΗΣ, 
+ΣΥΝΟΛΙΚΗ ΤΙΜΗ, ΤΙΜΗ ΚΑΘΕ ΠΡΟΙΟΝΤΟΣ
+
+
+Stack
+React 
+

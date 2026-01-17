@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Paper, Box, Typography } from "@mui/material";
+import { Paper, Box, Typography, IconButton } from "@mui/material";
 import TextField from "../Inputs/TextField";
 import Checkbox from "../Inputs/Checkbox";
 import DatePicker from "../Inputs/DatePicker";
 import FileUploadSingleImage from "../Inputs/FileUploadSingleImage";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { analyzeInvoiceImage } from "../../services/invoiceAnalysis";
 import { useTranslation } from "react-i18next";
 
@@ -26,7 +27,13 @@ const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
 const isMoney = (v) => /^[0-9]+([.,][0-9]{1,2})?$/.test(String(v ?? "").trim());
 
-export default function InvoiceForm({ formIndex, onFormChange, submitAttempted = false }) {
+export default function InvoiceForm({
+  formIndex,
+  onFormChange,
+  onRemove,
+  canRemove = true,
+  submitAttempted = false,
+}) {
   const [formData, setFormData] = useState(initialForm);
 
   // track touched for nicer UX
@@ -98,6 +105,18 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
   }, [formData, t]);
 
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
+  const hasContent = useMemo(
+    () =>
+      Boolean(
+        formData.file ||
+          formData.isPaid ||
+          Object.entries(formData).some(([key, value]) => {
+            if (key === "file" || key === "isPaid") return false;
+            return String(value ?? "").trim().length > 0;
+          })
+      ),
+    [formData]
+  );
 
   // push updates up
   useEffect(() => {
@@ -146,18 +165,32 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
   }, [formData.file]);
 
   const showError = (field) => submitAttempted || touched[field];
+  const handleRemove = () => {
+    if (!canRemove) return;
+    if (hasContent && !window.confirm(t("invoice.removeConfirm"))) return;
+    onRemove?.(formIndex);
+  };
 
   return (
     <Paper elevation={0} className="invoice-card">
       <Box className="invoice-card__header">
         <Box>
-          <Typography variant="subtitle1">
+          <Typography variant="subtitle1" className="invoice-card__title">
             {t("invoice.title", { index: formIndex + 1 })}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="text.secondary" className="invoice-card__hint">
             {t("invoice.hint")}
           </Typography>
         </Box>
+        <IconButton
+          size="small"
+          className="invoice-card__remove"
+          onClick={handleRemove}
+          disabled={!canRemove}
+          aria-label={t("invoice.remove")}
+        >
+          <DeleteOutlineIcon fontSize="small" />
+        </IconButton>
       </Box>
 
       <Box className="invoice-card__grid">
@@ -194,6 +227,8 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
           size="small"
         />
 
+        <Box className="invoice-card__spacer" />
+
         <TextField
           label={t("fields.mark")}
           value={formData.mark}
@@ -225,6 +260,8 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
           size="small"
         />
 
+        <Box className="invoice-card__spacer" />
+
         <Box className="invoice-card__inline">
           <Checkbox
             label={t("fields.isPaid")}
@@ -233,15 +270,12 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
             onBlur={() => markTouched("isPaid")}
             size="small"
           />
-          {/* If you want to show error under checkbox: */}
           {showError("isPaid") && errors.isPaid ? (
             <Typography variant="caption" color="error">
               {errors.isPaid}
             </Typography>
           ) : null}
         </Box>
-
-   
 
         <TextField
           label={t("fields.vendorName")}
@@ -264,7 +298,9 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
           size="small"
         />
 
-             <TextField
+        <Box className="invoice-card__spacer" />
+
+        <TextField
           label={t("fields.comments")}
           value={formData.comments}
           onChange={(e) => setField("comments", e.target.value)}
@@ -272,8 +308,9 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
           error={showError("comments") && !!errors.comments}
           helperText={showError("comments") ? errors.comments : ""}
           multiline
-          rows={3}
+          rows={2}
           size="small"
+          className="invoice-card__full"
         />
 
         <Box className="invoice-card__file">
@@ -293,7 +330,7 @@ export default function InvoiceForm({ formIndex, onFormChange, submitAttempted =
           ) : null}
 
           {showError("file") && errors.file ? (
-            <Typography variant="caption" color="error" sx={{ mt: 0.75 }}>
+            <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
               {errors.file}
             </Typography>
           ) : null}

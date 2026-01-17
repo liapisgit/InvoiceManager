@@ -4,20 +4,41 @@
 }
 
 .app-root {
-  padding: 32px 16px 48px;
+  padding: 24px 16px 36px;
 }
 
 .app-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.app-titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-titleIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .app-title {
-  font-weight: 650;
-  letter-spacing: -0.5px;
+  color: #111827;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.app-subtitle {
+  color: #6b7280;
 }
 
 .lang-panel {
@@ -28,65 +49,96 @@
 }
 
 .lang-panel .MuiToggleButtonGroup-root {
-  background: #eef1f7;
-  border-radius: 10px;
+  background: #f2f3f6;
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.lang-panel .MuiToggleButton-root {
+  min-width: 34px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 999px;
 }
 
 .forms-group {
-  background: #f7f8fc;
-  border: 1px solid #d9dee9;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+  padding: 16px;
+  box-shadow: none;
 }
 
 .forms-group__header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e2e6ef;
-  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 12px;
 }
 
 .forms-group__list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .forms-group__footer {
   display: flex;
   justify-content: flex-start;
-  padding-top: 12px;
-  border-top: 1px solid #e2e6ef;
-  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 12px;
 }
 
 .app-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 12px;
 }
 
 .invoice-card {
-  border: 1px solid #e3e7f1;
+  border: 1px solid #d1d5db;
   border-radius: 12px;
-  padding: 16px;
-  background: #f1f3f9;
+  padding: 12px;
+  background: #ffffff;
 }
 
 .invoice-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.invoice-card__title {
+  color: #111827;
+  font-weight: 600;
+}
+
+.invoice-card__hint {
+  color: #6b7280;
+}
+
+.invoice-card__remove {
+  color: #9ca3af;
 }
 
 .invoice-card__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  gap: 10px;
+}
+
+.invoice-card__spacer {
+  grid-column: 1 / -1;
+  height: 4px;
+}
+
+.invoice-card__full {
+  grid-column: 1 / -1;
 }
 
 .invoice-card__inline {

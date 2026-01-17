@@ -14,6 +14,7 @@ import InvoiceForm from "./components/Forms/InvoiceForm";
 import "./App.css";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 
 function App() {
   const [forms, setForms] = useState([{}]);
@@ -31,6 +32,10 @@ function App() {
       next[index] = formData;
       return next;
     });
+  }, []);
+
+  const handleRemoveForm = useCallback((index) => {
+    setForms((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const allValid = useMemo(() => {
@@ -63,17 +68,19 @@ function App() {
     <Container maxWidth="md" className="app-root">
       <Box className="app-header">
         <Box>
-          <Typography variant="h4" component="h1" className="app-title">
-            {t("app.title")}
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
+          <Box className="app-titleRow">
+            <Box className="app-titleIcon">
+              <ReceiptLongIcon fontSize="small" />
+            </Box>
+            <Typography variant="h5" component="h1" className="app-title">
+              {t("app.title")}
+            </Typography>
+          </Box>
+          <Typography variant="subtitle1" color="text.secondary" className="app-subtitle">
             {t("app.subtitle")}
           </Typography>
         </Box>
         <Box className="lang-panel">
-          <Typography variant="caption" color="text.secondary">
-            {t("app.language")}
-          </Typography>
           <ToggleButtonGroup
             size="small"
             color="primary"
@@ -81,8 +88,8 @@ function App() {
             exclusive
             onChange={(_, value) => value && handleLanguageChange(value)}
           >
-            <ToggleButton value="el">Ελληνικά</ToggleButton>
-            <ToggleButton value="en">English</ToggleButton>
+            <ToggleButton value="el">EL</ToggleButton>
+            <ToggleButton value="en">EN</ToggleButton>
           </ToggleButtonGroup>
         </Box>
       </Box>
@@ -101,6 +108,8 @@ function App() {
               key={index}
               formIndex={index}
               onFormChange={handleFormChange}
+              onRemove={handleRemoveForm}
+              canRemove={forms.length > 1}
               submitAttempted={submitAttempted}
             />
           ))}

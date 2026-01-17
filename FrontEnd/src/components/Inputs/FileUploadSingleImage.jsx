@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Box, Typography, Stack, IconButton, Button, Chip, CircularProgress } from "@mui/material";
+import { Box, Typography, Stack, IconButton, Chip, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
-import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import "./FileUploadSingleImage.css";
 import { createElement, isValidElement } from "react"; // ✅ add
 import { useTranslation } from "react-i18next";
@@ -56,16 +55,13 @@ export default function FileUploadSingleImage({
     [onChange]
   );
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject, fileRejections, open } =
-    useDropzone({
-      onDrop,
-      accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
-      multiple: false,
-      maxFiles: 1,
-      maxSize,
-      noClick: true,
-      noKeyboard: true,
-    });
+  const { getRootProps, getInputProps, isDragActive, isDragReject, fileRejections } = useDropzone({
+    onDrop,
+    accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
+    multiple: false,
+    maxFiles: 1,
+    maxSize,
+  });
 
   const errorMsg = useMemo(() => {
     if (!fileRejections?.length) return "";
@@ -84,11 +80,6 @@ export default function FileUploadSingleImage({
     <Box className="fu-root">
       <Stack direction="row" alignItems="center" justifyContent="space-between" className="fu-header">
         <Typography variant="subtitle2">{resolvedLabel}</Typography>
-        {Boolean(file) && (
-          <Button size="small" onClick={open} variant="text">
-            {t("file.replace")}
-          </Button>
-        )}
       </Stack>
 
       <Box
@@ -97,9 +88,6 @@ export default function FileUploadSingleImage({
         data-state={state}
         data-hasfile={Boolean(file)}
         data-busy={isBusy}
-        onClick={() => {
-          if (!file) open();
-        }}
       >
         <input {...getInputProps()} style={{ display: "none" }} />
 
@@ -118,19 +106,6 @@ export default function FileUploadSingleImage({
               </Typography>
             </Box>
 
-            <Box className="fu-actions">
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  open();
-                }}
-                startIcon={<CloudUploadOutlinedIcon fontSize="small" />}
-              >
-                <div className="fu-actions-btn-text">{t("file.browse")}</div>
-              </Button>
-            </Box>
           </Box>
         ) : (
           <Box className="fu-filled">

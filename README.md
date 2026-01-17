@@ -1,1 +1,1 @@
-This is an Invoice App.
+This is an Invoice App. It cosists of a main form where the user can edit and approve an invoice's information.

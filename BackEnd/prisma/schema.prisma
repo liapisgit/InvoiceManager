@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String   @unique 
+  password  String
+  createdAt DateTime @default(now())
+  lastUpdatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id             String   @id @default(uuid())
+  afm            String?
+  invoice_series  String?
+  invoice_number  String?
+  mark           String?
+  project        String?
+  iban           String?
+  invoice_date   DateTime
+  isPaid         Boolean?
+  comments       String?
+  vendor_name    String
+  total_amount   Decimal  @db.Decimal(10, 2)
+  createdAt      DateTime @default(now())
+  lastUpdatedAt  DateTime @updatedAt
+}

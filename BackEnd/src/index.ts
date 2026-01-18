@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import cors from "cors";
 import dotenv from "dotenv";
 import userRouter from "./routes/userRoutes";
 import invoiceRouter from "./routes/invoiceRoutes";
@@ -7,6 +8,7 @@ import uploadRouter from "./routes/uploadRoutes";
 dotenv.config();
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 // Serve uploaded files statically

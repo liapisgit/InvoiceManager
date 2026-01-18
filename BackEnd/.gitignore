@@ -45,3 +45,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 .cache
+
+# Uploaded files
+uploads/*
+!uploads/.gitkeep

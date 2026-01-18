@@ -15,7 +15,7 @@ export const analyzeInvoiceImage = async (file, { signal } = {}) => {
     }
   );
 
-  console.log(response.data);
+  console.log(response.data.webhook.data);
 
-  return response.data;
+  return response.data.webhook.data;
 };

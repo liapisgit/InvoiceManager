@@ -1,23 +1,21 @@
-import { TextField as MuiTextField } from '@mui/material';
+import { DatePicker as MuiDatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
-const DatePicker = ({ label, value, onChange, placeholder = "dd/mm/yyyy", ...props }) => {
+const DatePicker = ({ label, value, onChange }) => {
   return (
-    <MuiTextField
+    <MuiDatePicker
       label={label}
-      type="text"
-      value={value}
-      onChange={onChange}
-      variant="outlined"
-      fullWidth
-      margin="dense"
-      InputLabelProps={{
-        shrink: true,
+      value={value ? dayjs(value) : null}
+      onChange={(newValue) => {
+        onChange(newValue ? newValue.format("YYYY-MM-DD") : "");
       }}
-      inputProps={{
-        inputMode: "numeric",
-        placeholder,
+      format="DD/MM/YYYY"
+      slotProps={{
+        textField: {
+          fullWidth: true,
+          margin: "dense",
+        },
       }}
-      {...props}
     />
   );
 };

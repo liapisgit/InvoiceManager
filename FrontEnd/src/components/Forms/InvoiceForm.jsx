@@ -11,15 +11,15 @@ import { useTranslation } from "react-i18next";
 
 const initialForm = {
   afm: "",
-  series: "",
-  number: "",
+  invoice_series: "",
+  invoice_number: "",
   mark: "",
   project: "",
-  date: "",
+  invoice_date: "",
   isPaid: false,
   comments: "",
-  vendorName: "",
-  totalPrice: "",
+  vendor_name: "",
+  total_amount: "",
   file: null, // ✅ single image
 };
 
@@ -51,15 +51,15 @@ export default function InvoiceForm({
   const markAllTouched = () =>
     setTouched({
       afm: true,
-      series: true,
-      number: true,
+      invoice_series: true,
+      invoice_number: true,
       mark: true,
       project: true,
-      date: true,
+      invoice_date: true,
       isPaid: true,
       comments: true,
-      vendorName: true,
-      totalPrice: true,
+      vendor_name: true,
+      total_amount: true,
       file: true,
     });
 
@@ -69,24 +69,24 @@ export default function InvoiceForm({
     // Required text fields
     if (isEmpty(formData.project)) e.project = t("validation.required");
     // Comments are optional
-    if (isEmpty(formData.vendorName)) e.vendorName = t("validation.required");
+    if (isEmpty(formData.vendor_name)) e.vendor_name = t("validation.required");
 
     // Required numeric-ish fields
     if (isEmpty(formData.afm)) e.afm = t("validation.required");
     else if (!isNumeric(formData.afm)) e.afm = t("validation.numbersOnly");
     else if (String(formData.afm).trim().length !== 9) e.afm = t("validation.afmLength");
 
-    if (isEmpty(formData.series)) e.series = t("validation.required");
-    else if (!isNumeric(formData.series)) e.series = t("validation.numbersOnly");
+    if (isEmpty(formData.invoice_series)) e.invoice_series = t("validation.required");
+    else if (!isNumeric(formData.invoice_series)) e.invoice_series = t("validation.numbersOnly");
 
-    if (isEmpty(formData.number)) e.number = t("validation.required");
-    else if (!isNumeric(formData.number)) e.number = t("validation.numbersOnly");
+    if (isEmpty(formData.invoice_number)) e.invoice_number = t("validation.required");
+    else if (!isNumeric(formData.invoice_number)) e.invoice_number = t("validation.numbersOnly");
 
     if (isEmpty(formData.mark)) e.mark = t("validation.required");
     else if (!isNumeric(formData.mark)) e.mark = t("validation.numbersOnly");
 
     // Date required
-    if (isEmpty(formData.date)) e.date = t("validation.required");
+    if (isEmpty(formData.invoice_date)) e.invoice_date = t("validation.required");
 
     // Checkbox required (since you said all fields required)
     if (formData.isPaid !== true && formData.isPaid !== false) e.isPaid = t("validation.checkbox");
@@ -95,8 +95,8 @@ export default function InvoiceForm({
     // if (!formData.isPaid) e.isPaid = "Πρέπει να επιλεγεί.";
 
     // Total price required + valid money
-    if (isEmpty(formData.totalPrice)) e.totalPrice = t("validation.required");
-    else if (!isMoney(formData.totalPrice)) e.totalPrice = t("validation.money");
+    if (isEmpty(formData.total_amount)) e.total_amount = t("validation.required");
+    else if (!isMoney(formData.total_amount)) e.total_amount = t("validation.money");
 
     // File required
     if (!formData.file) e.file = t("validation.uploadReceipt");
@@ -206,23 +206,23 @@ export default function InvoiceForm({
         />
 
         <TextField
-          label={t("fields.series")}
-          value={formData.series}
-          onChange={(e) => setField("series", e.target.value)}
-          onBlur={() => markTouched("series")}
-          error={showError("series") && !!errors.series}
-          helperText={showError("series") ? errors.series : ""}
+          label={t("fields.invoice_series")}
+          value={formData.invoice_series}
+          onChange={(e) => setField("invoice_series", e.target.value)}
+          onBlur={() => markTouched("invoice_series")}
+          error={showError("invoice_series") && !!errors.invoice_series}
+          helperText={showError("invoice_series") ? errors.invoice_series : ""}
           inputMode="numeric"
           size="small"
         />
 
         <TextField
-          label={t("fields.number")}
-          value={formData.number}
-          onChange={(e) => setField("number", e.target.value)}
-          onBlur={() => markTouched("number")}
-          error={showError("number") && !!errors.number}
-          helperText={showError("number") ? errors.number : ""}
+          label={t("fields.invoice_number")}
+          value={formData.invoice_number}
+          onChange={(e) => setField("invoice_number", e.target.value)}
+          onBlur={() => markTouched("invoice_number")}
+          error={showError("invoice_number") && !!errors.invoice_number}
+          helperText={showError("invoice_number") ? errors.invoice_number : ""}
           inputMode="numeric"
           size="small"
         />
@@ -249,34 +249,34 @@ export default function InvoiceForm({
         />
 
         <DatePicker
-          label={t("fields.date")}
-          value={formData.date}
-          onChange={(e) => setField("date", e.target.value)}
-          onBlur={() => markTouched("date")}
-          error={showError("date") && !!errors.date}
-          helperText={showError("date") ? errors.date : ""}
+          label={t("fields.invoice_date")}
+          value={formData.invoice_date}
+          onChange={(e) => setField("invoice_date", e.target.value)}
+          onBlur={() => markTouched("invoice_date")}
+          error={showError("invoice_date") && !!errors.invoice_date}
+          helperText={showError("invoice_date") ? errors.invoice_date : ""}
           size="small"
         />
 
 
 
         <TextField
-          label={t("fields.vendorName")}
-          value={formData.vendorName}
-          onChange={(e) => setField("vendorName", e.target.value)}
-          onBlur={() => markTouched("vendorName")}
-          error={showError("vendorName") && !!errors.vendorName}
-          helperText={showError("vendorName") ? errors.vendorName : ""}
+          label={t("fields.vendor_name")}
+          value={formData.vendor_name}
+          onChange={(e) => setField("vendor_name", e.target.value)}
+          onBlur={() => markTouched("vendor_name")}
+          error={showError("vendor_name") && !!errors.vendor_name}
+          helperText={showError("vendor_name") ? errors.vendor_name : ""}
           size="small"
         />
 
         <TextField
-          label={t("fields.totalPrice")}
-          value={formData.totalPrice}
-          onChange={(e) => setField("totalPrice", e.target.value)}
-          onBlur={() => markTouched("totalPrice")}
-          error={showError("totalPrice") && !!errors.totalPrice}
-          helperText={showError("totalPrice") ? errors.totalPrice : ""}
+          label={t("fields.total_amount")}
+          value={formData.total_amount}
+          onChange={(e) => setField("total_amount", e.target.value)}
+          onBlur={() => markTouched("total_amount")}
+          error={showError("total_amount") && !!errors.total_amount}
+          helperText={showError("total_amount") ? errors.total_amount : ""}
           inputMode="decimal"
           size="small"
         />

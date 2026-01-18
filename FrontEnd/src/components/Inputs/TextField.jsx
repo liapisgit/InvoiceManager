@@ -10,8 +10,10 @@ const TextField = ({ label, value, onChange, type = 'text', ...props }) => {
       variant="outlined"
       fullWidth
       margin="dense"
-      InputLabelProps={{
-        shrink: true,
+      slotProps={{
+        textField: {
+          InputLabelProps: { shrink: true },
+        },
       }}
       {...props}
     />

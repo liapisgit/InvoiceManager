@@ -3,18 +3,16 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     mode: "light",
+    primary: { main: "#51af8b" },
     background: {
-      default: "#F3F4F6",
+      default: "#EEF3F0", // softer, less white
       paper: "#FFFFFF",
     },
-    primary: {
-      main: "#2F6FED",
-    },
+    divider: "#d6e2dc",
     text: {
       primary: "#111827",
-      secondary: "#4B5563",
+      secondary: "#4b5b55",
     },
-    divider: "#D1D5DB",
   },
   typography: {
     fontFamily: '"Inter","Segoe UI",system-ui,-apple-system,sans-serif',
@@ -46,16 +44,25 @@ const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          backgroundColor: "#FFFFFF",
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#9CA3AF",
+            borderColor: "#4B5563",
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#6B7280",
+            borderColor: "#374151",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#2F6FED",
-            borderWidth: 2,
+            borderColor: "#374151",
+            borderWidth: 1.5,
+          },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          color: "#4B5563",
+          "&.Mui-focused": {
+            color: "#4B5563",
           },
         },
       },

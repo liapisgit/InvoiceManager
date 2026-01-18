@@ -65,42 +65,32 @@ export default function InvoiceForm({
 
   const errors = useMemo(() => {
     const e = {};
-
     // Required text fields
     if (isEmpty(formData.project)) e.project = t("validation.required");
     // Comments are optional
     if (isEmpty(formData.vendor_name)) e.vendor_name = t("validation.required");
-
     // Required numeric-ish fields
     if (isEmpty(formData.afm)) e.afm = t("validation.required");
     else if (!isNumeric(formData.afm)) e.afm = t("validation.numbersOnly");
     else if (String(formData.afm).trim().length !== 9) e.afm = t("validation.afmLength");
-
     if (isEmpty(formData.invoice_series)) e.invoice_series = t("validation.required");
     else if (!isNumeric(formData.invoice_series)) e.invoice_series = t("validation.numbersOnly");
-
     if (isEmpty(formData.invoice_number)) e.invoice_number = t("validation.required");
     else if (!isNumeric(formData.invoice_number)) e.invoice_number = t("validation.numbersOnly");
-
     if (isEmpty(formData.mark)) e.mark = t("validation.required");
     else if (!isNumeric(formData.mark)) e.mark = t("validation.numbersOnly");
-
     // Date required
     if (isEmpty(formData.invoice_date)) e.invoice_date = t("validation.required");
-
     // Checkbox required (since you said all fields required)
     if (formData.isPaid !== true && formData.isPaid !== false) e.isPaid = t("validation.checkbox");
     // If you literally mean user must explicitly choose: force true/false is already explicit.
     // If you mean "must be checked", uncomment:
     // if (!formData.isPaid) e.isPaid = "Πρέπει να επιλεγεί.";
-
     // Total price required + valid money
     if (isEmpty(formData.total_amount)) e.total_amount = t("validation.required");
     else if (!isMoney(formData.total_amount)) e.total_amount = t("validation.money");
-
     // File required
-    if (!formData.file) e.file = t("validation.uploadReceipt");
-
+    // if (!formData.file) e.file = t("validation.uploadReceipt");
     return e;
   }, [formData, t]);
 
@@ -160,11 +150,11 @@ export default function InvoiceForm({
           setIsAnalyzing(false);
         }
       });
-
     return () => controller.abort();
   }, [formData.file]);
 
   const showError = (field) => submitAttempted || touched[field];
+
   const handleRemove = () => {
     if (!canRemove) return;
     if (hasContent && !window.confirm(t("invoice.removeConfirm"))) return;
@@ -192,7 +182,6 @@ export default function InvoiceForm({
           <DeleteOutlineIcon fontSize="small" />
         </IconButton>
       </Box>
-
       <Box className="invoice-card__grid">
         <TextField
           label={t("fields.afm")}
@@ -204,7 +193,6 @@ export default function InvoiceForm({
           inputMode="numeric"
           size="small"
         />
-
         <TextField
           label={t("fields.invoice_series")}
           value={formData.invoice_series}
@@ -215,7 +203,6 @@ export default function InvoiceForm({
           inputMode="numeric"
           size="small"
         />
-
         <TextField
           label={t("fields.invoice_number")}
           value={formData.invoice_number}
@@ -226,7 +213,6 @@ export default function InvoiceForm({
           inputMode="numeric"
           size="small"
         />
-
         <TextField
           label={t("fields.mark")}
           value={formData.mark}
@@ -237,7 +223,6 @@ export default function InvoiceForm({
           inputMode="numeric"
           size="small"
         />
-
         <TextField
           label={t("fields.project")}
           value={formData.project}
@@ -247,19 +232,15 @@ export default function InvoiceForm({
           helperText={showError("project") ? errors.project : ""}
           size="small"
         />
-
         <DatePicker
           label={t("fields.invoice_date")}
           value={formData.invoice_date}
-          onChange={(e) => setField("invoice_date", e.target.value)}
+          onChange={(value) => setField("invoice_date", value)}
           onBlur={() => markTouched("invoice_date")}
           error={showError("invoice_date") && !!errors.invoice_date}
           helperText={showError("invoice_date") ? errors.invoice_date : ""}
           size="small"
         />
-
-
-
         <TextField
           label={t("fields.vendor_name")}
           value={formData.vendor_name}
@@ -269,7 +250,6 @@ export default function InvoiceForm({
           helperText={showError("vendor_name") ? errors.vendor_name : ""}
           size="small"
         />
-
         <TextField
           label={t("fields.total_amount")}
           value={formData.total_amount}
@@ -280,7 +260,6 @@ export default function InvoiceForm({
           inputMode="decimal"
           size="small"
         />
-
         <Box className="invoice-card__row-checkbox">
           <Checkbox
             label={t("fields.isPaid")}
@@ -295,7 +274,6 @@ export default function InvoiceForm({
             </Typography>
           ) : null}
         </Box>
-
         <TextField
           label={t("fields.comments")}
           value={formData.comments}
@@ -308,7 +286,6 @@ export default function InvoiceForm({
           size="small"
           className="invoice-card__full"
         />
-
         <Box className="invoice-card__file">
           <FileUploadSingleImage
             label={t("fields.receipt")}
@@ -318,13 +295,11 @@ export default function InvoiceForm({
             helperText={t("file.helperText")}
             isBusy={isAnalyzing}
           />
-
           {analysisStatus ? (
             <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
               {t(`analysis.${analysisStatus}`)}
             </Typography>
           ) : null}
-
           {showError("file") && errors.file ? (
             <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
               {errors.file}

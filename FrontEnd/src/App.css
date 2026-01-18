@@ -128,8 +128,11 @@
 }
 
 .invoice-card__remove {
-  color: #9ca3af;
-  margin-top: 2px;
+  color: #6b7280;
+}
+
+.invoice-card__remove:hover {
+  color: #ef4444;
 }
 
 .invoice-card__grid {

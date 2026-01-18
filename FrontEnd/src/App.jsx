@@ -72,12 +72,12 @@ function App() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          bgcolor: "#fff",
+          bgcolor: "#51af8b",
           borderBottom: "1px solid",
           borderColor: "divider",
         }}
       >
-        <Typography sx={{ fontSize: 14, fontWeight: 500, color: "text.secondary", letterSpacing: 0 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#ffffff", letterSpacing: 0 }}>
           Invoice Manager
         </Typography>
         <ToggleButtonGroup
@@ -88,13 +88,13 @@ function App() {
           sx={{
             "& .MuiToggleButton-root": {
               fontSize: 13,
-              color: "text.secondary",
+              borderColor: "rgba(255,255,255,0.45)",
               minWidth: 34,
               px: 1,
               py: 0.25,
             },
-            "& .MuiToggleButtonGroup-grouped": {
-              borderColor: "divider",
+            "& .Mui-selected": {
+              backgroundColor: "rgba(255,255,255,0.22)",
             },
           }}
         >
@@ -105,31 +105,43 @@ function App() {
 
       <Container maxWidth="md" className="app-root">
         <Paper elevation={0} className="forms-group">
-        <Box className="forms-group__header">
-          <Typography variant="subtitle1">{t("app.invoices")}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {t("app.entries", { count: forms.length })}
-          </Typography>
-        </Box>
+          <Box className="forms-group__header">
+            <Typography variant="subtitle1">{t("app.invoices")}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {t("app.entries", { count: forms.length })}
+            </Typography>
+          </Box>
 
-        <Box className="forms-group__list">
-          {forms.map((_, index) => (
-            <InvoiceForm
-              key={index}
-              formIndex={index}
-              onFormChange={handleFormChange}
-              onRemove={handleRemoveForm}
-              canRemove={forms.length > 1}
-              submitAttempted={submitAttempted}
-            />
-          ))}
-        </Box>
+          <Box className="forms-group__list">
+            {forms.map((_, index) => (
+              <InvoiceForm
+                key={index}
+                formIndex={index}
+                onFormChange={handleFormChange}
+                onRemove={handleRemoveForm}
+                canRemove={forms.length > 1}
+                submitAttempted={submitAttempted}
+              />
+            ))}
+          </Box>
 
-        <Box className="forms-group__footer">
-          <Button variant="outlined" onClick={handleAddNew} startIcon={<AddIcon />}>
-            {t("app.addInvoice")}
-          </Button>
-        </Box>
+          <Box className="forms-group__footer">
+            <Button
+              variant="outlined"
+              onClick={handleAddNew}
+              startIcon={<AddIcon />}
+              sx={{
+                color: "#2f8f6e",
+                borderColor: "#2f8f6e",
+                "&:hover": {
+                  borderColor: "#25785d",
+                  backgroundColor: "rgba(47,143,110,0.08)",
+                },
+              }}
+            >
+              {t("app.addInvoice")}
+            </Button>
+          </Box>
         </Paper>
 
         <Box className="app-actions">

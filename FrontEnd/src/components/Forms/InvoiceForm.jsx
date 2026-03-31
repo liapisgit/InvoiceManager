@@ -151,8 +151,10 @@ export default function InvoiceForm({
     // Comments are optional
     if (isEmpty(formData.issuer_name)) e.issuer_name = t("validation.required");
     // Required numeric-ish fields
-    if (isEmpty(formData.issuer_vat_number)) e.issuer_vat_number = t("validation.required");
-    else if (!isNumeric(formData.issuer_vat_number)) e.issuer_vat_number = t("validation.numbersOnly");
+    if (isEmpty(formData.issuer_vat_number))
+      e.issuer_vat_number = t("validation.required");
+    else if (!isNumeric(formData.issuer_vat_number))
+      e.issuer_vat_number = t("validation.numbersOnly");
     else if (String(formData.issuer_vat_number).trim().length !== 9)
       e.issuer_vat_number = t("validation.afmLength");
     // Date required
@@ -268,12 +270,30 @@ export default function InvoiceForm({
       </Box>
       <Box className="invoice-card__grid">
         <TextField
-          label={t("fields.issuer_vat_number")}
-          value={formData.issuer_vat_number}
-          onChange={(e) => setField("issuer_vat_number", e.target.value)}
-          onBlur={() => markTouched("issuer_vat_number")}
-          error={showError("issuer_vat_number") && !!errors.issuer_vat_number}
-          helperText={showError("issuer_vat_number") ? errors.issuer_vat_number : ""}
+          label={t("fields.document_type")}
+          value={formData.document_type}
+          onChange={(e) => setField("document_type", e.target.value)}
+          onBlur={() => markTouched("document_type")}
+          error={showError("document_type") && !!errors.document_type}
+          helperText={showError("document_type") ? errors.document_type : ""}
+          size="small"
+        />
+        <DatePicker
+          label={t("fields.invoice_date")}
+          value={formData.invoice_date}
+          onChange={(value) => setField("invoice_date", value)}
+          onBlur={() => markTouched("invoice_date")}
+          error={showError("invoice_date") && !!errors.invoice_date}
+          helperText={showError("invoice_date") ? errors.invoice_date : ""}
+          size="small"
+        />
+        <TextField
+          label={t("fields.mark")}
+          value={formData.mark}
+          onChange={(e) => setField("mark", e.target.value)}
+          onBlur={() => markTouched("mark")}
+          error={showError("mark") && !!errors.mark}
+          helperText={showError("mark") ? errors.mark : ""}
           inputMode="numeric"
           size="small"
         />
@@ -298,13 +318,55 @@ export default function InvoiceForm({
           size="small"
         />
         <TextField
-          label={t("fields.mark")}
-          value={formData.mark}
-          onChange={(e) => setField("mark", e.target.value)}
-          onBlur={() => markTouched("mark")}
-          error={showError("mark") && !!errors.mark}
-          helperText={showError("mark") ? errors.mark : ""}
+          label={t("fields.issuer_vat_number")}
+          value={formData.issuer_vat_number}
+          onChange={(e) => setField("issuer_vat_number", e.target.value)}
+          onBlur={() => markTouched("issuer_vat_number")}
+          error={showError("issuer_vat_number") && !!errors.issuer_vat_number}
+          helperText={
+            showError("issuer_vat_number") ? errors.issuer_vat_number : ""
+          }
           inputMode="numeric"
+          size="small"
+        />
+        <TextField
+          label={t("fields.issuer_name")}
+          value={formData.issuer_name}
+          onChange={(e) => setField("issuer_name", e.target.value)}
+          onBlur={() => markTouched("issuer_name")}
+          error={showError("issuer_name") && !!errors.issuer_name}
+          helperText={showError("issuer_name") ? errors.issuer_name : ""}
+          size="small"
+        />
+        <TextField
+          label={t("fields.recipient_vat_number")}
+          value={formData.recipient_vat_number}
+          onChange={(e) => setField("recipient_vat_number", e.target.value)}
+          onBlur={() => markTouched("recipient_vat_number")}
+          error={
+            showError("recipient_vat_number") && !!errors.recipient_vat_number
+          }
+          helperText={
+            showError("recipient_vat_number") ? errors.recipient_vat_number : ""
+          }
+          size="small"
+        />
+        <TextField
+          label={t("fields.recipient_name")}
+          value={formData.recipient_name}
+          onChange={(e) => setField("recipient_name", e.target.value)}
+          onBlur={() => markTouched("recipient_name")}
+          error={showError("recipient_name") && !!errors.recipient_name}
+          helperText={showError("recipient_name") ? errors.recipient_name : ""}
+          size="small"
+        />
+        <TextField
+          label={t("fields.recipient_code")}
+          value={formData.recipient_code}
+          onChange={(e) => setField("recipient_code", e.target.value)}
+          onBlur={() => markTouched("recipient_code")}
+          error={showError("recipient_code") && !!errors.recipient_code}
+          helperText={showError("recipient_code") ? errors.recipient_code : ""}
           size="small"
         />
         <TextField
@@ -326,6 +388,103 @@ export default function InvoiceForm({
             </MenuItem>
           ))}
         </TextField>
+        <TextField
+          label={t("fields.payment_method")}
+          value={formData.payment_method}
+          onChange={(e) => setField("payment_method", e.target.value)}
+          onBlur={() => markTouched("payment_method")}
+          error={showError("payment_method") && !!errors.payment_method}
+          helperText={showError("payment_method") ? errors.payment_method : ""}
+          size="small"
+        />
+        <TextField
+          label={t("fields.value_before_discount")}
+          value={formData.value_before_discount}
+          onChange={(e) => setField("value_before_discount", e.target.value)}
+          onBlur={() => markTouched("value_before_discount")}
+          error={
+            showError("value_before_discount") && !!errors.value_before_discount
+          }
+          helperText={
+            showError("value_before_discount")
+              ? errors.value_before_discount
+              : ""
+          }
+          inputMode="decimal"
+          size="small"
+        />
+        <TextField
+          label={t("fields.discount_amount")}
+          value={formData.discount_amount}
+          onChange={(e) => setField("discount_amount", e.target.value)}
+          onBlur={() => markTouched("discount_amount")}
+          error={showError("discount_amount") && !!errors.discount_amount}
+          helperText={
+            showError("discount_amount") ? errors.discount_amount : ""
+          }
+          inputMode="decimal"
+          size="small"
+        />
+        <TextField
+          label={t("fields.net_amount")}
+          value={formData.net_amount}
+          onChange={(e) => setField("net_amount", e.target.value)}
+          onBlur={() => markTouched("net_amount")}
+          error={showError("net_amount") && !!errors.net_amount}
+          helperText={showError("net_amount") ? errors.net_amount : ""}
+          inputMode="decimal"
+          size="small"
+        />
+        <TextField
+          label={t("fields.vat_amount")}
+          value={formData.vat_amount}
+          onChange={(e) => setField("vat_amount", e.target.value)}
+          onBlur={() => markTouched("vat_amount")}
+          error={showError("vat_amount") && !!errors.vat_amount}
+          helperText={showError("vat_amount") ? errors.vat_amount : ""}
+          inputMode="decimal"
+          size="small"
+        />
+        <TextField
+          label={t("fields.withholding_amount")}
+          value={formData.withholding_amount}
+          onChange={(e) => setField("withholding_amount", e.target.value)}
+          onBlur={() => markTouched("withholding_amount")}
+          error={showError("withholding_amount") && !!errors.withholding_amount}
+          helperText={
+            showError("withholding_amount") ? errors.withholding_amount : ""
+          }
+          inputMode="decimal"
+          size="small"
+        />
+        <TextField
+          label={t("fields.fees_or_stamps")}
+          value={formData.fees_or_stamps}
+          onChange={(e) => setField("fees_or_stamps", e.target.value)}
+          onBlur={() => markTouched("fees_or_stamps")}
+          error={showError("fees_or_stamps") && !!errors.fees_or_stamps}
+          helperText={showError("fees_or_stamps") ? errors.fees_or_stamps : ""}
+          size="small"
+        />
+        <TextField
+          label={t("fields.total_amount")}
+          value={formData.total_amount}
+          onChange={(e) => setField("total_amount", e.target.value)}
+          onBlur={() => markTouched("total_amount")}
+          error={showError("total_amount") && !!errors.total_amount}
+          helperText={showError("total_amount") ? errors.total_amount : ""}
+          inputMode="decimal"
+          size="small"
+        />
+        <TextField
+          label={t("fields.issuer_iban")}
+          value={formData.issuer_iban}
+          onChange={(e) => setField("issuer_iban", e.target.value)}
+          onBlur={() => markTouched("issuer_iban")}
+          error={showError("issuer_iban") && !!errors.issuer_iban}
+          helperText={showError("issuer_iban") ? errors.issuer_iban : ""}
+          size="small"
+        />
         <TextField
           label={t("fields.company")}
           value={formData.company}
@@ -364,34 +523,7 @@ export default function InvoiceForm({
             </MenuItem>
           ))}
         </TextField>
-        <DatePicker
-          label={t("fields.invoice_date")}
-          value={formData.invoice_date}
-          onChange={(value) => setField("invoice_date", value)}
-          onBlur={() => markTouched("invoice_date")}
-          error={showError("invoice_date") && !!errors.invoice_date}
-          helperText={showError("invoice_date") ? errors.invoice_date : ""}
-          size="small"
-        />
-        <TextField
-          label={t("fields.issuer_name")}
-          value={formData.issuer_name}
-          onChange={(e) => setField("issuer_name", e.target.value)}
-          onBlur={() => markTouched("issuer_name")}
-          error={showError("issuer_name") && !!errors.issuer_name}
-          helperText={showError("issuer_name") ? errors.issuer_name : ""}
-          size="small"
-        />
-        <TextField
-          label={t("fields.total_amount")}
-          value={formData.total_amount}
-          onChange={(e) => setField("total_amount", e.target.value)}
-          onBlur={() => markTouched("total_amount")}
-          error={showError("total_amount") && !!errors.total_amount}
-          helperText={showError("total_amount") ? errors.total_amount : ""}
-          inputMode="decimal"
-          size="small"
-        />
+
         <Box className="invoice-card__row-checkbox">
           <Checkbox
             label={t("fields.is_paid")}

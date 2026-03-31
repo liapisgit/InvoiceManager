@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client"
+  url     =  env("DATABASE_URL")
   output   = "../src/generated/prisma"
 }
 

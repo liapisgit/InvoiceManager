@@ -25,8 +25,9 @@ function App() {
   const [forms, setForms] = useState([{}]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
-const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [resetVersion, setResetVersion] = useState(0);
   const { t, i18n } = useTranslation();
 
   const handleAddNew = () => {
@@ -65,6 +66,11 @@ const [errorMessage, setErrorMessage] = useState("");
         }),
       );
       setShowSuccess(true);
+      setForms([{}]);
+      setSubmitAttempted(false);
+      setErrorMessage("");
+      setShowError(false);
+      setResetVersion((v) => v + 1);
     } catch (error) {
       console.error("Error creating invoices:", error);
       const fallback = t("app.error");
@@ -147,7 +153,7 @@ const [errorMessage, setErrorMessage] = useState("");
           <Box className="forms-group__list">
             {forms.map((_, index) => (
               <InvoiceForm
-                key={index}
+                key={`${resetVersion}-${index}`}
                 formIndex={index}
                 onFormChange={handleFormChange}
                 onRemove={handleRemoveForm}

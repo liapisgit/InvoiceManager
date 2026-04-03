@@ -62,7 +62,14 @@ function App() {
       await Promise.all(
         forms.map((form) => {
           const payload = createInvoiceSchema.parse(form);
-          return axios.post(`${apiBaseUrl}/api/invoices`, payload);
+          return Promise.allSettled([
+            axios.post(`${apiBaseUrl}/api/invoices`, payload),
+            axios.post(
+              "http://100.104.68.112:5678/webhook/upload-invoice-data",
+              payload,
+              { headers: { "Content-Type": "application/json" } },
+            ),
+          ]);
         }),
       );
       setShowSuccess(true);
@@ -74,12 +81,11 @@ function App() {
     } catch (error) {
       console.error("Error creating invoices:", error);
       const fallback = t("app.error");
-  const message =
-    axios.isAxiosError(error)
-      ? error.response?.data?.message || fallback
-      : fallback;
-  setErrorMessage(message);
-  setShowError(true);
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || fallback
+        : fallback;
+      setErrorMessage(message);
+      setShowError(true);
     }
     // console.log("All forms data:", forms);
     // setShowSuccess(true);
@@ -207,15 +213,19 @@ function App() {
           </Alert>
         </Snackbar>
         <Snackbar
-  open={showError}
-  autoHideDuration={6000}
-  onClose={handleCloseError}
-  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
->
-  <Alert onClose={handleCloseError} severity="error" sx={{ width: "100%" }}>
-    {errorMessage}
-  </Alert>
-</Snackbar>
+          open={showError}
+          autoHideDuration={6000}
+          onClose={handleCloseError}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={handleCloseError}
+            severity="error"
+            sx={{ width: "100%" }}
+          >
+            {errorMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </>
   );

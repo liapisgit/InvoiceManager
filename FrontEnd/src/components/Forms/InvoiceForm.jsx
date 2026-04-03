@@ -98,6 +98,7 @@ export default function InvoiceForm({
   formIndex,
   onFormChange,
   onRemove,
+  onAnalysisStateChange,
   canRemove = true,
   submitAttempted = false,
 }) {
@@ -199,12 +200,14 @@ export default function InvoiceForm({
     if (!formData.file) {
       setIsAnalyzing(false);
       setAnalysisStatus("");
+      onAnalysisStateChange?.(formIndex, false);
       return;
     }
 
     const controller = new AbortController();
     setIsAnalyzing(true);
     setAnalysisStatus("running");
+    onAnalysisStateChange?.(formIndex, true);
 
     analyzeInvoiceImage(formData.file, { signal: controller.signal })
       .then((result) => {
@@ -230,10 +233,14 @@ export default function InvoiceForm({
       .finally(() => {
         if (!controller.signal.aborted) {
           setIsAnalyzing(false);
+          onAnalysisStateChange?.(formIndex, false);
         }
       });
-    return () => controller.abort();
-  }, [formData.file]);
+    return () => {
+      controller.abort();
+      onAnalysisStateChange?.(formIndex, false);
+    };
+  }, [formData.file, formIndex, onAnalysisStateChange]);
 
   const showError = (field) => submitAttempted || touched[field];
 

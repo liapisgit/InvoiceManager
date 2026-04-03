@@ -9,6 +9,8 @@ import {
   Paper,
   ToggleButton,
   ToggleButtonGroup,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import InvoiceForm from "./components/Forms/InvoiceForm";
 import "./App.css";
@@ -28,7 +30,10 @@ function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [resetVersion, setResetVersion] = useState(0);
+  const [busyFormIndexes, setBusyFormIndexes] = useState(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { t, i18n } = useTranslation();
+  const isUiLocked = busyFormIndexes.size > 0 || isSubmitting;
 
   const handleAddNew = () => {
     setForms((prev) => [...prev, {}]);
@@ -46,18 +51,33 @@ function App() {
     setForms((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  const handleAnalysisStateChange = useCallback((formIndex, isBusy) => {
+    setBusyFormIndexes((prev) => {
+      const next = new Set(prev);
+      if (isBusy) {
+        next.add(formIndex);
+      } else {
+        next.delete(formIndex);
+      }
+      return next;
+    });
+  }, []);
+
   const allValid = useMemo(() => {
     if (!forms.length) return false;
     return forms.every((f) => f?.isValid === true);
   }, [forms]);
 
   const handleComplete = async () => {
+    if (isUiLocked) return;
     setSubmitAttempted(true);
 
     if (!allValid) {
       console.log("Validation failed", forms);
       return;
     }
+
+    setIsSubmitting(true);
     try {
       await Promise.all(
         forms.map((form) => {
@@ -86,6 +106,8 @@ function App() {
         : fallback;
       setErrorMessage(message);
       setShowError(true);
+    } finally {
+      setIsSubmitting(false);
     }
     // console.log("All forms data:", forms);
     // setShowSuccess(true);
@@ -129,6 +151,7 @@ function App() {
           value={i18n.language}
           exclusive
           onChange={(_, value) => value && handleLanguageChange(value)}
+          disabled={isUiLocked}
           sx={{
             "& .MuiToggleButton-root": {
               fontSize: 13,
@@ -163,6 +186,7 @@ function App() {
                 formIndex={index}
                 onFormChange={handleFormChange}
                 onRemove={handleRemoveForm}
+                onAnalysisStateChange={handleAnalysisStateChange}
                 canRemove={forms.length > 1}
                 submitAttempted={submitAttempted}
               />
@@ -173,6 +197,7 @@ function App() {
             <Button
               variant="outlined"
               onClick={handleAddNew}
+              disabled={isUiLocked}
               startIcon={<AddIcon />}
               sx={{
                 color: "#2f8f6e",
@@ -192,11 +217,17 @@ function App() {
           <Button
             variant="contained"
             onClick={handleComplete}
-            disabled={!allValid}
+            disabled={!allValid || isUiLocked}
           >
             {t("app.completeReview")}
           </Button>
         </Box>
+        <Backdrop
+          open={isUiLocked}
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 10 }}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
 
         <Snackbar
           open={showSuccess}

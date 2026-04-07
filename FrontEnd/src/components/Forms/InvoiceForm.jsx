@@ -128,42 +128,55 @@ export default function InvoiceForm({
       invoice_date: true,
     });
 
-    const errors = useMemo(() => {
-      const e = {};
-      // REQUIRED
-      if (isEmpty(formData.project)) e.project = t("validation.required");
-      if (isEmpty(formData.company)) e.company = t("validation.required");
-      if (isEmpty(formData.number)) e.number = t("validation.required");
-      else if (!isNumeric(formData.number)) e.number = t("validation.numbersOnly");
-      if (isEmpty(formData.issuer_vat_number))
-        e.issuer_vat_number = t("validation.required");
-      else if (!isNumeric(formData.issuer_vat_number))
-        e.issuer_vat_number = t("validation.numbersOnly");
-      else if (String(formData.issuer_vat_number).trim().length !== 9)
-        e.issuer_vat_number = t("validation.afmLength");
-      if (formData.is_paid !== true && formData.is_paid !== false)
-        e.is_paid = t("validation.checkbox");
-      // OPTIONAL BUT VALIDATED IF FILLED
-      if (!isEmpty(formData.mark) && !isNumeric(formData.mark))
-        e.mark = t("validation.numbersOnly");
-      if (!isEmpty(formData.series) && !isNumeric(formData.series))
-        e.series = t("validation.numbersOnly");
-      if (!isEmpty(formData.recipient_vat_number) && !isNumeric(formData.recipient_vat_number))
-        e.recipient_vat_number = t("validation.numbersOnly");
-      if (!isEmpty(formData.value_before_discount) && !isMoney(formData.value_before_discount))
-        e.value_before_discount = t("validation.money");
-      if (!isEmpty(formData.discount_amount) && !isMoney(formData.discount_amount))
-        e.discount_amount = t("validation.money");
-      if (!isEmpty(formData.net_amount) && !isMoney(formData.net_amount))
-        e.net_amount = t("validation.money");
-      if (!isEmpty(formData.vat_amount) && !isMoney(formData.vat_amount))
-        e.vat_amount = t("validation.money");
-      if (!isEmpty(formData.withholding_amount) && !isMoney(formData.withholding_amount))
-        e.withholding_amount = t("validation.money");
-      if (!isEmpty(formData.total_amount) && !isMoney(formData.total_amount))
-        e.total_amount = t("validation.money");
-      return e;
-    }, [formData, t]);
+  const errors = useMemo(() => {
+    const e = {};
+    // REQUIRED
+    if (isEmpty(formData.project)) e.project = t("validation.required");
+    if (isEmpty(formData.company)) e.company = t("validation.required");
+    if (isEmpty(formData.number)) e.number = t("validation.required");
+    else if (!isNumeric(formData.number))
+      e.number = t("validation.numbersOnly");
+    if (isEmpty(formData.issuer_vat_number))
+      e.issuer_vat_number = t("validation.required");
+    else if (!isNumeric(formData.issuer_vat_number))
+      e.issuer_vat_number = t("validation.numbersOnly");
+    else if (String(formData.issuer_vat_number).trim().length !== 9)
+      e.issuer_vat_number = t("validation.afmLength");
+    if (formData.is_paid !== true && formData.is_paid !== false)
+      e.is_paid = t("validation.checkbox");
+    // OPTIONAL BUT VALIDATED IF FILLED
+    if (!isEmpty(formData.mark) && !isNumeric(formData.mark))
+      e.mark = t("validation.numbersOnly");
+    if (!isEmpty(formData.series) && !isNumeric(formData.series))
+      e.series = t("validation.numbersOnly");
+    if (
+      !isEmpty(formData.recipient_vat_number) &&
+      !isNumeric(formData.recipient_vat_number)
+    )
+      e.recipient_vat_number = t("validation.numbersOnly");
+    if (
+      !isEmpty(formData.value_before_discount) &&
+      !isMoney(formData.value_before_discount)
+    )
+      e.value_before_discount = t("validation.money");
+    if (
+      !isEmpty(formData.discount_amount) &&
+      !isMoney(formData.discount_amount)
+    )
+      e.discount_amount = t("validation.money");
+    if (!isEmpty(formData.net_amount) && !isMoney(formData.net_amount))
+      e.net_amount = t("validation.money");
+    if (!isEmpty(formData.vat_amount) && !isMoney(formData.vat_amount))
+      e.vat_amount = t("validation.money");
+    if (
+      !isEmpty(formData.withholding_amount) &&
+      !isMoney(formData.withholding_amount)
+    )
+      e.withholding_amount = t("validation.money");
+    if (!isEmpty(formData.total_amount) && !isMoney(formData.total_amount))
+      e.total_amount = t("validation.money");
+    return e;
+  }, [formData, t]);
 
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
   const hasContent = useMemo(
@@ -506,10 +519,7 @@ export default function InvoiceForm({
           onBlur={() => markTouched("category")}
           error={showError("category") && !!errors.category}
           helperText={showError("category") ? errors.category : ""}
-          multiline
-          rows={2}
           size="small"
-          className="invoice-card__full"
         />
         <TextField
           label={t("fields.expense_type")}
@@ -518,10 +528,7 @@ export default function InvoiceForm({
           onBlur={() => markTouched("expense_type")}
           error={showError("expense_type") && !!errors.expense_type}
           helperText={showError("expense_type") ? errors.expense_type : ""}
-          multiline
-          rows={2}
           size="small"
-          className="invoice-card__full"
         />
         <Box className="invoice-card__row-checkbox">
           <Checkbox

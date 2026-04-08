@@ -29,6 +29,9 @@ export const createInvoiceSchema = z.object({
   company: z.string().optional(),
   category: z.string().optional(),
   expense_type: z.string().optional(),
+  file_url: z.string().optional(),
+  file_hash: z.string().optional(),
+  file_upload_id: z.string().optional(),
 });
 
 export const updateInvoiceSchema = z.object({
@@ -60,4 +63,7 @@ export const updateInvoiceSchema = z.object({
   company: z.string().optional(),
   category: z.string().optional(),
   expense_type: z.string().optional(),
+  file_url: z.string().optional(),
+  file_hash: z.string().optional(),
+  file_upload_id: z.string().optional(),
 });

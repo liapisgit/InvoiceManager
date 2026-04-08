@@ -31,6 +31,9 @@ const initialForm = {
   issuer_iban: "",
   is_paid: false,
   comments: "",
+  file_url: "",
+  file_hash: "",
+  file_upload_id: "",
   file: null, // ✅ single image
   project: "",
   company: "",

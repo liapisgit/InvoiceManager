@@ -80,8 +80,8 @@ export default function HomePage() {
     try {
       await Promise.all(
         forms.map((form) => {
-          // const payload = createInvoiceSchema.parse(form);
-          const payload = { ...form };
+          const payload = createInvoiceSchema.parse(form);
+          console.log("payload", payload);
           return Promise.allSettled([
             apiClient.post(`/api/invoices`, payload),
             axios.post(

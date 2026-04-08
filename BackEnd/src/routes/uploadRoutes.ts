@@ -51,7 +51,7 @@ uploadRouter.post("/image", upload.single("image"), async (req, res) => {
       },
       webhook: {
         status: webhookResponse.status,
-        data: webhookResponse.data[0],
+        data: webhookPayload,
       },
     });
   } catch (error: any) {

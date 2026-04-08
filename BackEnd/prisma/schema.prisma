@@ -45,6 +45,9 @@ model Invoice {
   company        String?
   category       String?
   expense_type   String?
+  file_url       String?
+  file_hash      String?
+  file_upload_id String?
   createdBy      String?
   createdAt      DateTime @default(now())
   lastUpdatedAt  DateTime @updatedAt

@@ -7,7 +7,6 @@ import axios from "axios";
 import { config, requireEnv } from "../config/env";
 
 const uploadRouter = Router();
-//const n8nWebhookUrl = requireEnv(config.n8nWebhookUrl, "N8N_WEBHOOK_URL");
 
 // Upload single image
 uploadRouter.post("/image", upload.single("image"), async (req, res) => {
@@ -24,13 +23,10 @@ uploadRouter.post("/image", upload.single("image"), async (req, res) => {
       contentType: req.file.mimetype,
     });
 
-    const webhookResponse = await axios.post(
-      "http://100.104.68.112:5678/webhook/upload-invoice-image",
-      formData,
-      {
-        headers: formData.getHeaders(),
-      },
-    );
+    const n8nWebhookUrl = requireEnv(config.n8nWebhookUrl, "N8N_WEBHOOK_URL");
+    const webhookResponse = await axios.post(n8nWebhookUrl, formData, {
+      headers: formData.getHeaders(),
+    });
     const webhookPayload = Array.isArray(webhookResponse.data)
       ? webhookResponse.data[0]
       : webhookResponse.data;

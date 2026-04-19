@@ -12,6 +12,8 @@ export const config = {
   port: parsedPort,
   dbConnectionString: process.env.DATABASE_URL ?? "",
   n8nWebhookUrl: process.env.N8N_WEBHOOK_URL ?? "",
+  /** JSON payload webhook (invoice submit); optional — if unset, forwarding is skipped */
+  n8nInvoiceDataWebhookUrl: process.env.N8N_INVOICE_DATA_WEBHOOK_URL ?? "",
   frontendDistPath:
     process.env.FRONTEND_DIST_PATH || path.resolve(process.cwd(), "public"),
 };

@@ -22,8 +22,6 @@ import { createInvoiceSchema } from "../schemas/invoiceSchemas";
 import { clearToken } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
-import { getUserFullNameFromToken } from "../services/auth";
-
 export default function HomePage() {
   const navigate = useNavigate();
   const [forms, setForms] = useState([{}]);
@@ -36,7 +34,6 @@ export default function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t, i18n } = useTranslation();
   const isUiLocked = busyFormIndexes.size > 0 || isSubmitting;
-  const user = getUserFullNameFromToken();
 
   const handleLogout = () => {
     clearToken();
@@ -82,14 +79,7 @@ export default function HomePage() {
         forms.map((form) => {
           const payload = createInvoiceSchema.parse(form);
           console.log("payload", payload);
-          return Promise.allSettled([
-            apiClient.post(`/api/invoices`, payload),
-            axios.post(
-              "http://100.104.68.112:5678/webhook/upload-invoice-data",
-              { ...payload, user: user },
-              { headers: { "Content-Type": "application/json" } },
-            ),
-          ]);
+          return apiClient.post(`/api/invoices`, payload);
         }),
       );
 

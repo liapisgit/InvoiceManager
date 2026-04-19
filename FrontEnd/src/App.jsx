@@ -82,14 +82,7 @@ function App() {
       await Promise.all(
         forms.map((form) => {
           const payload = createInvoiceSchema.parse(form);
-          return Promise.allSettled([
-            axios.post(`${apiBaseUrl}/api/invoices`, payload),
-            axios.post(
-              "http://100.104.68.112:5678/webhook/upload-invoice-data",
-              payload,
-              { headers: { "Content-Type": "application/json" } },
-            ),
-          ]);
+          return axios.post(`${apiBaseUrl}/api/invoices`, payload);
         }),
       );
       setShowSuccess(true);

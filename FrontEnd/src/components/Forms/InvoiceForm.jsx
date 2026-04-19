@@ -55,25 +55,12 @@ const PROJECT_OPTIONS = [
   "HERITAGE OT36",
   "IOUSTINIANOU",
   "LAGONISI",
-  "FALIROU2",
-  "PORT OF KORINTHOS",
-  "PALLINI",
-  "CHLOIS 29 VOULA",
   "ERMA , LEOF ATHINWN 122 ATHENS",
-  "LAZARAKI 57",
   "JULIA & CHRISTIAN KARAM_AFRODITIS",
   "REAL ESTATE",
-  "HOSPITALITY",
 ];
 const COMPANY_OPTIONS = [
   "THE OLON DEVELOPMENTS ΜΟΝΟΠΡΟΣΩΠΗ IKE",
-  "HERITAGE VENTURES IKE",
-  "ALAMANAS ONE ΙΚΕ",
-  "A15 Hotel Ventures ΜΟΝ IKE",
-  "Ο ΛΥΡΑΣ ΞΕΝΟΔΟΧΕΙΑ & ΕΜΠΟΡΙΚΑΙ ΕΠΙΧΕΙΡΗΣΕΙΣ ΜΟΝ/ΠΗ ΑΕ",
-  "AIOLOU HAB MON IKE",
-  "LAGONISI VENTURES IKE",
-  "HOT ΜΟΝΟΠΡΟΣΩΠΗ ΙΚΕ ΤΕΧΝΙΚΗ ΕΤΑΙΡΙΑ & ΕΚΜ/ΣΗ ΑΚΙΝΗΤΩΝ",
   "THE OLON HOSPITALITY ΙΚΕ",
 ];
 

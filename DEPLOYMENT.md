@@ -29,7 +29,7 @@ This project is configured to run on a Linux server with Docker Compose and no r
 3. Edit `.env` and replace:
    - `POSTGRES_PASSWORD`
    - `SERVER_IP_OR_HOSTNAME` inside `N8N_PUBLIC_BASE_URL`
-4. If your webhook path in n8n will be different, update `N8N_WEBHOOK_PATH`.
+4. If your webhook path in n8n will be different, update `N8N_WEBHOOK_PATH` (image upload) and/or `N8N_INVOICE_DATA_WEBHOOK_PATH` (invoice JSON after DB save).
 
 Example:
 
@@ -41,6 +41,7 @@ POSTGRES_DB=invoice_manager
 N8N_PORT=5678
 N8N_PUBLIC_BASE_URL=http://192.168.1.50:5678
 N8N_WEBHOOK_PATH=upload-invoice-image
+N8N_INVOICE_DATA_WEBHOOK_PATH=upload-invoice-data
 GENERIC_TIMEZONE=Europe/Athens
 ```
 
@@ -102,6 +103,14 @@ If you change the webhook path in n8n, update `N8N_WEBHOOK_PATH` in `.env` and r
 ```bash
 docker compose up -d backend
 ```
+
+The backend also forwards each saved invoice (JSON, including `user` from the JWT) to a second webhook. Default path:
+
+```text
+upload-invoice-data
+```
+
+Configure that workflow in n8n, or change `N8N_INVOICE_DATA_WEBHOOK_PATH` and restart the backend. For **local dev** with the API running on the host (not in Docker), set `N8N_WEBHOOK_URL` and `N8N_INVOICE_DATA_WEBHOOK_URL` in `BackEnd/.env` to `http://localhost:5678/webhook/...` instead of `http://n8n:5678/...`.
 
 ## Updating The App
 

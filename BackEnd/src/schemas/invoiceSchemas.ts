@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createInvoiceSchema = z.object({
   invoice_date: z.coerce.date().optional(),
   document_type: z.string().optional(),
-  mark: z.string().optional(),
+  mark: z.string().min(1),
   series: z.string().optional(),
   number: z.string().optional(),
   issuer_vat_number: z.string().optional(),

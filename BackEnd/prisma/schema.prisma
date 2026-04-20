@@ -21,7 +21,7 @@ model User {
 model Invoice {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   document_type String?
-  invoice_date DateTime?
+  invoice_date DateTime? @db.Date
   mark  String @unique
   series  String?
   number  String?

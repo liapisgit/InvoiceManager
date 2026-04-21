@@ -1,11 +1,42 @@
 import { Router } from "express";
 import axios from "axios";
 import { validate } from "../middlewares/validationMiddleware";
-import { createInvoiceSchema } from "../schemas/invoiceSchemas";
+import {
+  createInvoiceSchema,
+  updateInvoiceSchema,
+} from "../schemas/invoiceSchemas";
 import { invoiceRepository } from "../repositories/invoiceRepository";
 import { config } from "../config/env";
+import type { Invoice } from "../generated/prisma/client";
+import type { AuthPayload } from "../types/express";
 
 const invoiceRouter = Router();
+
+const getUserLabel = (user: AuthPayload) =>
+  `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.user_name;
+
+const buildInvoiceWebhookPayload = (invoice: Invoice) => {
+  const { id, createdAt, lastUpdatedAt, ...invoicePayload } = invoice;
+  return JSON.parse(JSON.stringify(invoicePayload));
+};
+
+const triggerInvoiceDataWebhook = async (invoice: Invoice, user: AuthPayload) => {
+  const dataWebhookUrl = config.n8nInvoiceDataWebhookUrl?.trim();
+  if (!dataWebhookUrl) return;
+
+  try {
+    await axios.post(
+      dataWebhookUrl,
+      {
+        ...buildInvoiceWebhookPayload(invoice),
+        user: getUserLabel(user),
+      },
+      { headers: { "Content-Type": "application/json" } },
+    );
+  } catch (n8nErr) {
+    console.error("n8n invoice-data webhook failed:", n8nErr);
+  }
+};
 
 // Create a new invoice
 invoiceRouter.post("/", validate(createInvoiceSchema), async (req, res) => {
@@ -15,21 +46,7 @@ invoiceRouter.post("/", validate(createInvoiceSchema), async (req, res) => {
       createdBy: req.user!.user_id,
     });
 
-    const dataWebhookUrl = config.n8nInvoiceDataWebhookUrl?.trim();
-    if (dataWebhookUrl) {
-      const userLabel =
-        `${req.user!.first_name ?? ""} ${req.user!.last_name ?? ""}`.trim() ||
-        req.user!.user_name;
-      try {
-        await axios.post(
-          dataWebhookUrl,
-          { ...req.body, user: userLabel },
-          { headers: { "Content-Type": "application/json" } },
-        );
-      } catch (n8nErr) {
-        console.error("n8n invoice-data webhook failed:", n8nErr);
-      }
-    }
+    await triggerInvoiceDataWebhook(invoice, req.user!);
 
     res.status(201).json(invoice);
   } catch (error: any) {
@@ -51,6 +68,19 @@ invoiceRouter.get("/", async (req, res) => {
   }
 });
 
+// Get invoice by mark
+invoiceRouter.get("/by-mark/:mark", async (req, res) => {
+  try {
+    const invoice = await invoiceRepository.findByMark(req.params.mark);
+    if (!invoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+    res.json(invoice);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch invoice" });
+  }
+});
+
 // Get invoice by ID
 invoiceRouter.get("/:id", async (req, res) => {
   try {
@@ -61,6 +91,31 @@ invoiceRouter.get("/:id", async (req, res) => {
     res.json(invoice);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch invoice" });
+  }
+});
+
+// Update invoice
+invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: "Invoice id is required" });
+    }
+
+    const existingInvoice = await invoiceRepository.findById(id);
+    if (!existingInvoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    const invoice = await invoiceRepository.update(id, req.body);
+    await triggerInvoiceDataWebhook(invoice, req.user!);
+    res.json(invoice);
+  } catch (error: any) {
+    console.error("Error updating invoice:", error);
+    res.status(500).json({
+      error: "Failed to update invoice",
+      details: error?.message || "Unknown error",
+    });
   }
 });
 

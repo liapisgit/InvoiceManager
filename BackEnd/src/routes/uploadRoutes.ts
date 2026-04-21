@@ -34,6 +34,8 @@ uploadRouter.post("/image", upload.single("image"), async (req, res) => {
       return res.status(422).json({
         error: "Failed to upload image",
         details: webhookPayload.error || "Unknown error",
+        row_number: webhookPayload.row_number,
+        mark: webhookPayload.mark,
       });
     }
     res.status(201).json({

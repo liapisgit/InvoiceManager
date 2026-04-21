@@ -34,6 +34,15 @@ i18n.use(initReactI18next).init({
           remove: "Αφαίρεση τιμολογίου",
           removeConfirm: "Θες σίγουρα να αφαιρέσεις αυτό το τιμολόγιο;",
         },
+        existingInvoice: {
+          title: "Το τιμολόγιο υπάρχει ήδη",
+          defaultMessage: "Βρέθηκαν ήδη αρχεία τιμολογίου για αυτό το MARK.",
+          prompt:
+            "Θες να ανοίξεις το υπάρχον τιμολόγιο με MARK {{mark}} για έλεγχο και ενημέρωση;",
+          confirm: "Ναι, άνοιξέ το",
+          cancel: "Όχι",
+          fetchError: "Δεν ήταν δυνατή η φόρτωση του υπάρχοντος τιμολογίου.",
+        },
         fields: {
           document_type: "Τύπος Τιμολογίου",
           recipient_code: "Κωδικός Πελάτη",
@@ -106,6 +115,15 @@ i18n.use(initReactI18next).init({
           hint: "Complete all fields to finish the review.",
           remove: "Remove invoice",
           removeConfirm: "Remove this invoice?",
+        },
+        existingInvoice: {
+          title: "Invoice already exists",
+          defaultMessage: "Invoice files already exist for this mark.",
+          prompt:
+            "Open the existing invoice with mark {{mark}} so you can review and update it?",
+          confirm: "Yes, open it",
+          cancel: "No",
+          fetchError: "Could not load the existing invoice.",
         },
         fields: {
           document_type: "Document Type",

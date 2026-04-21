@@ -11,6 +11,7 @@ import { analyzeInvoiceImage } from "../../services/invoiceAnalysis";
 import { useTranslation } from "react-i18next";
 
 const initialForm = {
+  id: "",
   document_type: "",
   recipient_code: "",
   mark: "",
@@ -40,6 +41,33 @@ const initialForm = {
   category: "",
   expense_type: "",
   invoice_date: "",
+};
+
+const normalizeIncomingFormData = (data = {}) => {
+  const next = { ...initialForm };
+
+  Object.keys(next).forEach((key) => {
+    if (key === "file") {
+      next.file = null;
+      return;
+    }
+
+    if (key === "is_paid") {
+      next.is_paid = typeof data.is_paid === "boolean" ? data.is_paid : false;
+      return;
+    }
+
+    if (key === "invoice_date") {
+      next.invoice_date = data.invoice_date
+        ? String(data.invoice_date).slice(0, 10)
+        : "";
+      return;
+    }
+
+    next[key] = data[key] == null ? initialForm[key] : data[key];
+  });
+
+  return next;
 };
 
 // Fill these with your static options.
@@ -73,10 +101,14 @@ export default function InvoiceForm({
   onFormChange,
   onRemove,
   onAnalysisStateChange,
+  onExistingInvoiceDetected,
   canRemove = true,
   submitAttempted = false,
+  externalData = null,
 }) {
-  const [formData, setFormData] = useState(initialForm);
+  const [formData, setFormData] = useState(() =>
+    normalizeIncomingFormData(externalData || initialForm),
+  );
 
   // track touched for nicer UX
   const [touched, setTouched] = useState({});
@@ -86,6 +118,20 @@ export default function InvoiceForm({
   const { t } = useTranslation();
 
   const setField = (field, value) => {
+    if (field === "file" && !value) {
+      setIsAnalyzing(false);
+      setAnalysisStatus("");
+      setAnalysisError("");
+      onAnalysisStateChange?.(formIndex, false);
+    }
+
+    if (field === "file" && value) {
+      setIsAnalyzing(true);
+      setAnalysisStatus("running");
+      setAnalysisError("");
+      onAnalysisStateChange?.(formIndex, true);
+    }
+
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -189,19 +235,9 @@ export default function InvoiceForm({
   }, [formData, formIndex, onFormChange, isValid, errors]);
 
   useEffect(() => {
-    if (!formData.file) {
-      setIsAnalyzing(false);
-      setAnalysisStatus("");
-      setAnalysisError("");
-      onAnalysisStateChange?.(formIndex, false);
-      return;
-    }
+    if (!formData.file) return;
 
     const controller = new AbortController();
-    setIsAnalyzing(true);
-    setAnalysisStatus("running");
-    setAnalysisError("");
-    onAnalysisStateChange?.(formIndex, true);
 
     analyzeInvoiceImage(formData.file, { signal: controller.signal })
       .then((result) => {
@@ -221,13 +257,23 @@ export default function InvoiceForm({
         markAllTouched();
       })
       .catch((error) => {
-        if (error?.name !== "AbortError") {
-          const backendMessage =
-            error?.response?.data?.details ||
-            error?.response?.data?.error ||
-            "Image analysis failed";
-          setAnalysisStatus("failed");
-          setAnalysisError(backendMessage);
+        if (error?.name === "AbortError") return;
+
+        const backendMessage =
+          error?.response?.data?.details ||
+          error?.response?.data?.error ||
+          "Image analysis failed";
+        const existingInvoiceMark = error?.response?.data?.mark;
+
+        setAnalysisStatus("failed");
+        setAnalysisError(backendMessage);
+
+        if (existingInvoiceMark) {
+          onExistingInvoiceDetected?.({
+            formIndex,
+            mark: existingInvoiceMark,
+            message: backendMessage,
+          });
         }
       })
       .finally(() => {
@@ -240,7 +286,12 @@ export default function InvoiceForm({
       controller.abort();
       onAnalysisStateChange?.(formIndex, false);
     };
-  }, [formData.file, formIndex, onAnalysisStateChange]);
+  }, [
+    formData.file,
+    formIndex,
+    onAnalysisStateChange,
+    onExistingInvoiceDetected,
+  ]);
 
   const showError = (field) => submitAttempted || touched[field];
 

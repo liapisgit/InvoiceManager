@@ -11,6 +11,11 @@ import {
   ToggleButtonGroup,
   Backdrop,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
@@ -18,13 +23,18 @@ import axios from "axios";
 import { apiClient } from "../services/apiClient";
 
 import InvoiceForm from "../components/Forms/InvoiceForm";
-import { createInvoiceSchema } from "../schemas/invoiceSchemas";
+import {
+  createInvoiceSchema,
+  updateInvoiceSchema,
+} from "../schemas/invoiceSchemas";
 import { clearToken } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 export default function HomePage() {
   const navigate = useNavigate();
   const [forms, setForms] = useState([{}]);
+  const [loadedForms, setLoadedForms] = useState([null]);
+  const [formLoadVersions, setFormLoadVersions] = useState([0]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -32,6 +42,13 @@ export default function HomePage() {
   const [resetVersion, setResetVersion] = useState(0);
   const [busyFormIndexes, setBusyFormIndexes] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpeningExistingInvoice, setIsOpeningExistingInvoice] = useState(false);
+  const [existingInvoiceDialog, setExistingInvoiceDialog] = useState({
+    open: false,
+    formIndex: null,
+    mark: "",
+    message: "",
+  });
   const { t, i18n } = useTranslation();
   const isUiLocked = busyFormIndexes.size > 0 || isSubmitting;
 
@@ -40,7 +57,11 @@ export default function HomePage() {
     navigate("/login", { replace: true });
   };
 
-  const handleAddNew = () => setForms((prev) => [...prev, {}]);
+  const handleAddNew = () => {
+    setForms((prev) => [...prev, {}]);
+    setLoadedForms((prev) => [...prev, null]);
+    setFormLoadVersions((prev) => [...prev, 0]);
+  };
 
   const handleFormChange = useCallback((index, formData) => {
     setForms((prev) => {
@@ -52,6 +73,8 @@ export default function HomePage() {
 
   const handleRemoveForm = useCallback((index) => {
     setForms((prev) => prev.filter((_, i) => i !== index));
+    setLoadedForms((prev) => prev.filter((_, i) => i !== index));
+    setFormLoadVersions((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleAnalysisStateChange = useCallback((formIndex, isBusy) => {
@@ -68,6 +91,76 @@ export default function HomePage() {
     return forms.every((f) => f?.isValid === true);
   }, [forms]);
 
+  const handleExistingInvoiceDetected = useCallback(
+    ({ formIndex, mark, message }) => {
+      setExistingInvoiceDialog({
+        open: true,
+        formIndex,
+        mark: String(mark ?? ""),
+        message: message || t("existingInvoice.defaultMessage"),
+      });
+    },
+    [t],
+  );
+
+  const handleCloseExistingInvoiceDialog = useCallback(() => {
+    if (isOpeningExistingInvoice) return;
+
+    setExistingInvoiceDialog({
+      open: false,
+      formIndex: null,
+      mark: "",
+      message: "",
+    });
+  }, [isOpeningExistingInvoice]);
+
+  const handleOpenExistingInvoice = useCallback(async () => {
+    if (
+      existingInvoiceDialog.formIndex == null ||
+      !existingInvoiceDialog.mark ||
+      isOpeningExistingInvoice
+    ) {
+      return;
+    }
+
+    setIsOpeningExistingInvoice(true);
+    try {
+      const response = await apiClient.get(
+        `/api/invoices/by-mark/${encodeURIComponent(existingInvoiceDialog.mark)}`,
+      );
+
+      setLoadedForms((prev) => {
+        const next = [...prev];
+        next[existingInvoiceDialog.formIndex] = response.data;
+        return next;
+      });
+      setFormLoadVersions((prev) => {
+        const next = [...prev];
+        next[existingInvoiceDialog.formIndex] =
+          (next[existingInvoiceDialog.formIndex] || 0) + 1;
+        return next;
+      });
+
+      setExistingInvoiceDialog({
+        open: false,
+        formIndex: null,
+        mark: "",
+        message: "",
+      });
+    } catch (error) {
+      const fallback = t("existingInvoice.fetchError");
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.details ||
+          error.response?.data?.error ||
+          fallback
+        : fallback;
+      setErrorMessage(message);
+      setShowError(true);
+    } finally {
+      setIsOpeningExistingInvoice(false);
+    }
+  }, [existingInvoiceDialog, isOpeningExistingInvoice, t]);
+
   const handleComplete = async () => {
     if (isUiLocked) return;
     setSubmitAttempted(true);
@@ -77,14 +170,20 @@ export default function HomePage() {
     try {
       await Promise.all(
         forms.map((form) => {
+          if (form?.id) {
+            const payload = updateInvoiceSchema.parse(form);
+            return apiClient.patch(`/api/invoices/${form.id}`, payload);
+          }
+
           const payload = createInvoiceSchema.parse(form);
-          console.log("payload", payload);
           return apiClient.post(`/api/invoices`, payload);
         }),
       );
 
       setShowSuccess(true);
       setForms([{}]);
+      setLoadedForms([null]);
+      setFormLoadVersions([0]);
       setSubmitAttempted(false);
       setErrorMessage("");
       setShowError(false);
@@ -162,13 +261,15 @@ export default function HomePage() {
           <Box className="forms-group__list">
             {forms.map((_, index) => (
               <InvoiceForm
-                key={`${resetVersion}-${index}`}
+                key={`${resetVersion}-${formLoadVersions[index] ?? 0}-${index}`}
                 formIndex={index}
                 onFormChange={handleFormChange}
                 onRemove={handleRemoveForm}
                 onAnalysisStateChange={handleAnalysisStateChange}
+                onExistingInvoiceDetected={handleExistingInvoiceDetected}
                 canRemove={forms.length > 1}
                 submitAttempted={submitAttempted}
+                externalData={loadedForms[index]}
               />
             ))}
           </Box>
@@ -231,6 +332,37 @@ export default function HomePage() {
             {errorMessage}
           </Alert>
         </Snackbar>
+        <Dialog
+          open={existingInvoiceDialog.open}
+          onClose={handleCloseExistingInvoiceDialog}
+          fullWidth
+          maxWidth="xs"
+        >
+          <DialogTitle>{t("existingInvoice.title")}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {existingInvoiceDialog.message || t("existingInvoice.defaultMessage")}
+            </DialogContentText>
+            <DialogContentText sx={{ mt: 1 }}>
+              {t("existingInvoice.prompt", { mark: existingInvoiceDialog.mark })}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleCloseExistingInvoiceDialog}
+              disabled={isOpeningExistingInvoice}
+            >
+              {t("existingInvoice.cancel")}
+            </Button>
+            <Button
+              onClick={handleOpenExistingInvoice}
+              variant="contained"
+              disabled={isOpeningExistingInvoice}
+            >
+              {t("existingInvoice.confirm")}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );

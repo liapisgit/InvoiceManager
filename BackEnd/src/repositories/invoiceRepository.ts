@@ -59,6 +59,19 @@ export const invoiceRepository = {
     });
   },
 
+  async findByMark(mark: string) {
+    return dbClient.invoice.findUnique({
+      where: { mark },
+    });
+  },
+
+  async update(id: string, data: UpdateInvoiceData) {
+    return dbClient.invoice.update({
+      where: { id },
+      data,
+    });
+  },
+
   async delete(id: string) {
     return dbClient.invoice.delete({
       where: { id },

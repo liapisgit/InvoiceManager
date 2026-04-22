@@ -70,27 +70,52 @@ const normalizeIncomingFormData = (data = {}) => {
   return next;
 };
 
-// Fill these with your static options.
-const PROJECT_OPTIONS = [
-  "KIRKIS",
-  "ALAMANAS",
-  "ARMONIAS-RIVIERA PEARL",
-  "AIOLOU",
-  "APOLLONOS",
-  "HERITAGE OT11",
-  "HERITAGE OT23",
-  "HERITAGE OT29",
-  "HERITAGE OT36",
-  "IOUSTINIANOU",
-  "LAGONISI",
-  "ERMA , LEOF ATHINWN 122 ATHENS",
-  "JULIA & CHRISTIAN KARAM_AFRODITIS",
-  "REAL ESTATE",
-];
-const COMPANY_OPTIONS = [
-  "THE OLON DEVELOPMENTS ΜΟΝΟΠΡΟΣΩΠΗ IKE",
-  "THE OLON HOSPITALITY ΙΚΕ",
-];
+// Fill these with your static company -> project options.
+const COMPANY_PROJECT_OPTIONS = {
+  "THE OLON DEVELOPMENTS ΜΟΝΟΠΡΟΣΩΠΗ IKE": [
+    "AIOLOU",
+    "ALAMANAS",
+    "APOLLONOS",
+    "ARMONIAS",
+    "ERMA , LEOF ATHINWN 122 ATHENS",
+    "FLEMING",
+    "GEORGE SEMELIDIS",
+    "HERITAGE OT11",
+    "HERITAGE OT23",
+    "HERITAGE OT29",
+    "HERITAGE OT36A",
+    "HERITAGE OT36B",
+    "IOUSTINIANOU",
+    "JULIA & CHRISTIAN KARAM_AFRODITIS",
+    "KIRKIS",
+    "LAGONISI",
+    "MARKETING",
+    "QONTRALESS CYPRUS",
+    "REAL ESTATE",
+    "XENOFONTOS 50",
+  ],
+  "THE OLON HOSPITALITY ΙΚΕ": [
+    "AIGEWS 6",
+    "ATHINWN 46",
+    "DIADOXOU 39-2BD",
+    "DIADOXOU 39-3BD",
+    "EKAVIS",
+    "FRYNIXOU 11",
+    "GEORGE SEMELIDIS",
+    "IASONOS",
+    "KAVOURIOU",
+    "LAMBRAKI 6",
+    "LITOUS 26",
+    "METAXA 7-2BD",
+    "METAXA 7-3BD",
+    "METAXA 33-EXECUTIVE",
+    "METAXA 33-SUPERIOR",
+    "NAYSIKAS 32",
+    "OFFICE EXPENSES",
+    "SAKI KARAGIORGA",
+  ],
+};
+const COMPANY_OPTIONS = Object.keys(COMPANY_PROJECT_OPTIONS);
 
 const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
@@ -116,6 +141,10 @@ export default function InvoiceForm({
   const [analysisStatus, setAnalysisStatus] = useState("");
   const [analysisError, setAnalysisError] = useState("");
   const { t } = useTranslation();
+  const projectOptions = useMemo(
+    () => COMPANY_PROJECT_OPTIONS[formData.company] || [],
+    [formData.company],
+  );
 
   const setField = (field, value) => {
     if (field === "file" && !value) {
@@ -133,6 +162,14 @@ export default function InvoiceForm({
     }
 
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCompanyChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      company: value,
+      project: "",
+    }));
   };
 
   const markTouched = (field) => setTouched((t) => ({ ...t, [field]: true }));
@@ -328,28 +365,9 @@ export default function InvoiceForm({
       </Box>
       <Box className="invoice-card__grid invoice-card__grid--top">
         <TextField
-          label={t("fields.project")}
-          value={formData.project}
-          onChange={(e) => setField("project", e.target.value)}
-          onBlur={() => markTouched("project")}
-          error={showError("project") && !!errors.project}
-          helperText={showError("project") ? errors.project : ""}
-          select
-          size="small"
-        >
-          <MenuItem value="">
-            <em>-</em>
-          </MenuItem>
-          {PROJECT_OPTIONS.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
           label={t("fields.company")}
           value={formData.company}
-          onChange={(e) => setField("company", e.target.value)}
+          onChange={(e) => handleCompanyChange(e.target.value)}
           onBlur={() => markTouched("company")}
           error={showError("company") && !!errors.company}
           helperText={showError("company") ? errors.company : ""}
@@ -360,6 +378,26 @@ export default function InvoiceForm({
             <em>-</em>
           </MenuItem>
           {COMPANY_OPTIONS.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          label={t("fields.project")}
+          value={formData.project}
+          onChange={(e) => setField("project", e.target.value)}
+          onBlur={() => markTouched("project")}
+          error={showError("project") && !!errors.project}
+          helperText={showError("project") ? errors.project : ""}
+          select
+          size="small"
+          disabled={!formData.company}
+        >
+          <MenuItem value="">
+            <em>-</em>
+          </MenuItem>
+          {projectOptions.map((option) => (
             <MenuItem key={option} value={option}>
               {option}
             </MenuItem>

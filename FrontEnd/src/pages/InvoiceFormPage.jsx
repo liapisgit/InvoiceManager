@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Container,
   Button,
@@ -19,7 +19,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import "../App.css";
 import InvoiceForm from "../components/Forms/InvoiceForm";
@@ -33,6 +33,8 @@ import {
 
 export default function InvoiceFormPage() {
   const navigate = useNavigate();
+  const { invoiceId } = useParams();
+  const isEditMode = Boolean(invoiceId);
   const [forms, setForms] = useState([{}]);
   const [loadedForms, setLoadedForms] = useState([null]);
   const [formLoadVersions, setFormLoadVersions] = useState([0]);
@@ -43,6 +45,7 @@ export default function InvoiceFormPage() {
   const [resetVersion, setResetVersion] = useState(0);
   const [busyFormIndexes, setBusyFormIndexes] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingInvoice, setIsFetchingInvoice] = useState(false);
   const [isOpeningExistingInvoice, setIsOpeningExistingInvoice] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState({
     open: false,
@@ -51,7 +54,8 @@ export default function InvoiceFormPage() {
     message: "",
   });
   const { t } = useTranslation();
-  const isUiLocked = busyFormIndexes.size > 0 || isSubmitting;
+  const isUiLocked =
+    busyFormIndexes.size > 0 || isSubmitting || isFetchingInvoice;
 
   const handleLogout = () => {
     clearToken();
@@ -59,6 +63,7 @@ export default function InvoiceFormPage() {
   };
 
   const handleAddNew = () => {
+    if (isEditMode) return;
     setForms((prev) => [...prev, {}]);
     setLoadedForms((prev) => [...prev, null]);
     setFormLoadVersions((prev) => [...prev, 0]);
@@ -91,6 +96,44 @@ export default function InvoiceFormPage() {
     if (!forms.length) return false;
     return forms.every((form) => form?.isValid === true);
   }, [forms]);
+
+  useEffect(() => {
+    if (!invoiceId) return;
+
+    let isActive = true;
+    setIsFetchingInvoice(true);
+
+    apiClient
+      .get(`/api/invoices/${invoiceId}`)
+      .then((response) => {
+        if (!isActive) return;
+        setForms([{}]);
+        setLoadedForms([response.data]);
+        setFormLoadVersions((prev) => [(prev[0] || 0) + 1]);
+        setErrorMessage("");
+        setShowError(false);
+      })
+      .catch((error) => {
+        if (!isActive) return;
+        const fallback = t("invoiceEdit.fetchError");
+        const message = axios.isAxiosError(error)
+          ? error.response?.data?.details ||
+            error.response?.data?.error ||
+            fallback
+          : fallback;
+        setErrorMessage(message);
+        setShowError(true);
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsFetchingInvoice(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [invoiceId, t]);
 
   const handleExistingInvoiceDetected = useCallback(
     ({ formIndex, mark, message }) => {
@@ -169,7 +212,7 @@ export default function InvoiceFormPage() {
 
     setIsSubmitting(true);
     try {
-      await Promise.all(
+      const responses = await Promise.all(
         forms.map((form) => {
           if (form?.id) {
             const payload = updateInvoiceSchema.parse(form);
@@ -182,13 +225,21 @@ export default function InvoiceFormPage() {
       );
 
       setShowSuccess(true);
-      setForms([{}]);
-      setLoadedForms([null]);
-      setFormLoadVersions([0]);
       setSubmitAttempted(false);
       setErrorMessage("");
       setShowError(false);
-      setResetVersion((version) => version + 1);
+
+      if (isEditMode) {
+        setLoadedForms(responses.map((response) => response.data));
+        setFormLoadVersions((prev) =>
+          prev.map((version, index) => version + (responses[index] ? 1 : 0)),
+        );
+      } else {
+        setForms([{}]);
+        setLoadedForms([null]);
+        setFormLoadVersions([0]);
+        setResetVersion((version) => version + 1);
+      }
     } catch (error) {
       const fallback = t("app.error");
       const message = axios.isAxiosError(error)
@@ -237,9 +288,13 @@ export default function InvoiceFormPage() {
       <Container maxWidth="md" className="app-root">
         <Paper elevation={0} className="forms-group">
           <Box className="forms-group__header">
-            <Typography variant="subtitle1">{t("app.invoices")}</Typography>
+            <Typography variant="subtitle1">
+              {isEditMode ? t("invoiceEdit.title") : t("app.invoices")}
+            </Typography>
             <Typography variant="caption" color="text.secondary">
-              {t("app.entries", { count: forms.length })}
+              {isEditMode
+                ? t("invoiceEdit.subtitle")
+                : t("app.entries", { count: forms.length })}
             </Typography>
           </Box>
 
@@ -259,16 +314,18 @@ export default function InvoiceFormPage() {
             ))}
           </Box>
 
-          <Box className="forms-group__footer">
-            <Button
-              variant="outlined"
-              onClick={handleAddNew}
-              disabled={isUiLocked}
-              startIcon={<AddIcon />}
-            >
-              {t("app.addInvoice")}
-            </Button>
-          </Box>
+          {!isEditMode ? (
+            <Box className="forms-group__footer">
+              <Button
+                variant="outlined"
+                onClick={handleAddNew}
+                disabled={isUiLocked}
+                startIcon={<AddIcon />}
+              >
+                {t("app.addInvoice")}
+              </Button>
+            </Box>
+          ) : null}
         </Paper>
 
         <Box className="app-actions">
@@ -277,7 +334,7 @@ export default function InvoiceFormPage() {
             onClick={handleComplete}
             disabled={!allValid || isUiLocked}
           >
-            {t("app.completeReview")}
+            {isEditMode ? t("invoiceEdit.submit") : t("app.completeReview")}
           </Button>
         </Box>
 

@@ -45,6 +45,14 @@ createRoot(document.getElementById("root")).render(
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/invoices/:invoiceId/edit"
+              element={
+                <ProtectedRoute>
+                  <InvoiceFormPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

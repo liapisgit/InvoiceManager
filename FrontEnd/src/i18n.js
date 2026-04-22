@@ -39,6 +39,7 @@ i18n.use(initReactI18next).init({
             "Δες τα τιμολόγια και φιλτράρισέ τα ανά αποδέκτη, έργο, χρήστη ή ημερομηνία.",
           results: "{{count}} από {{total}} τιμολόγια",
           newInvoice: "Νέο Τιμολόγιο",
+          updateInvoice: "Ενημέρωση",
           refresh: "Ανανέωση",
           all: "Όλα",
           userFilter: "Χρήστης",
@@ -50,6 +51,12 @@ i18n.use(initReactI18next).init({
           emptyValue: "-",
           invoiceFallback: "Τιμολόγιο",
           backToDashboard: "Επιστροφή στο dashboard",
+        },
+        invoiceEdit: {
+          title: "Ενημέρωση τιμολογίου",
+          subtitle: "Τα πεδία φορτώθηκαν από τη βάση δεδομένων.",
+          submit: "Αποθήκευση αλλαγών",
+          fetchError: "Δεν ήταν δυνατή η φόρτωση του τιμολογίου.",
         },
         invoice: {
           title: "Τιμολόγιο #{{index}}",
@@ -144,6 +151,7 @@ i18n.use(initReactI18next).init({
             "View invoices and filter them by recipient, project, user, or invoice date.",
           results: "{{count}} of {{total}} invoices",
           newInvoice: "New Invoice",
+          updateInvoice: "Update",
           refresh: "Refresh",
           all: "All",
           userFilter: "User",
@@ -155,6 +163,12 @@ i18n.use(initReactI18next).init({
           emptyValue: "-",
           invoiceFallback: "Invoice",
           backToDashboard: "Back to dashboard",
+        },
+        invoiceEdit: {
+          title: "Update invoice",
+          subtitle: "The fields were loaded from the database.",
+          submit: "Save changes",
+          fetchError: "Could not load the invoice.",
         },
         invoice: {
           title: "Invoice #{{index}}",

@@ -12,6 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -427,6 +428,14 @@ export default function HomePage() {
                         color={invoice.is_paid ? "success" : "default"}
                         variant={invoice.is_paid ? "filled" : "outlined"}
                       />
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<EditIcon />}
+                        onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
+                      >
+                        {t("dashboard.updateInvoice")}
+                      </Button>
                     </Box>
                   </Box>
 

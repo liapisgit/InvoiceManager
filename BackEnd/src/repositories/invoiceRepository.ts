@@ -65,6 +65,13 @@ export const invoiceRepository = {
     });
   },
 
+  async findByFileUploadId(file_upload_id: string) {
+    return dbClient.invoice.findFirst({
+      where: { file_upload_id },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
   async update(id: string, data: UpdateInvoiceData) {
     return dbClient.invoice.update({
       where: { id },

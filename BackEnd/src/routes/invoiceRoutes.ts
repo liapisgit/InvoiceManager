@@ -115,6 +115,21 @@ invoiceRouter.get("/by-mark/:mark", async (req, res) => {
   }
 });
 
+// Get invoice by file upload id
+invoiceRouter.get("/by-file-upload-id/:fileUploadId", async (req, res) => {
+  try {
+    const invoice = await invoiceRepository.findByFileUploadId(
+      req.params.fileUploadId,
+    );
+    if (!invoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+    res.json(await withCreatedByLabel(invoice));
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch invoice" });
+  }
+});
+
 // Get invoice by ID
 invoiceRouter.get("/:id", async (req, res) => {
   try {

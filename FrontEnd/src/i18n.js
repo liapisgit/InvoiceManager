@@ -66,9 +66,12 @@ i18n.use(initReactI18next).init({
         },
         existingInvoice: {
           title: "Το τιμολόγιο υπάρχει ήδη",
-          defaultMessage: "Βρέθηκαν ήδη αρχεία τιμολογίου για αυτό το MARK.",
+          defaultMessage:
+            "Βρέθηκε ήδη τιμολόγιο με το ίδιο αναγνωριστικό στο σύστημα.",
           prompt:
-            "Θες να ανοίξεις το υπάρχον τιμολόγιο με MARK {{mark}} για έλεγχο και ενημέρωση;",
+            "Θες να ανοίξεις το υπάρχον τιμολόγιο με {{identifierLabel}} {{identifierValue}} για έλεγχο και ενημέρωση;",
+          markLabel: "MARK",
+          fileUploadIdLabel: "File Upload ID",
           confirm: "Ναι, άνοιξέ το",
           cancel: "Όχι",
           fetchError: "Δεν ήταν δυνατή η φόρτωση του υπάρχοντος τιμολογίου.",
@@ -99,6 +102,7 @@ i18n.use(initReactI18next).init({
           company: "Εταιρεία",
           category: "Κατηγορία",
           expense_type: "Τύπος Εξόδου",
+          file_upload_id: "File Upload ID",
           invoice_date: "Ημ/νία Τιμολογίου",
         },
         file: {
@@ -178,9 +182,11 @@ i18n.use(initReactI18next).init({
         },
         existingInvoice: {
           title: "Invoice already exists",
-          defaultMessage: "Invoice files already exist for this mark.",
+          defaultMessage: "An invoice with the same identifier already exists.",
           prompt:
-            "Open the existing invoice with mark {{mark}} so you can review and update it?",
+            "Open the existing invoice with {{identifierLabel}} {{identifierValue}} so you can review and update it?",
+          markLabel: "MARK",
+          fileUploadIdLabel: "File Upload ID",
           confirm: "Yes, open it",
           cancel: "No",
           fetchError: "Could not load the existing invoice.",
@@ -211,6 +217,7 @@ i18n.use(initReactI18next).init({
           company: "Company",
           category: "Category",
           expense_type: "Expense Type",
+          file_upload_id: "File Upload ID",
           invoice_date: "Invoice Date",
         },
         file: {

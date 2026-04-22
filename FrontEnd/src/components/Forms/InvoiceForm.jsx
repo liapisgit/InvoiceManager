@@ -300,15 +300,33 @@ export default function InvoiceForm({
           error?.response?.data?.details ||
           error?.response?.data?.error ||
           "Image analysis failed";
+        const existingInvoiceId = error?.response?.data?.invoiceId;
+        const duplicateField = error?.response?.data?.duplicate_field;
+        const duplicateValue = error?.response?.data?.duplicate_value;
         const existingInvoiceMark = error?.response?.data?.mark;
+        const existingInvoiceFileUploadId =
+          error?.response?.data?.file_upload_id;
 
         setAnalysisStatus("failed");
         setAnalysisError(backendMessage);
 
-        if (existingInvoiceMark) {
+        if (
+          existingInvoiceId ||
+          duplicateField ||
+          existingInvoiceMark ||
+          existingInvoiceFileUploadId
+        ) {
           onExistingInvoiceDetected?.({
             formIndex,
-            mark: existingInvoiceMark,
+            invoiceId: existingInvoiceId,
+            duplicateField:
+              duplicateField ||
+              (existingInvoiceFileUploadId ? "file_upload_id" : "mark"),
+            duplicateValue:
+              duplicateValue ||
+              existingInvoiceFileUploadId ||
+              existingInvoiceMark ||
+              "",
             message: backendMessage,
           });
         }

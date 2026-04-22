@@ -50,7 +50,9 @@ export default function InvoiceFormPage() {
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState({
     open: false,
     formIndex: null,
-    mark: "",
+    invoiceId: "",
+    duplicateField: "",
+    duplicateValue: "",
     message: "",
   });
   const { t } = useTranslation();
@@ -136,11 +138,13 @@ export default function InvoiceFormPage() {
   }, [invoiceId, t]);
 
   const handleExistingInvoiceDetected = useCallback(
-    ({ formIndex, mark, message }) => {
+    ({ formIndex, invoiceId, duplicateField, duplicateValue, message }) => {
       setExistingInvoiceDialog({
         open: true,
         formIndex,
-        mark: String(mark ?? ""),
+        invoiceId: String(invoiceId ?? ""),
+        duplicateField: String(duplicateField ?? ""),
+        duplicateValue: String(duplicateValue ?? ""),
         message: message || t("existingInvoice.defaultMessage"),
       });
     },
@@ -153,7 +157,9 @@ export default function InvoiceFormPage() {
     setExistingInvoiceDialog({
       open: false,
       formIndex: null,
-      mark: "",
+      invoiceId: "",
+      duplicateField: "",
+      duplicateValue: "",
       message: "",
     });
   }, [isOpeningExistingInvoice]);
@@ -161,7 +167,6 @@ export default function InvoiceFormPage() {
   const handleOpenExistingInvoice = useCallback(async () => {
     if (
       existingInvoiceDialog.formIndex == null ||
-      !existingInvoiceDialog.mark ||
       isOpeningExistingInvoice
     ) {
       return;
@@ -169,9 +174,28 @@ export default function InvoiceFormPage() {
 
     setIsOpeningExistingInvoice(true);
     try {
-      const response = await apiClient.get(
-        `/api/invoices/by-mark/${encodeURIComponent(existingInvoiceDialog.mark)}`,
-      );
+      let response;
+      if (existingInvoiceDialog.invoiceId) {
+        response = await apiClient.get(
+          `/api/invoices/${encodeURIComponent(existingInvoiceDialog.invoiceId)}`,
+        );
+      } else if (
+        existingInvoiceDialog.duplicateField === "file_upload_id" &&
+        existingInvoiceDialog.duplicateValue
+      ) {
+        response = await apiClient.get(
+          `/api/invoices/by-file-upload-id/${encodeURIComponent(existingInvoiceDialog.duplicateValue)}`,
+        );
+      } else if (
+        existingInvoiceDialog.duplicateField === "mark" &&
+        existingInvoiceDialog.duplicateValue
+      ) {
+        response = await apiClient.get(
+          `/api/invoices/by-mark/${encodeURIComponent(existingInvoiceDialog.duplicateValue)}`,
+        );
+      } else {
+        return;
+      }
 
       setLoadedForms((prev) => {
         const next = [...prev];
@@ -188,7 +212,9 @@ export default function InvoiceFormPage() {
       setExistingInvoiceDialog({
         open: false,
         formIndex: null,
-        mark: "",
+        invoiceId: "",
+        duplicateField: "",
+        duplicateValue: "",
         message: "",
       });
     } catch (error) {
@@ -204,6 +230,13 @@ export default function InvoiceFormPage() {
       setIsOpeningExistingInvoice(false);
     }
   }, [existingInvoiceDialog, isOpeningExistingInvoice, t]);
+
+  const existingInvoiceIdentifierLabel = useMemo(() => {
+    if (existingInvoiceDialog.duplicateField === "file_upload_id") {
+      return t("existingInvoice.fileUploadIdLabel");
+    }
+    return t("existingInvoice.markLabel");
+  }, [existingInvoiceDialog.duplicateField, t]);
 
   const handleComplete = async () => {
     if (isUiLocked) return;
@@ -387,7 +420,10 @@ export default function InvoiceFormPage() {
               {existingInvoiceDialog.message || t("existingInvoice.defaultMessage")}
             </DialogContentText>
             <DialogContentText sx={{ mt: 1 }}>
-              {t("existingInvoice.prompt", { mark: existingInvoiceDialog.mark })}
+              {t("existingInvoice.prompt", {
+                identifierLabel: existingInvoiceIdentifierLabel,
+                identifierValue: existingInvoiceDialog.duplicateValue,
+              })}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

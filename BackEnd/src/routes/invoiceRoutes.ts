@@ -156,9 +156,12 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
       return res.status(404).json({ error: "Invoice not found" });
     }
 
-    const invoice = await invoiceRepository.update(id, req.body);
+    const invoice = await invoiceRepository.update(id, {
+      ...req.body,
+      createdBy: req.user!.user_id,
+    });
     await triggerInvoiceDataWebhook(invoice, req.user!);
-    res.json(invoice);
+    res.json(await withCreatedByLabel(invoice));
   } catch (error: any) {
     console.error("Error updating invoice:", error);
     res.status(500).json({

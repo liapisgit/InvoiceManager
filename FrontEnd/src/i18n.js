@@ -39,6 +39,15 @@ i18n.use(initReactI18next).init({
             "Δες τα τιμολόγια και φιλτράρισέ τα ανά αποδέκτη, έργο, χρήστη ή ημερομηνία.",
           results: "{{count}} από {{total}} τιμολόγια",
           newInvoice: "Νέο Τιμολόγιο",
+          previewInvoice: "Προεπισκόπηση",
+          previewTitle: "Προεπισκόπηση αρχείου",
+          previewEmpty: "Επίλεξε ένα τιμολόγιο για να δεις το αρχείο του.",
+          previewHelper:
+            "Πάτησε Προεπισκόπηση σε κάποιο τιμολόγιο για να εμφανιστεί εδώ το PDF ή η εικόνα του.",
+          previewFrameTitle: "Προεπισκόπηση τιμολογίου",
+          previewUnsupported:
+            "Δεν ήταν δυνατή η ενσωματωμένη προεπισκόπηση αυτού του αρχείου.",
+          openOriginalFile: "Άνοιγμα αρχικού αρχείου",
           updateInvoice: "Ενημέρωση",
           refresh: "Ανανέωση",
           all: "Όλα",
@@ -155,6 +164,15 @@ i18n.use(initReactI18next).init({
             "View invoices and filter them by recipient, project, user, or invoice date.",
           results: "{{count}} of {{total}} invoices",
           newInvoice: "New Invoice",
+          previewInvoice: "Preview",
+          previewTitle: "File preview",
+          previewEmpty: "Select an invoice to preview its file.",
+          previewHelper:
+            "Click Preview on any invoice to display its PDF or image here.",
+          previewFrameTitle: "Invoice preview",
+          previewUnsupported:
+            "This file could not be previewed directly inside the app.",
+          openOriginalFile: "Open original file",
           updateInvoice: "Update",
           refresh: "Refresh",
           all: "All",

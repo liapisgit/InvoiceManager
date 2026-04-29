@@ -54,6 +54,15 @@ const formatValue = (field, value, language, t) => {
   return String(value);
 };
 
+const getInvoiceIdentifier = (invoice, t) => {
+  const datePart = String(invoice?.invoice_date ?? "").slice(0, 10).trim();
+  const issuerPart = String(invoice?.issuer_name ?? "").trim();
+  const numberPart = String(invoice?.number ?? "").trim();
+  const parts = [datePart, issuerPart, numberPart].filter(Boolean);
+
+  return parts.length ? parts.join("_") : t("dashboard.invoiceFallback");
+};
+
 const GOOGLE_DRIVE_FILE_ID_PATTERNS = [
   /drive\.google\.com\/file\/d\/([^/]+)/i,
   /drive\.google\.com\/open\?id=([^&]+)/i,
@@ -422,6 +431,7 @@ export default function HomePage() {
                 );
                 const hasPreview = Boolean(String(invoice.file_url ?? "").trim());
                 const isSelectedPreview = selectedPreviewInvoice?.id === invoice.id;
+                const invoiceIdentifier = getInvoiceIdentifier(invoice, t);
 
                 return (
                   <Paper
@@ -450,9 +460,7 @@ export default function HomePage() {
                     >
                       <Box>
                         <Typography variant="h6" sx={{ mb: 0.5 }}>
-                          {invoice.issuer_name ||
-                            invoice.recipient_name ||
-                            t("dashboard.invoiceFallback")}
+                          {invoiceIdentifier}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {`${t("dashboard.costCenter")
@@ -466,13 +474,6 @@ export default function HomePage() {
                       </Box>
 
                       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                        {isSelectedPreview ? (
-                          <Chip
-                            label={t("dashboard.previewSelected")}
-                            color="success"
-                            variant="filled"
-                          />
-                        ) : null}
                         <Chip
                           label={`${t("fields.invoice_date")}: ${formatValue(
                             "invoice_date",
@@ -496,7 +497,11 @@ export default function HomePage() {
                           variant={isSelectedPreview ? "contained" : "outlined"}
                           size="small"
                           startIcon={<VisibilityIcon />}
-                          onClick={() => setSelectedPreviewInvoice(invoice)}
+                          onClick={() =>
+                            setSelectedPreviewInvoice((currentInvoice) =>
+                              currentInvoice?.id === invoice.id ? null : invoice,
+                            )
+                          }
                           disabled={!hasPreview}
                         >
                           {t("dashboard.previewInvoice")}
@@ -563,9 +568,7 @@ export default function HomePage() {
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {selectedPreviewInvoice
-                  ? selectedPreviewInvoice.recipient_name ||
-                    selectedPreviewInvoice.issuer_name ||
-                    t("dashboard.invoiceFallback")
+                  ? getInvoiceIdentifier(selectedPreviewInvoice, t)
                   : t("dashboard.previewEmpty")}
               </Typography>
 
@@ -644,42 +647,7 @@ export default function HomePage() {
                     );
                   }
 
-                  return (
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      <Box
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          border: "1px solid rgba(81, 175, 139, 0.35)",
-                          backgroundColor: "rgba(81, 175, 139, 0.08)",
-                        }}
-                      >
-                        <Typography
-                          variant="overline"
-                          sx={{ display: "block", color: "#2f8f6e", lineHeight: 1.4 }}
-                        >
-                          {t("dashboard.previewSelectionTitle")}
-                        </Typography>
-                        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                          {selectedPreviewInvoice.recipient_name ||
-                            selectedPreviewInvoice.issuer_name ||
-                            t("dashboard.invoiceFallback")}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {`${t("dashboard.costCenter").toLocaleUpperCase(
-                            i18n.language,
-                          )}: ${formatValue(
-                            "project",
-                            selectedPreviewInvoice.project,
-                            i18n.language,
-                            t,
-                          )}`}
-                        </Typography>
-                      </Box>
-
-                      {previewContent}
-                    </Box>
-                  );
+                  return previewContent;
                 })()
               ) : (
                 <Box

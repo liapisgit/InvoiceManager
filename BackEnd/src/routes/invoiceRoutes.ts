@@ -80,8 +80,6 @@ invoiceRouter.post("/", validate(createInvoiceSchema), async (req, res) => {
       createdBy: req.user!.user_id,
     });
 
-    await triggerInvoiceDataWebhook(invoice, req.user!);
-
     res.status(201).json(invoice);
   } catch (error: any) {
     console.error("Error creating invoice:", error);

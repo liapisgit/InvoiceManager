@@ -1,9 +1,20 @@
 import { z } from "zod";
 
+const statusSchema = z.enum(["processing", "needs_review", "complete", "error"]);
+const approvalStatusSchema = z.enum(["approved", "not_approved"]);
+const optionalStatusSchema = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  statusSchema.optional(),
+);
+const optionalApprovalStatusSchema = z.preprocess(
+  (value) => (value === "" ? null : value),
+  approvalStatusSchema.nullable().optional(),
+);
+
 export const createInvoiceSchema = z.object({
   invoice_date: z.coerce.date().optional(),
   document_type: z.string().optional(),
-  mark: z.string().min(1),
+  mark: z.string().min(1).nullable().optional(),
   series: z.string().optional(),
   number: z.string().optional(),
   issuer_vat_number: z.string().optional(),
@@ -30,8 +41,11 @@ export const createInvoiceSchema = z.object({
   category: z.string().optional(),
   expense_type: z.string().optional(),
   file_url: z.string().optional(),
+  file_path: z.string().optional(),
   file_hash: z.string().optional(),
   file_upload_id: z.string().optional(),
+  status: optionalStatusSchema,
+  approval_status: optionalApprovalStatusSchema,
 });
 
 export const updateInvoiceSchema = z.object({
@@ -64,6 +78,9 @@ export const updateInvoiceSchema = z.object({
   category: z.string().optional(),
   expense_type: z.string().optional(),
   file_url: z.string().optional(),
+  file_path: z.string().optional(),
   file_hash: z.string().optional(),
   file_upload_id: z.string().optional(),
+  status: optionalStatusSchema,
+  approval_status: optionalApprovalStatusSchema,
 });

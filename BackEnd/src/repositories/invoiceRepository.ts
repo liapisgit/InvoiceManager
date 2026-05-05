@@ -3,7 +3,7 @@ import { dbClient } from "../lib/prisma";
 type CreateInvoiceData = {
   invoice_date?: Date | null;
   document_type?: string;
-  mark: string;
+  mark?: string | null;
   series?: string;
   number?: string;
   issuer_vat_number?: string;
@@ -27,8 +27,11 @@ type CreateInvoiceData = {
   category?: string;
   expense_type?: string;
   file_url?: string;
+  file_path?: string;
   file_hash?: string;
   file_upload_id?: string;
+  status?: string;
+  approval_status?: string | null;
   createdBy?: string;
 };
 

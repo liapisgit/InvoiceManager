@@ -64,6 +64,23 @@ i18n.use(initReactI18next).init({
           emptyValue: "-",
           invoiceFallback: "Τιμολόγιο",
           backToDashboard: "Επιστροφή στο dashboard",
+          pendingApproval: "Εκκρεμεί έγκριση",
+        },
+        upload: {
+          title: "Νέο τιμολόγιο",
+          subtitle:
+            "Ανέβασε το αρχείο και συμπλήρωσε τα βασικά στοιχεία κόστους.",
+          submit: "Ανέβασμα τιμολογίου",
+        },
+        invoiceStatus: {
+          processing: "Σε επεξεργασία",
+          needs_review: "Χρειάζεται έλεγχο",
+          complete: "Ολοκληρωμένο",
+          error: "Σφάλμα",
+        },
+        approvalStatus: {
+          approved: "Εγκεκριμένο",
+          not_approved: "Μη εγκεκριμένο",
         },
         invoiceEdit: {
           title: "Ενημέρωση τιμολογίου",
@@ -116,6 +133,9 @@ i18n.use(initReactI18next).init({
           category: "Κατηγορία",
           expense_type: "Τύπος Εξόδου",
           file_upload_id: "File Upload ID",
+          file_path: "Τοπική διαδρομή αρχείου",
+          status: "Κατάσταση",
+          approval_status: "Κατάσταση έγκρισης",
           invoice_date: "Ημ/νία Τιμολογίου",
         },
         file: {
@@ -193,6 +213,22 @@ i18n.use(initReactI18next).init({
           emptyValue: "-",
           invoiceFallback: "Invoice",
           backToDashboard: "Back to dashboard",
+          pendingApproval: "Pending approval",
+        },
+        upload: {
+          title: "New invoice",
+          subtitle: "Upload the file and fill in the basic cost details.",
+          submit: "Upload invoice",
+        },
+        invoiceStatus: {
+          processing: "Processing",
+          needs_review: "Needs review",
+          complete: "Complete",
+          error: "Error",
+        },
+        approvalStatus: {
+          approved: "Approved",
+          not_approved: "Not approved",
         },
         invoiceEdit: {
           title: "Update invoice",
@@ -244,6 +280,9 @@ i18n.use(initReactI18next).init({
           category: "Category",
           expense_type: "Expense Type",
           file_upload_id: "File Upload ID",
+          file_path: "Local File Path",
+          status: "Status",
+          approval_status: "Approval Status",
           invoice_date: "Invoice Date",
         },
         file: {

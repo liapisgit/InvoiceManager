@@ -7,7 +7,6 @@ import DatePicker from "../Inputs/DatePicker";
 import FileUploadSingleImage from "../Inputs/FileUploadSingleImage";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { analyzeInvoiceImage } from "../../services/invoiceAnalysis";
 import { useTranslation } from "react-i18next";
 
 const initialForm = {
@@ -33,8 +32,11 @@ const initialForm = {
   is_paid: false,
   comments: "",
   file_url: "",
+  file_path: "",
   file_hash: "",
   file_upload_id: "",
+  status: "",
+  approval_status: "",
   file: null, // ✅ single image
   project: "",
   company: "",
@@ -71,7 +73,7 @@ const normalizeIncomingFormData = (data = {}) => {
 };
 
 // Fill these with your static company -> project options.
-const COMPANY_PROJECT_OPTIONS = {
+export const COMPANY_PROJECT_OPTIONS = {
   "THE OLON DEVELOPMENTS ΜΟΝΟΠΡΟΣΩΠΗ IKE": [
     "AIOLOU",
     "ALAMANAS",
@@ -130,7 +132,7 @@ const COMPANY_PROJECT_OPTIONS = {
     "GEORGE BERSENDES",
   ],
 };
-const COMPANY_OPTIONS = Object.keys(COMPANY_PROJECT_OPTIONS);
+export const COMPANY_OPTIONS = Object.keys(COMPANY_PROJECT_OPTIONS);
 
 const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
@@ -140,8 +142,6 @@ export default function InvoiceForm({
   formIndex,
   onFormChange,
   onRemove,
-  onAnalysisStateChange,
-  onExistingInvoiceDetected,
   canRemove = true,
   submitAttempted = false,
   externalData = null,
@@ -152,9 +152,6 @@ export default function InvoiceForm({
 
   // track touched for nicer UX
   const [touched, setTouched] = useState({});
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisStatus, setAnalysisStatus] = useState("");
-  const [analysisError, setAnalysisError] = useState("");
   const { t } = useTranslation();
   const projectOptions = useMemo(
     () => COMPANY_PROJECT_OPTIONS[formData.company] || [],
@@ -162,20 +159,6 @@ export default function InvoiceForm({
   );
 
   const setField = (field, value) => {
-    if (field === "file" && !value) {
-      setIsAnalyzing(false);
-      setAnalysisStatus("");
-      setAnalysisError("");
-      onAnalysisStateChange?.(formIndex, false);
-    }
-
-    if (field === "file" && value) {
-      setIsAnalyzing(true);
-      setAnalysisStatus("running");
-      setAnalysisError("");
-      onAnalysisStateChange?.(formIndex, true);
-    }
-
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -188,34 +171,6 @@ export default function InvoiceForm({
   };
 
   const markTouched = (field) => setTouched((t) => ({ ...t, [field]: true }));
-
-  const markAllTouched = () =>
-    setTouched({
-      recipient_code: true,
-      document_type: true,
-      series: true,
-      number: true,
-      issuer_vat_number: true,
-      issuer_name: true,
-      recipient_vat_number: true,
-      recipient_name: true,
-      payment_method: true,
-      value_before_discount: true,
-      discount_amount: true,
-      net_amount: true,
-      vat_amount: true,
-      withholding_amount: true,
-      fees_or_stamps: true,
-      total_amount: true,
-      issuer_iban: true,
-      is_paid: true,
-      comments: true,
-      project: true,
-      company: true,
-      category: true,
-      expense_type: true,
-      invoice_date: true,
-    });
 
   const errors = useMemo(() => {
     const e = {};
@@ -285,83 +240,6 @@ export default function InvoiceForm({
   useEffect(() => {
     onFormChange?.(formIndex, { ...formData, isValid, errors });
   }, [formData, formIndex, onFormChange, isValid, errors]);
-
-  useEffect(() => {
-    if (!formData.file) return;
-
-    const controller = new AbortController();
-
-    analyzeInvoiceImage(formData.file, { signal: controller.signal })
-      .then((result) => {
-        setFormData((prev) => {
-          const next = { ...prev };
-          Object.entries(result).forEach(([key, value]) => {
-            const current = prev[key];
-            const isEmptyValue = String(current ?? "").trim().length === 0;
-            if (isEmptyValue || current == null) {
-              next[key] = value;
-            }
-          });
-          return next;
-        });
-        setAnalysisStatus("complete");
-        setAnalysisError("");
-        markAllTouched();
-      })
-      .catch((error) => {
-        if (error?.name === "AbortError") return;
-
-        const backendMessage =
-          error?.response?.data?.details ||
-          error?.response?.data?.error ||
-          "Image analysis failed";
-        const existingInvoiceId = error?.response?.data?.invoiceId;
-        const duplicateField = error?.response?.data?.duplicate_field;
-        const duplicateValue = error?.response?.data?.duplicate_value;
-        const existingInvoiceMark = error?.response?.data?.mark;
-        const existingInvoiceFileUploadId =
-          error?.response?.data?.file_upload_id;
-
-        setAnalysisStatus("failed");
-        setAnalysisError(backendMessage);
-
-        if (
-          existingInvoiceId ||
-          duplicateField ||
-          existingInvoiceMark ||
-          existingInvoiceFileUploadId
-        ) {
-          onExistingInvoiceDetected?.({
-            formIndex,
-            invoiceId: existingInvoiceId,
-            duplicateField:
-              duplicateField ||
-              (existingInvoiceFileUploadId ? "file_upload_id" : "mark"),
-            duplicateValue:
-              duplicateValue ||
-              existingInvoiceFileUploadId ||
-              existingInvoiceMark ||
-              "",
-            message: backendMessage,
-          });
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setIsAnalyzing(false);
-          onAnalysisStateChange?.(formIndex, false);
-        }
-      });
-    return () => {
-      controller.abort();
-      onAnalysisStateChange?.(formIndex, false);
-    };
-  }, [
-    formData.file,
-    formIndex,
-    onAnalysisStateChange,
-    onExistingInvoiceDetected,
-  ]);
 
   const showError = (field) => submitAttempted || touched[field];
 
@@ -472,6 +350,24 @@ export default function InvoiceForm({
             </Typography>
           ) : null}
         </Box>
+        <TextField
+          label={t("fields.approval_status")}
+          value={formData.approval_status}
+          onChange={(e) => setField("approval_status", e.target.value)}
+          onBlur={() => markTouched("approval_status")}
+          error={showError("approval_status") && !!errors.approval_status}
+          helperText={showError("approval_status") ? errors.approval_status : ""}
+          select
+          size="small"
+        >
+          <MenuItem value="">
+            <em>{t("dashboard.pendingApproval")}</em>
+          </MenuItem>
+          <MenuItem value="approved">{t("approvalStatus.approved")}</MenuItem>
+          <MenuItem value="not_approved">
+            {t("approvalStatus.not_approved")}
+          </MenuItem>
+        </TextField>
       </Box>
       <Box className="invoice-card__grid">
         <TextField
@@ -683,22 +579,7 @@ export default function InvoiceForm({
             onChange={(file) => setField("file", file)}
             icon={ReceiptIcon}
             helperText={t("file.helperText")}
-            isBusy={isAnalyzing}
           />
-          {analysisStatus ? (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mt: 0.5 }}
-            >
-              {t(`analysis.${analysisStatus}`)}
-            </Typography>
-          ) : null}
-          {analysisError ? (
-            <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
-              {analysisError}
-            </Typography>
-          ) : null}
           {showError("file") && errors.file ? (
             <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
               {errors.file}

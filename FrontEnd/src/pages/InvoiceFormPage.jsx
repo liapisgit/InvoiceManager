@@ -1,35 +1,49 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Container,
-  Button,
-  Box,
-  Typography,
-  Snackbar,
   Alert,
-  Paper,
   Backdrop,
+  Box,
+  Button,
+  Checkbox,
   CircularProgress,
+  Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControlLabel,
+  MenuItem,
+  Paper,
+  Snackbar,
+  TextField,
+  Typography,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 import "../App.css";
-import InvoiceForm from "../components/Forms/InvoiceForm";
+import InvoiceForm, {
+  COMPANY_OPTIONS,
+  COMPANY_PROJECT_OPTIONS,
+} from "../components/Forms/InvoiceForm";
+import FileUploadSingleImage from "../components/Inputs/FileUploadSingleImage";
 import AppHeader from "../components/layout/AppHeader";
 import { apiClient } from "../services/apiClient";
 import { clearToken } from "../services/auth";
-import {
-  createInvoiceSchema,
-  updateInvoiceSchema,
-} from "../schemas/invoiceSchemas";
+import { updateInvoiceSchema } from "../schemas/invoiceSchemas";
+
+const initialUploadForm = {
+  file: null,
+  company: "",
+  project: "",
+  is_paid: "",
+  comments: "",
+  approval_status: "",
+};
 
 export default function InvoiceFormPage() {
   const navigate = useNavigate();
@@ -46,6 +60,7 @@ export default function InvoiceFormPage() {
   const [busyFormIndexes, setBusyFormIndexes] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingInvoice, setIsFetchingInvoice] = useState(false);
+  const [uploadForm, setUploadForm] = useState(initialUploadForm);
   const [isOpeningExistingInvoice, setIsOpeningExistingInvoice] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState({
     open: false,
@@ -58,17 +73,17 @@ export default function InvoiceFormPage() {
   const { t } = useTranslation();
   const isUiLocked =
     busyFormIndexes.size > 0 || isSubmitting || isFetchingInvoice;
+  const uploadProjectOptions = useMemo(
+    () => COMPANY_PROJECT_OPTIONS[uploadForm.company] || [],
+    [uploadForm.company],
+  );
+  const isUploadValid = Boolean(
+    uploadForm.file && uploadForm.company && uploadForm.project,
+  );
 
   const handleLogout = () => {
     clearToken();
     navigate("/login", { replace: true });
-  };
-
-  const handleAddNew = () => {
-    if (isEditMode) return;
-    setForms((prev) => [...prev, {}]);
-    setLoadedForms((prev) => [...prev, null]);
-    setFormLoadVersions((prev) => [...prev, 0]);
   };
 
   const handleFormChange = useCallback((index, formData) => {
@@ -98,6 +113,15 @@ export default function InvoiceFormPage() {
     if (!forms.length) return false;
     return forms.every((form) => form?.isValid === true);
   }, [forms]);
+  const canSubmit = isEditMode ? allValid : isUploadValid;
+
+  const setUploadField = (field, value) => {
+    setUploadForm((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "company" ? { project: "" } : {}),
+    }));
+  };
 
   useEffect(() => {
     if (!invoiceId) return;
@@ -241,10 +265,35 @@ export default function InvoiceFormPage() {
   const handleComplete = async () => {
     if (isUiLocked) return;
     setSubmitAttempted(true);
-    if (!allValid) return;
+    if (!canSubmit) return;
 
     setIsSubmitting(true);
     try {
+      if (!isEditMode) {
+        const formData = new FormData();
+        formData.append("image", uploadForm.file);
+        formData.append("company", uploadForm.company);
+        formData.append("project", uploadForm.project);
+        if (uploadForm.is_paid !== "") {
+          formData.append("is_paid", uploadForm.is_paid);
+        }
+        if (uploadForm.comments.trim()) {
+          formData.append("comments", uploadForm.comments.trim());
+        }
+        if (uploadForm.approval_status) {
+          formData.append("approval_status", uploadForm.approval_status);
+        }
+
+        await apiClient.post("/api/upload/invoice", formData);
+        setUploadForm(initialUploadForm);
+        setShowSuccess(true);
+        setSubmitAttempted(false);
+        setErrorMessage("");
+        setShowError(false);
+        navigate("/");
+        return;
+      }
+
       const responses = await Promise.all(
         forms.map((form) => {
           if (form?.id) {
@@ -322,52 +371,157 @@ export default function InvoiceFormPage() {
         <Paper elevation={0} className="forms-group">
           <Box className="forms-group__header">
             <Typography variant="subtitle1">
-              {isEditMode ? t("invoiceEdit.title") : t("app.invoices")}
+              {isEditMode ? t("invoiceEdit.title") : t("upload.title")}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {isEditMode
                 ? t("invoiceEdit.subtitle")
-                : t("app.entries", { count: forms.length })}
+                : t("upload.subtitle")}
             </Typography>
           </Box>
 
-          <Box className="forms-group__list">
-            {forms.map((_, index) => (
-              <InvoiceForm
-                key={`${resetVersion}-${formLoadVersions[index] ?? 0}-${index}`}
-                formIndex={index}
-                onFormChange={handleFormChange}
-                onRemove={handleRemoveForm}
-                onAnalysisStateChange={handleAnalysisStateChange}
-                onExistingInvoiceDetected={handleExistingInvoiceDetected}
-                canRemove={forms.length > 1}
-                submitAttempted={submitAttempted}
-                externalData={loadedForms[index]}
-              />
-            ))}
-          </Box>
-
-          {!isEditMode ? (
-            <Box className="forms-group__footer">
-              <Button
-                variant="outlined"
-                onClick={handleAddNew}
-                disabled={isUiLocked}
-                startIcon={<AddIcon />}
-              >
-                {t("app.addInvoice")}
-              </Button>
+          {isEditMode ? (
+            <Box className="forms-group__list">
+              {forms.map((_, index) => (
+                <InvoiceForm
+                  key={`${resetVersion}-${formLoadVersions[index] ?? 0}-${index}`}
+                  formIndex={index}
+                  onFormChange={handleFormChange}
+                  onRemove={handleRemoveForm}
+                  onAnalysisStateChange={handleAnalysisStateChange}
+                  onExistingInvoiceDetected={handleExistingInvoiceDetected}
+                  canRemove={forms.length > 1}
+                  submitAttempted={submitAttempted}
+                  externalData={loadedForms[index]}
+                />
+              ))}
             </Box>
-          ) : null}
+          ) : (
+            <Box className="forms-group__list">
+              <Paper elevation={0} className="invoice-card">
+                <Box className="invoice-card__grid invoice-card__grid--top">
+                  <TextField
+                    label={t("fields.company")}
+                    value={uploadForm.company}
+                    onChange={(event) =>
+                      setUploadField("company", event.target.value)
+                    }
+                    error={submitAttempted && !uploadForm.company}
+                    helperText={
+                      submitAttempted && !uploadForm.company
+                        ? t("validation.required")
+                        : ""
+                    }
+                    select
+                    size="small"
+                  >
+                    <MenuItem value="">
+                      <em>-</em>
+                    </MenuItem>
+                    {COMPANY_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    label={t("fields.project")}
+                    value={uploadForm.project}
+                    onChange={(event) =>
+                      setUploadField("project", event.target.value)
+                    }
+                    error={submitAttempted && !uploadForm.project}
+                    helperText={
+                      submitAttempted && !uploadForm.project
+                        ? t("validation.required")
+                        : ""
+                    }
+                    select
+                    size="small"
+                    disabled={!uploadForm.company}
+                  >
+                    <MenuItem value="">
+                      <em>-</em>
+                    </MenuItem>
+                    {uploadProjectOptions.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    label={t("fields.approval_status")}
+                    value={uploadForm.approval_status}
+                    onChange={(event) =>
+                      setUploadField("approval_status", event.target.value)
+                    }
+                    select
+                    size="small"
+                  >
+                    <MenuItem value="">
+                      <em>{t("dashboard.pendingApproval")}</em>
+                    </MenuItem>
+                    <MenuItem value="approved">
+                      {t("approvalStatus.approved")}
+                    </MenuItem>
+                    <MenuItem value="not_approved">
+                      {t("approvalStatus.not_approved")}
+                    </MenuItem>
+                  </TextField>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={uploadForm.is_paid === "true"}
+                        onChange={(event) =>
+                          setUploadField(
+                            "is_paid",
+                            event.target.checked ? "true" : "false",
+                          )
+                        }
+                      />
+                    }
+                    label={t("fields.is_paid")}
+                  />
+                </Box>
+                <Box className="invoice-card__grid">
+                  <TextField
+                    className="invoice-card__full"
+                    label={t("fields.comments")}
+                    value={uploadForm.comments}
+                    onChange={(event) =>
+                      setUploadField("comments", event.target.value)
+                    }
+                    multiline
+                    minRows={3}
+                    size="small"
+                  />
+                  <Box className="invoice-card__file">
+                    <FileUploadSingleImage
+                      label={t("fields.receipt")}
+                      value={uploadForm.file}
+                      onChange={(file) => setUploadField("file", file)}
+                      icon={ReceiptIcon}
+                      helperText={t("file.helperText")}
+                    />
+                    {submitAttempted && !uploadForm.file ? (
+                      <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                        {t("validation.uploadReceipt")}
+                      </Typography>
+                    ) : null}
+                  </Box>
+                </Box>
+              </Paper>
+            </Box>
+          )}
         </Paper>
 
         <Box className="app-actions">
           <Button
             variant="contained"
             onClick={handleComplete}
-            disabled={!allValid || isUiLocked}
+            disabled={!canSubmit || isUiLocked}
           >
-            {isEditMode ? t("invoiceEdit.submit") : t("app.completeReview")}
+            {isEditMode ? t("invoiceEdit.submit") : t("upload.submit")}
           </Button>
         </Box>
 

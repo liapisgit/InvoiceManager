@@ -109,6 +109,47 @@ const getPreviewConfig = (fileUrl) => {
   return { src: normalizedUrl, kind: "link" };
 };
 
+const getStatusChipConfig = (status, t) => {
+  const normalizedStatus = status || "complete";
+  const label = t(`invoiceStatus.${normalizedStatus}`, {
+    defaultValue: normalizedStatus,
+  });
+
+  if (normalizedStatus === "processing") {
+    return { label, color: "warning", variant: "filled" };
+  }
+  if (normalizedStatus === "needs_review") {
+    return { label, color: "warning", variant: "outlined" };
+  }
+  if (normalizedStatus === "error") {
+    return { label, color: "error", variant: "filled" };
+  }
+  return { label, color: "success", variant: "outlined" };
+};
+
+const getApprovalChipConfig = (approvalStatus, t) => {
+  if (approvalStatus === "approved") {
+    return {
+      label: t("approvalStatus.approved"),
+      color: "success",
+      variant: "filled",
+    };
+  }
+  if (approvalStatus === "not_approved") {
+    return {
+      label: t("approvalStatus.not_approved"),
+      color: "error",
+      variant: "outlined",
+    };
+  }
+
+  return {
+    label: t("dashboard.pendingApproval"),
+    color: "default",
+    variant: "outlined",
+  };
+};
+
 export default function HomePage() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -433,6 +474,11 @@ export default function HomePage() {
                 const isSelectedPreview = selectedPreviewInvoice?.id === invoice.id;
                 const invoiceIdentifier = getInvoiceIdentifier(invoice, t);
                 const isMissingCostCenter = !isPresent(invoice.project);
+                const statusChip = getStatusChipConfig(invoice.status, t);
+                const approvalChip = getApprovalChipConfig(
+                  invoice.approval_status,
+                  t,
+                );
 
                 return (
                   <Paper
@@ -485,6 +531,16 @@ export default function HomePage() {
                       </Box>
 
                       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Chip
+                          label={statusChip.label}
+                          color={statusChip.color}
+                          variant={statusChip.variant}
+                        />
+                        <Chip
+                          label={approvalChip.label}
+                          color={approvalChip.color}
+                          variant={approvalChip.variant}
+                        />
                         <Chip
                           label={`${t("fields.invoice_date")}: ${formatValue(
                             "invoice_date",

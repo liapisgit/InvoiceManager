@@ -22,7 +22,7 @@ model Invoice {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   document_type String?
   invoice_date DateTime? @db.Date
-  mark  String @unique
+  mark  String? @unique
   series  String?
   number  String?
   issuer_vat_number String?
@@ -46,8 +46,11 @@ model Invoice {
   category       String?
   expense_type   String?
   file_url       String?
+  file_path      String?
   file_hash      String?
   file_upload_id String?
+  status         String @default("complete")
+  approval_status String?
   createdBy      String?
   createdAt      DateTime @default(now())
   lastUpdatedAt  DateTime @updatedAt

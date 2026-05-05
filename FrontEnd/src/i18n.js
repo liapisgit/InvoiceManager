@@ -140,8 +140,8 @@ i18n.use(initReactI18next).init({
         },
         file: {
           label: "Απόδειξη",
-          helperText: "Σύρε ή πάτησε για να ανεβάσεις τιμολόγιο.",
-          emptyTitle: "Ανέβασε απόδειξη",
+          helperText: "Σύρε ή πάτησε για να ανεβάσεις εικόνα ή pdf.",
+          emptyTitle: "Ανέβασε τιμολόγιο",
           activeTitle: "Άφησε το αρχείο εδώ",
           replace: "Αντικατάσταση",
           dragReplace: "Σύρε μια άλλη εικόνα για αντικατάσταση.",
@@ -287,8 +287,8 @@ i18n.use(initReactI18next).init({
         },
         file: {
           label: "Receipt",
-          helperText: "Drag or click to upload an invoice.",
-          emptyTitle: "Upload receipt",
+          helperText: "Drag or click to upload image or pdf.",
+          emptyTitle: "Upload invoice",
           activeTitle: "Drop the file here",
           replace: "Replace",
           dragReplace: "Drag another image here to replace.",

@@ -31,7 +31,7 @@ userRouter.post("/login", validate(userLoginSchema), async (req, res) => {
       lastUpdatedAt: user.lastUpdatedAt,
     },
     jwtSecret,
-    { expiresIn: "1h" },
+    { expiresIn: "30d" },
   );
   return res.json({
     accessToken,

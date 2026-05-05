@@ -33,6 +33,7 @@ const initialForm = {
   comments: "",
   file_url: "",
   file_path: "",
+  display_name: "",
   file_hash: "",
   file_upload_id: "",
   status: "",

@@ -28,6 +28,7 @@ type CreateInvoiceData = {
   expense_type?: string;
   file_url?: string;
   file_path?: string;
+  display_name?: string;
   file_hash?: string;
   file_upload_id?: string;
   status?: string;

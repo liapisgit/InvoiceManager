@@ -55,6 +55,9 @@ const formatValue = (field, value, language, t) => {
 };
 
 const getInvoiceIdentifier = (invoice, t) => {
+  const displayName = String(invoice?.display_name ?? "").trim();
+  if (displayName) return displayName;
+
   const datePart = String(invoice?.invoice_date ?? "").slice(0, 10).trim();
   const issuerPart = String(invoice?.issuer_name ?? "").trim();
   const numberPart = String(invoice?.number ?? "").trim();
@@ -193,6 +196,19 @@ export default function HomePage() {
   useEffect(() => {
     loadInvoices();
   }, [loadInvoices]);
+
+  useEffect(() => {
+    const hasProcessingInvoices = invoices.some(
+      (invoice) => invoice.status === "processing",
+    );
+    if (!hasProcessingInvoices) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      loadInvoices(true);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [invoices, loadInvoices]);
 
   const filterOptions = useMemo(() => {
     const uniqueValues = (field) =>

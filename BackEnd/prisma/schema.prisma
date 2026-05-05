@@ -47,6 +47,7 @@ model Invoice {
   expense_type   String?
   file_url       String?
   file_path      String?
+  display_name   String?
   file_hash      String?
   file_upload_id String?
   status         String @default("complete")

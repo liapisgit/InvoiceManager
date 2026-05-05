@@ -9,6 +9,10 @@ import { invoiceRepository } from "../repositories/invoiceRepository";
 
 const uploadRouter = Router();
 const VALID_APPROVAL_STATUSES = new Set(["approved", "not_approved"]);
+const getUserLabel = (user: Express.Request["user"]) =>
+  `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
+  user?.user_name ||
+  "";
 
 const parseOptionalBoolean = (value: unknown) => {
   if (value === undefined || value === null || value === "") return undefined;
@@ -67,6 +71,7 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
     const n8nWebhookUrl = requireEnv(config.n8nWebhookUrl, "N8N_WEBHOOK_URL");
     const filePath = path.resolve(req.file.path);
     const relativeFilePath = path.join("uploads", req.file.filename);
+    const displayName = String(req.file.originalname ?? "").trim();
     const isPaid = parseOptionalBoolean(req.body.is_paid);
     const comments = String(req.body.comments ?? "").trim();
 
@@ -77,6 +82,7 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
       ...(comments ? { comments } : {}),
       ...(approvalStatus ? { approval_status: approvalStatus } : {}),
       file_path: relativeFilePath,
+      ...(displayName ? { display_name: displayName } : {}),
       status: "processing",
       createdBy: req.user!.user_id,
     });
@@ -86,6 +92,10 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
     formData.append("company", company);
     formData.append("project", project);
     formData.append("file_path", relativeFilePath);
+    if (displayName) {
+      formData.append("display_name", displayName);
+    }
+    formData.append("user", getUserLabel(req.user));
     if (isPaid !== undefined) {
       formData.append("is_paid", String(isPaid));
     }
@@ -128,6 +138,7 @@ uploadRouter.post("/image", upload.single("image"), async (req, res) => {
     // Forward the image to n8n webhook
     const formData = new FormData();
     const filePath = path.resolve(req.file.path);
+    formData.append("user", getUserLabel(req.user));
     formData.append("invoice_image", fs.createReadStream(filePath), {
       filename: req.file.originalname,
       contentType: req.file.mimetype,

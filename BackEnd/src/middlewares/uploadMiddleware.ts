@@ -18,18 +18,28 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter to only accept images
+// File filter to accept invoice images and PDFs
 const fileFilter = (
   req: Express.Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
-  const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  const allowedMimeTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "application/pdf",
+  ];
   
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed."));
+    cb(
+      new Error(
+        "Invalid file type. Only PDF, JPEG, PNG, GIF, and WebP files are allowed.",
+      ),
+    );
   }
 };
 

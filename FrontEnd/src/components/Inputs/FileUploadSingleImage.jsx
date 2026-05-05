@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { Box, Typography, Stack, IconButton, Chip, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import "./FileUploadSingleImage.css";
 import { createElement, isValidElement } from "react"; // ✅ add
 import { useTranslation } from "react-i18next";
@@ -29,6 +30,7 @@ export default function FileUploadSingleImage({
   const { t } = useTranslation();
   const file = value ?? null;
   const [previewUrl, setPreviewUrl] = useState(null);
+  const isPdf = file?.type === "application/pdf";
 
   const resolvedLabel = label ?? t("file.label");
   const resolvedHelper = helperText ?? t("file.helperText");
@@ -57,7 +59,10 @@ export default function FileUploadSingleImage({
 
   const { getRootProps, getInputProps, isDragActive, isDragReject, fileRejections } = useDropzone({
     onDrop,
-    accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
+    accept: {
+      "image/*": [".png", ".jpg", ".jpeg", ".webp", ".gif"],
+      "application/pdf": [".pdf"],
+    },
     multiple: false,
     maxFiles: 1,
     maxSize,
@@ -111,10 +116,10 @@ export default function FileUploadSingleImage({
           <Box className="fu-filled">
             <Stack direction="row" spacing={2} alignItems="center">
               <Box className="fu-preview">
-                {previewUrl ? (
+                {previewUrl && !isPdf ? (
                   <img className="fu-previewImg" src={previewUrl} alt={file.name} />
                 ) : (
-                  <ImageIcon fontSize="small" />
+                  isPdf ? <PictureAsPdfIcon fontSize="small" /> : <ImageIcon fontSize="small" />
                 )}
               </Box>
 

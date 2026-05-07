@@ -77,6 +77,7 @@ i18n.use(initReactI18next).init({
           needs_review: "Χρειάζεται έλεγχο",
           complete: "Ολοκληρωμένο",
           error: "Σφάλμα",
+          duplicate: "Αντίγραφο",
         },
         approvalStatus: {
           approved: "Εγκεκριμένο",
@@ -225,6 +226,7 @@ i18n.use(initReactI18next).init({
           needs_review: "Needs review",
           complete: "Complete",
           error: "Error",
+          duplicate: "Duplicate",
         },
         approvalStatus: {
           approved: "Approved",

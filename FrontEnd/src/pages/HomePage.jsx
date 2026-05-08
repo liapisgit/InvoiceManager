@@ -210,27 +210,34 @@ export default function HomePage() {
     return () => window.clearInterval(intervalId);
   }, [invoices, loadInvoices]);
 
+  const dashboardInvoices = useMemo(
+    () => invoices.filter((invoice) => invoice.status !== "duplicate"),
+    [invoices],
+  );
+
   const filterOptions = useMemo(() => {
     const uniqueValues = (field) =>
-      [...new Set(invoices.map((invoice) => invoice[field]).filter(isPresent))].sort(
-        (first, second) => String(first).localeCompare(String(second)),
-      );
+      [
+        ...new Set(
+          dashboardInvoices.map((invoice) => invoice[field]).filter(isPresent),
+        ),
+      ].sort((first, second) => String(first).localeCompare(String(second)));
 
     return {
       recipients: uniqueValues("recipient_name"),
       projects: uniqueValues("project"),
       users: [
         ...new Set(
-          invoices
+          dashboardInvoices
             .map((invoice) => invoice.createdByLabel || invoice.createdBy)
             .filter(Boolean),
         ),
       ].sort((first, second) => String(first).localeCompare(String(second))),
     };
-  }, [invoices]);
+  }, [dashboardInvoices]);
 
   const filteredInvoices = useMemo(() => {
-    return invoices.filter((invoice) => {
+    return dashboardInvoices.filter((invoice) => {
       if (
         filters.recipient_name &&
         invoice.recipient_name !== filters.recipient_name
@@ -256,7 +263,19 @@ export default function HomePage() {
       }
       return true;
     });
-  }, [filters, invoices]);
+  }, [dashboardInvoices, filters]);
+
+  useEffect(() => {
+    if (!selectedPreviewInvoice) return;
+
+    const stillVisible = filteredInvoices.some(
+      (invoice) => invoice.id === selectedPreviewInvoice.id,
+    );
+
+    if (!stillVisible) {
+      setSelectedPreviewInvoice(null);
+    }
+  }, [filteredInvoices, selectedPreviewInvoice]);
 
   return (
     <>
@@ -338,7 +357,7 @@ export default function HomePage() {
             <Typography variant="body2" color="text.secondary">
               {t("dashboard.results", {
                 count: filteredInvoices.length,
-                total: invoices.length,
+                total: dashboardInvoices.length,
               })}
             </Typography>
           </Box>
@@ -467,7 +486,7 @@ export default function HomePage() {
               {t("dashboard.emptyTitle")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {invoices.length === 0
+              {dashboardInvoices.length === 0
                 ? t("dashboard.emptyDescription")
                 : t("dashboard.noMatches")}
             </Typography>

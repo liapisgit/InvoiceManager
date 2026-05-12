@@ -13,6 +13,9 @@ model User {
   first_name      String?
   last_name      String?
   user_name     String   @unique 
+  phone         String?
+  is_approver   Boolean  @default(false)
+  approver_number String?
   password  String
   createdAt DateTime @default(now())
   lastUpdatedAt DateTime @updatedAt

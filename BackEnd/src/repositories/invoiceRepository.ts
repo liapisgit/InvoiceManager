@@ -33,6 +33,7 @@ type CreateInvoiceData = {
   file_upload_id?: string;
   status?: string;
   approval_status?: string | null;
+  approver_id?: string | null;
   createdBy?: string;
 };
 

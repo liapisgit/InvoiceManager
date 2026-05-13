@@ -38,6 +38,7 @@ const initialForm = {
   file_upload_id: "",
   status: "",
   approval_status: "",
+  approver_id: "",
   file: null, // ✅ single image
   project: "",
   company: "",
@@ -146,6 +147,7 @@ export default function InvoiceForm({
   canRemove = true,
   submitAttempted = false,
   externalData = null,
+  approverOptions = [],
 }) {
   const [formData, setFormData] = useState(() =>
     normalizeIncomingFormData(externalData || initialForm),
@@ -368,6 +370,25 @@ export default function InvoiceForm({
           <MenuItem value="not_approved">
             {t("approvalStatus.not_approved")}
           </MenuItem>
+        </TextField>
+        <TextField
+          label={t("fields.approver_id")}
+          value={formData.approver_id}
+          onChange={(e) => setField("approver_id", e.target.value)}
+          onBlur={() => markTouched("approver_id")}
+          error={showError("approver_id") && !!errors.approver_id}
+          helperText={showError("approver_id") ? errors.approver_id : ""}
+          select
+          size="small"
+        >
+          <MenuItem value="">
+            <em>-</em>
+          </MenuItem>
+          {approverOptions.map((option) => (
+            <MenuItem key={option.id} value={option.id}>
+              {option.label}
+            </MenuItem>
+          ))}
         </TextField>
       </Box>
       <Box className="invoice-card__grid">

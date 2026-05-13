@@ -4,7 +4,6 @@ import {
   Backdrop,
   Box,
   Button,
-  Checkbox,
   CircularProgress,
   Container,
   Dialog,
@@ -12,7 +11,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  FormControlLabel,
   MenuItem,
   Paper,
   Snackbar,
@@ -34,7 +32,10 @@ import FileUploadSingleImage from "../components/Inputs/FileUploadSingleImage";
 import AppHeader from "../components/layout/AppHeader";
 import { apiClient } from "../services/apiClient";
 import { clearToken } from "../services/auth";
-import { updateInvoiceSchema } from "../schemas/invoiceSchemas";
+import {
+  createInvoiceSchema,
+  updateInvoiceSchema,
+} from "../schemas/invoiceSchemas";
 
 const initialUploadForm = {
   file: null,
@@ -43,7 +44,9 @@ const initialUploadForm = {
   is_paid: "",
   comments: "",
   approval_status: "",
+  approver_id: "",
 };
+const SELF_APPROVER_VALUE = "__self__";
 
 export default function InvoiceFormPage() {
   const navigate = useNavigate();
@@ -61,6 +64,7 @@ export default function InvoiceFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingInvoice, setIsFetchingInvoice] = useState(false);
   const [uploadForm, setUploadForm] = useState(initialUploadForm);
+  const [approverOptions, setApproverOptions] = useState([]);
   const [isOpeningExistingInvoice, setIsOpeningExistingInvoice] = useState(false);
   const [existingInvoiceDialog, setExistingInvoiceDialog] = useState({
     open: false,
@@ -122,6 +126,27 @@ export default function InvoiceFormPage() {
       ...(field === "company" ? { project: "" } : {}),
     }));
   };
+
+  useEffect(() => {
+    let isActive = true;
+
+    apiClient
+      .get("/api/users/approvers")
+      .then((response) => {
+        if (!isActive) return;
+        setApproverOptions(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch((error) => {
+        if (!isActive) return;
+        console.error("Error fetching approvers:", error);
+        setErrorMessage(t("app.error"));
+        setShowError(true);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [t]);
 
   useEffect(() => {
     if (!invoiceId) return;
@@ -283,6 +308,9 @@ export default function InvoiceFormPage() {
         if (uploadForm.approval_status) {
           formData.append("approval_status", uploadForm.approval_status);
         }
+        if (uploadForm.approver_id) {
+          formData.append("approver_id", uploadForm.approver_id);
+        }
 
         await apiClient.post("/api/upload/invoice", formData);
         setUploadForm(initialUploadForm);
@@ -393,6 +421,7 @@ export default function InvoiceFormPage() {
                   canRemove={forms.length > 1}
                   submitAttempted={submitAttempted}
                   externalData={loadedForms[index]}
+                  approverOptions={approverOptions}
                 />
               ))}
             </Box>
@@ -450,6 +479,21 @@ export default function InvoiceFormPage() {
                     ))}
                   </TextField>
                   <TextField
+                    label={t("fields.is_paid")}
+                    value={uploadForm.is_paid}
+                    onChange={(event) =>
+                      setUploadField("is_paid", event.target.value)
+                    }
+                    select
+                    size="small"
+                  >
+                    <MenuItem value="">
+                      <em>-</em>
+                    </MenuItem>
+                    <MenuItem value="true">{t("paymentState.paid")}</MenuItem>
+                    <MenuItem value="false">{t("paymentState.toBePaid")}</MenuItem>
+                  </TextField>
+                  <TextField
                     label={t("fields.approval_status")}
                     value={uploadForm.approval_status}
                     onChange={(event) =>
@@ -468,20 +512,27 @@ export default function InvoiceFormPage() {
                       {t("approvalStatus.not_approved")}
                     </MenuItem>
                   </TextField>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={uploadForm.is_paid === "true"}
-                        onChange={(event) =>
-                          setUploadField(
-                            "is_paid",
-                            event.target.checked ? "true" : "false",
-                          )
-                        }
-                      />
+                  <TextField
+                    label={t("fields.approver_id")}
+                    value={uploadForm.approver_id}
+                    onChange={(event) =>
+                      setUploadField("approver_id", event.target.value)
                     }
-                    label={t("fields.is_paid")}
-                  />
+                    select
+                    size="small"
+                  >
+                    <MenuItem value="">
+                      <em>-</em>
+                    </MenuItem>
+                    <MenuItem value={SELF_APPROVER_VALUE}>
+                      {t("approvalStatus.selfApproval")}
+                    </MenuItem>
+                    {approverOptions.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Box>
                 <Box className="invoice-card__grid">
                   <TextField

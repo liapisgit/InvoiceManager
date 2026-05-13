@@ -33,6 +33,10 @@ i18n.use(initReactI18next).init({
           yes: "Ναι",
           no: "Όχι",
         },
+        paymentState: {
+          paid: "Πληρωμένο",
+          toBePaid: "Για να πληρωθεί",
+        },
         dashboard: {
           title: "Dashboard τιμολογίων",
           subtitle:
@@ -82,6 +86,7 @@ i18n.use(initReactI18next).init({
         approvalStatus: {
           approved: "Εγκεκριμένο",
           not_approved: "Μη εγκεκριμένο",
+          selfApproval: "Αυτοέγκριση",
         },
         invoiceEdit: {
           title: "Ενημέρωση τιμολογίου",
@@ -127,7 +132,7 @@ i18n.use(initReactI18next).init({
           fees_or_stamps: "Τέλη/Χαρτόσημα",
           total_amount: "Σύνολο",
           issuer_iban: "IBAN Εκδότη",
-          is_paid: "Εξοφλημένο",
+          is_paid: "Πληρωμή",
           comments: "Σχόλια",
           receipt: "Απόδειξη",
           company: "Εταιρεία",
@@ -137,6 +142,7 @@ i18n.use(initReactI18next).init({
           file_path: "Τοπική διαδρομή αρχείου",
           status: "Κατάσταση",
           approval_status: "Κατάσταση έγκρισης",
+          approver_id: "Έγκριση",
           invoice_date: "Ημ/νία Τιμολογίου",
         },
         file: {
@@ -182,6 +188,10 @@ i18n.use(initReactI18next).init({
         common: {
           yes: "Yes",
           no: "No",
+        },
+        paymentState: {
+          paid: "Paid",
+          toBePaid: "To be paid",
         },
         dashboard: {
           title: "Invoice dashboard",
@@ -231,6 +241,7 @@ i18n.use(initReactI18next).init({
         approvalStatus: {
           approved: "Approved",
           not_approved: "Not approved",
+          selfApproval: "Self-approval",
         },
         invoiceEdit: {
           title: "Update invoice",
@@ -275,7 +286,7 @@ i18n.use(initReactI18next).init({
           fees_or_stamps: "Fees or Stamps",
           total_amount: "Total Amount",
           issuer_iban: "Issuer IBAN",
-          is_paid: "Is Paid",
+          is_paid: "Payment",
           comments: "Comments",
           receipt: "Receipt",
           company: "Company",
@@ -285,6 +296,7 @@ i18n.use(initReactI18next).init({
           file_path: "Local File Path",
           status: "Status",
           approval_status: "Approval Status",
+          approver_id: "Approval",
           invoice_date: "Invoice Date",
         },
         file: {

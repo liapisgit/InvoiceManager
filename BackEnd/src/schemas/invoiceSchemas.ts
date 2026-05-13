@@ -47,6 +47,7 @@ export const createInvoiceSchema = z.object({
   file_upload_id: z.string().optional(),
   status: optionalStatusSchema,
   approval_status: optionalApprovalStatusSchema,
+  approver_id: z.string().optional(),
   createdBy: z.string().optional(),
 });
 
@@ -86,5 +87,6 @@ export const updateInvoiceSchema = z.object({
   file_upload_id: z.string().optional(),
   status: optionalStatusSchema,
   approval_status: optionalApprovalStatusSchema,
+  approver_id: z.string().optional(),
   createdBy: z.string().optional(),
 });

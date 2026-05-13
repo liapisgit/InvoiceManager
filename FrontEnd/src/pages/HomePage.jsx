@@ -49,7 +49,7 @@ const formatValue = (field, value, language, t) => {
     return date.toLocaleDateString(language === "el" ? "el-GR" : "en-GB");
   }
   if (field === "is_paid") {
-    return value ? t("common.yes") : t("common.no");
+    return value ? t("paymentState.paid") : t("paymentState.toBePaid");
   }
   return String(value);
 };

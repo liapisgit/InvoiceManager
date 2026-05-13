@@ -3,9 +3,16 @@ import { StatusCodes } from "http-status-codes";
 import { validate } from "../middlewares/validationMiddleware";
 import { userLoginSchema } from "../schemas/userSchemas";
 import { userRepository } from "../repositories/userRepository";
+import { authMiddleware } from "../middlewares/authMiddleware";
 import jwt from "jsonwebtoken";
 
 const userRouter = Router();
+
+const getUserLabel = (user: {
+  user_name: string;
+  first_name: string | null;
+  last_name: string | null;
+}) => `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.user_name;
 
 userRouter.post("/login", validate(userLoginSchema), async (req, res) => {
   const user = await userRepository.findByUserName(req.body.user_name);
@@ -36,6 +43,24 @@ userRouter.post("/login", validate(userLoginSchema), async (req, res) => {
   return res.json({
     accessToken,
   });
+});
+
+userRouter.get("/approvers", authMiddleware, async (_req, res) => {
+  try {
+    const approvers = await userRepository.findApprovers();
+    return res.json(
+      approvers.map((user) => ({
+        id: user.id,
+        user_name: user.user_name,
+        label: getUserLabel(user),
+      })),
+    );
+  } catch (error) {
+    console.error("Error fetching approvers:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      error: "Failed to fetch approvers",
+    });
+  }
 });
 
 export default userRouter;

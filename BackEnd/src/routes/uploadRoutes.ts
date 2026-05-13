@@ -6,9 +6,11 @@ import path from "path";
 import axios from "axios";
 import { config, requireEnv } from "../config/env";
 import { invoiceRepository } from "../repositories/invoiceRepository";
+import { userRepository } from "../repositories/userRepository";
 
 const uploadRouter = Router();
 const VALID_APPROVAL_STATUSES = new Set(["approved", "not_approved"]);
+const SELF_APPROVER_VALUE = "__self__";
 const getUserLabel = (user: Express.Request["user"]) =>
   `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
   user?.user_name ||
@@ -68,6 +70,18 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
       });
     }
 
+    const submittedApproverId = String(req.body.approver_id ?? "").trim();
+    const isSelfApproval = submittedApproverId === SELF_APPROVER_VALUE;
+    const approverId = isSelfApproval ? req.user!.user_id : submittedApproverId;
+    const approver = approverId && !isSelfApproval
+      ? await userRepository.findApproverById(approverId)
+      : null;
+    if (approverId && !isSelfApproval && !approver) {
+      return res.status(400).json({
+        error: "Invalid approver",
+      });
+    }
+
     const n8nWebhookUrl = requireEnv(config.n8nWebhookUrl, "N8N_WEBHOOK_URL");
     const filePath = path.resolve(req.file.path);
     const relativeFilePath = path.join("uploads", req.file.filename);
@@ -81,6 +95,7 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
       ...(isPaid === undefined ? {} : { is_paid: isPaid }),
       ...(comments ? { comments } : {}),
       ...(approvalStatus ? { approval_status: approvalStatus } : {}),
+      ...(approverId ? { approver_id: approverId } : {}),
       file_path: relativeFilePath,
       ...(displayName ? { display_name: displayName } : {}),
       status: "processing",
@@ -104,6 +119,16 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
     }
     if (approvalStatus) {
       formData.append("approval_status", approvalStatus);
+    }
+    if (approverId) {
+      formData.append("approver_id", approverId);
+      formData.append(
+        "approver",
+        (isSelfApproval ? getUserLabel(req.user) : "") ||
+          `${approver?.first_name ?? ""} ${approver?.last_name ?? ""}`.trim() ||
+          approver?.user_name ||
+          approverId,
+      );
     }
     formData.append("invoice_image", fs.createReadStream(filePath), {
       filename: req.file.originalname,

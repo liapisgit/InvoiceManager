@@ -55,6 +55,7 @@ model Invoice {
   file_upload_id String?
   status         String @default("complete")
   approval_status String?
+  approver_id    String?
   createdBy      String?
   createdAt      DateTime @default(now())
   lastUpdatedAt  DateTime @updatedAt

@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 const statusSchema = z.enum(["processing", "needs_review", "complete", "error","duplicate"]);
-const approvalStatusSchema = z.enum(["approved", "not_approved"]);
+const approvalStatusSchema = z.enum([
+  "approved",
+  "pending_approval",
+  "not_approved",
+]);
 const optionalStatusSchema = z.preprocess(
   (value) => (value === "" ? undefined : value),
   statusSchema.optional(),

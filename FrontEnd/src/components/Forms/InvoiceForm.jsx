@@ -367,6 +367,9 @@ export default function InvoiceForm({
             <em>{t("dashboard.pendingApproval")}</em>
           </MenuItem>
           <MenuItem value="approved">{t("approvalStatus.approved")}</MenuItem>
+          <MenuItem value="pending_approval">
+            {t("approvalStatus.pending_approval")}
+          </MenuItem>
           <MenuItem value="not_approved">
             {t("approvalStatus.not_approved")}
           </MenuItem>

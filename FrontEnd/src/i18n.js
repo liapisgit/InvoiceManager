@@ -85,6 +85,7 @@ i18n.use(initReactI18next).init({
         },
         approvalStatus: {
           approved: "Εγκεκριμένο",
+          pending_approval: "Εκκρεμεί έγκριση",
           not_approved: "Μη εγκεκριμένο",
           selfApproval: "Αυτοέγκριση",
         },
@@ -240,6 +241,7 @@ i18n.use(initReactI18next).init({
         },
         approvalStatus: {
           approved: "Approved",
+          pending_approval: "Pending approval",
           not_approved: "Not approved",
           selfApproval: "Self-approval",
         },

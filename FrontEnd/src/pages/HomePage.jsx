@@ -145,6 +145,13 @@ const getApprovalChipConfig = (approvalStatus, t) => {
       variant: "outlined",
     };
   }
+  if (approvalStatus === "pending_approval") {
+    return {
+      label: t("approvalStatus.pending_approval"),
+      color: "warning",
+      variant: "outlined",
+    };
+  }
 
   return {
     label: t("dashboard.pendingApproval"),

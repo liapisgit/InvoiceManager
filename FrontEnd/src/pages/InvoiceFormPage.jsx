@@ -47,6 +47,10 @@ const initialUploadForm = {
   approver_id: "",
 };
 const SELF_APPROVER_VALUE = "__self__";
+const getApprovalStatusForApprover = (approverId) => {
+  if (!approverId) return "";
+  return approverId === SELF_APPROVER_VALUE ? "approved" : "pending_approval";
+};
 
 export default function InvoiceFormPage() {
   const navigate = useNavigate();
@@ -124,6 +128,9 @@ export default function InvoiceFormPage() {
       ...prev,
       [field]: value,
       ...(field === "company" ? { project: "" } : {}),
+      ...(field === "approver_id"
+        ? { approval_status: getApprovalStatusForApprover(value) }
+        : {}),
     }));
   };
 
@@ -305,8 +312,11 @@ export default function InvoiceFormPage() {
         if (uploadForm.comments.trim()) {
           formData.append("comments", uploadForm.comments.trim());
         }
-        if (uploadForm.approval_status) {
-          formData.append("approval_status", uploadForm.approval_status);
+        const approvalStatus = getApprovalStatusForApprover(
+          uploadForm.approver_id,
+        );
+        if (approvalStatus) {
+          formData.append("approval_status", approvalStatus);
         }
         if (uploadForm.approver_id) {
           formData.append("approver_id", uploadForm.approver_id);
@@ -496,17 +506,18 @@ export default function InvoiceFormPage() {
                   <TextField
                     label={t("fields.approval_status")}
                     value={uploadForm.approval_status}
-                    onChange={(event) =>
-                      setUploadField("approval_status", event.target.value)
-                    }
                     select
                     size="small"
+                    disabled
                   >
                     <MenuItem value="">
                       <em>{t("dashboard.pendingApproval")}</em>
                     </MenuItem>
                     <MenuItem value="approved">
                       {t("approvalStatus.approved")}
+                    </MenuItem>
+                    <MenuItem value="pending_approval">
+                      {t("approvalStatus.pending_approval")}
                     </MenuItem>
                     <MenuItem value="not_approved">
                       {t("approvalStatus.not_approved")}

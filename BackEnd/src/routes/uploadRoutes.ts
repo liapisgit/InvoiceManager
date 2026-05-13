@@ -9,12 +9,18 @@ import { invoiceRepository } from "../repositories/invoiceRepository";
 import { userRepository } from "../repositories/userRepository";
 
 const uploadRouter = Router();
-const VALID_APPROVAL_STATUSES = new Set(["approved", "not_approved"]);
 const SELF_APPROVER_VALUE = "__self__";
 const getUserLabel = (user: Express.Request["user"]) =>
   `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
   user?.user_name ||
   "";
+const getApprovalStatusForApprover = (
+  approverId: string,
+  isSelfApproval: boolean,
+) => {
+  if (!approverId) return "";
+  return isSelfApproval ? "approved" : "pending_approval";
+};
 
 const parseOptionalBoolean = (value: unknown) => {
   if (value === undefined || value === null || value === "") return undefined;
@@ -63,16 +69,13 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
       });
     }
 
-    const approvalStatus = String(req.body.approval_status ?? "").trim();
-    if (approvalStatus && !VALID_APPROVAL_STATUSES.has(approvalStatus)) {
-      return res.status(400).json({
-        error: "Invalid approval status",
-      });
-    }
-
     const submittedApproverId = String(req.body.approver_id ?? "").trim();
     const isSelfApproval = submittedApproverId === SELF_APPROVER_VALUE;
     const approverId = isSelfApproval ? req.user!.user_id : submittedApproverId;
+    const approvalStatus = getApprovalStatusForApprover(
+      approverId,
+      isSelfApproval,
+    );
     const approver = approverId && !isSelfApproval
       ? await userRepository.findApproverById(approverId)
       : null;

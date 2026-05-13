@@ -223,7 +223,11 @@ export default function HomePage() {
   }, [invoices, loadInvoices]);
 
   const dashboardInvoices = useMemo(
-    () => invoices.filter((invoice) => invoice.status !== "duplicate"),
+    () =>
+      invoices.filter(
+        (invoice) =>
+          invoice.status !== "duplicate" && invoice.status !== "error",
+      ),
     [invoices],
   );
 

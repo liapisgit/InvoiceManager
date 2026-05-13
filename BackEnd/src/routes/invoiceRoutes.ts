@@ -22,6 +22,8 @@ const getStoredUserLabel = (user: {
   last_name: string | null;
 }) => `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.user_name;
 
+const hasValue = (value: unknown) => String(value ?? "").trim().length > 0;
+
 const withCreatedByLabel = async (invoiceOrInvoices: Invoice | Invoice[]) => {
   const invoices = Array.isArray(invoiceOrInvoices)
     ? invoiceOrInvoices
@@ -154,8 +156,16 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
       return res.status(404).json({ error: "Invoice not found" });
     }
 
+    const nextCompany = req.body.company ?? existingInvoice.company;
+    const nextProject = req.body.project ?? existingInvoice.project;
+    const shouldMarkComplete =
+      existingInvoice.status === "needs_review" &&
+      hasValue(nextCompany) &&
+      hasValue(nextProject);
+
     const invoice = await invoiceRepository.update(id, {
       ...req.body,
+      ...(shouldMarkComplete ? { status: "complete" } : {}),
       createdBy: req.user!.user_id,
     });
     await triggerInvoiceDataWebhook(invoice, req.user!);

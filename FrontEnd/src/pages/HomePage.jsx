@@ -23,7 +23,12 @@ import "../App.css";
 import { apiClient } from "../services/apiClient";
 import { clearToken } from "../services/auth";
 
-const DISPLAY_FIELDS = ["recipient_name", "expense_type", "total_amount"];
+const DISPLAY_FIELDS = [
+  "recipient_name",
+  "expense_type",
+  "total_amount",
+  "comments",
+];
 
 const getInvoiceMonthKey = (value) => (value ? String(value).slice(0, 7) : "");
 const getCurrentMonthFilter = () => {

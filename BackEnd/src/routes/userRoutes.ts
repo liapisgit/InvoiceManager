@@ -9,10 +9,9 @@ import jwt from "jsonwebtoken";
 const userRouter = Router();
 
 const getUserLabel = (user: {
-  user_name: string;
   first_name: string | null;
   last_name: string | null;
-}) => `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.user_name;
+}) => `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim();
 
 userRouter.post("/login", validate(userLoginSchema), async (req, res) => {
   const user = await userRepository.findByUserName(req.body.user_name);

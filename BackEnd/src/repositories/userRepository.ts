@@ -7,7 +7,16 @@ export const userRepository = {
 
   async findApproverById(id: string) {
     return dbClient.user.findFirst({
-      where: { id, is_approver: true },
+      where: {
+        id,
+        is_approver: true,
+        AND: [
+          { first_name: { not: null } },
+          { first_name: { not: "" } },
+          { last_name: { not: null } },
+          { last_name: { not: "" } },
+        ],
+      },
       select: {
         id: true,
         user_name: true,
@@ -19,7 +28,15 @@ export const userRepository = {
 
   async findApprovers() {
     return dbClient.user.findMany({
-      where: { is_approver: true },
+      where: {
+        is_approver: true,
+        AND: [
+          { first_name: { not: null } },
+          { first_name: { not: "" } },
+          { last_name: { not: null } },
+          { last_name: { not: "" } },
+        ],
+      },
       orderBy: [{ first_name: "asc" }, { last_name: "asc" }, { user_name: "asc" }],
       select: {
         id: true,

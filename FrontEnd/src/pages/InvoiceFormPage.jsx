@@ -504,26 +504,6 @@ export default function InvoiceFormPage() {
                     <MenuItem value="false">{t("paymentState.toBePaid")}</MenuItem>
                   </TextField>
                   <TextField
-                    label={t("fields.approval_status")}
-                    value={uploadForm.approval_status}
-                    select
-                    size="small"
-                    disabled
-                  >
-                    <MenuItem value="">
-                      <em>{t("dashboard.pendingApproval")}</em>
-                    </MenuItem>
-                    <MenuItem value="approved">
-                      {t("approvalStatus.approved")}
-                    </MenuItem>
-                    <MenuItem value="pending_approval">
-                      {t("approvalStatus.pending_approval")}
-                    </MenuItem>
-                    <MenuItem value="not_approved">
-                      {t("approvalStatus.not_approved")}
-                    </MenuItem>
-                  </TextField>
-                  <TextField
                     label={t("fields.approver_id")}
                     value={uploadForm.approver_id}
                     onChange={(event) =>

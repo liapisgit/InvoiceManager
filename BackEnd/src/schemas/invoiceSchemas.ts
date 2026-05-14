@@ -6,6 +6,7 @@ const approvalStatusSchema = z.enum([
   "pending_approval",
   "not_approved",
 ]);
+const originSchema = z.enum(["app", "email", "whatsapp"]);
 const optionalStatusSchema = z.preprocess(
   (value) => (value === "" ? undefined : value),
   statusSchema.optional(),
@@ -49,6 +50,7 @@ export const createInvoiceSchema = z.object({
   display_name: z.string().optional(),
   file_hash: z.string().optional(),
   file_upload_id: z.string().optional(),
+  origin: originSchema.optional(),
   status: optionalStatusSchema,
   approval_status: optionalApprovalStatusSchema,
   approver_id: z.string().optional(),
@@ -89,6 +91,7 @@ export const updateInvoiceSchema = z.object({
   display_name: z.string().optional(),
   file_hash: z.string().optional(),
   file_upload_id: z.string().optional(),
+  origin: originSchema.optional(),
   status: optionalStatusSchema,
   approval_status: optionalApprovalStatusSchema,
   approver_id: z.string().optional(),

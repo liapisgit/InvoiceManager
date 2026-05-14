@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -180,14 +180,17 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedPreviewInvoice, setSelectedPreviewInvoice] = useState(null);
+  const hasLoadedInvoicesRef = useRef(false);
 
   const handleLogout = () => {
     clearToken();
     navigate("/login", { replace: true });
   };
 
-  const loadInvoices = useCallback(async (silent = false) => {
-    if (silent) {
+  const loadInvoices = useCallback(async ({ background = false } = {}) => {
+    if (background) {
+      setErrorMessage("");
+    } else if (hasLoadedInvoicesRef.current) {
       setIsRefreshing(true);
     } else {
       setIsLoading(true);
@@ -196,13 +199,16 @@ export default function HomePage() {
     try {
       const response = await apiClient.get("/api/invoices");
       setInvoices(Array.isArray(response.data) ? response.data : []);
+      hasLoadedInvoicesRef.current = true;
       setErrorMessage("");
     } catch (error) {
       console.error("Error fetching invoices:", error);
       setErrorMessage(t("dashboard.fetchError"));
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+      if (!background) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [t]);
 
@@ -217,7 +223,7 @@ export default function HomePage() {
     if (!hasProcessingInvoices) return undefined;
 
     const intervalId = window.setInterval(() => {
-      loadInvoices(true);
+      loadInvoices({ background: true });
     }, 5000);
 
     return () => window.clearInterval(intervalId);
@@ -326,7 +332,7 @@ export default function HomePage() {
             </Button>
             <Button
               variant="outlined"
-              onClick={() => loadInvoices(true)}
+              onClick={() => loadInvoices()}
               startIcon={
                 isRefreshing ? (
                   <CircularProgress size={16} color="inherit" />

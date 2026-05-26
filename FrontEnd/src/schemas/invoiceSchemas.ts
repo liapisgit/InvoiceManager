@@ -89,6 +89,5 @@ export const updateInvoiceSchema = z.object({
   file_hash: z.string().optional(),
   file_upload_id: z.string().optional(),
   status: optionalStatusSchema,
-  approval_status: optionalApprovalStatusSchema,
   approver_id: z.string().optional(),
 });

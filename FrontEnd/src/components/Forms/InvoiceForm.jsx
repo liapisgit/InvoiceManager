@@ -139,7 +139,7 @@ export const COMPANY_OPTIONS = Object.keys(COMPANY_PROJECT_OPTIONS);
 const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
 const isMoney = (v) => /^[0-9]+([.,][0-9]{1,2})?$/.test(String(v ?? "").trim());
-const PARTIAL_UPDATE_IGNORED_FIELDS = new Set(["id", "file"]);
+const PARTIAL_UPDATE_IGNORED_FIELDS = new Set(["id", "file", "approval_status"]);
 
 const valuesMatch = (first, second) => {
   if (typeof first === "boolean" || typeof second === "boolean") {
@@ -393,27 +393,29 @@ export default function InvoiceForm({
             </Typography>
           ) : null}
         </Box>
-        <TextField
-          label={t("fields.approval_status")}
-          value={formData.approval_status}
-          onChange={(e) => setField("approval_status", e.target.value)}
-          onBlur={() => markTouched("approval_status")}
-          error={showError("approval_status") && !!errors.approval_status}
-          helperText={showError("approval_status") ? errors.approval_status : ""}
-          select
-          size="small"
-        >
-          <MenuItem value="">
-            <em>{t("dashboard.pendingApproval")}</em>
-          </MenuItem>
-          <MenuItem value="approved">{t("approvalStatus.approved")}</MenuItem>
-          <MenuItem value="pending_approval">
-            {t("approvalStatus.pending_approval")}
-          </MenuItem>
-          <MenuItem value="not_approved">
-            {t("approvalStatus.not_approved")}
-          </MenuItem>
-        </TextField>
+        {!allowPartialUpdate ? (
+          <TextField
+            label={t("fields.approval_status")}
+            value={formData.approval_status}
+            onChange={(e) => setField("approval_status", e.target.value)}
+            onBlur={() => markTouched("approval_status")}
+            error={showError("approval_status") && !!errors.approval_status}
+            helperText={showError("approval_status") ? errors.approval_status : ""}
+            select
+            size="small"
+          >
+            <MenuItem value="">
+              <em>{t("dashboard.pendingApproval")}</em>
+            </MenuItem>
+            <MenuItem value="approved">{t("approvalStatus.approved")}</MenuItem>
+            <MenuItem value="pending_approval">
+              {t("approvalStatus.pending_approval")}
+            </MenuItem>
+            <MenuItem value="not_approved">
+              {t("approvalStatus.not_approved")}
+            </MenuItem>
+          </TextField>
+        ) : null}
         <TextField
           label={t("fields.approver_id")}
           value={formData.approver_id}

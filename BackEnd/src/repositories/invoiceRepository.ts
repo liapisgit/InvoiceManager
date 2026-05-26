@@ -1,7 +1,5 @@
 import { dbClient } from "../lib/prisma";
 
-type InvoiceOrigin = "app" | "email" | "whatsapp";
-
 type CreateInvoiceData = {
   invoice_date?: Date | null;
   document_type?: string;
@@ -33,7 +31,7 @@ type CreateInvoiceData = {
   display_name?: string;
   file_hash?: string;
   file_upload_id?: string;
-  origin?: InvoiceOrigin;
+  origin?: string;
   status?: string;
   approval_status?: string | null;
   approver_id?: string | null;

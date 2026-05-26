@@ -6,7 +6,7 @@ const approvalStatusSchema = z.enum([
   "pending_approval",
   "not_approved",
 ]);
-const originSchema = z.enum(["app", "email", "whatsapp"]);
+const originSchema = z.string();
 const optionalStatusSchema = z.preprocess(
   (value) => (value === "" ? undefined : value),
   statusSchema.optional(),

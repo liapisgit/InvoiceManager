@@ -8,12 +8,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum InvoiceOrigin {
-  app
-  email
-  whatsapp
-}
-
 model User {
   id        String     @id @default(uuid())
   first_name      String?
@@ -59,7 +53,7 @@ model Invoice {
   display_name   String?
   file_hash      String?
   file_upload_id String?
-  origin         InvoiceOrigin @default(app)
+  origin         String @default("app")
   status         String @default("complete")
   approval_status String?
   approver_id    String?

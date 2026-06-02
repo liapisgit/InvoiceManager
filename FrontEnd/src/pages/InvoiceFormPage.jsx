@@ -89,7 +89,11 @@ export default function InvoiceFormPage() {
   );
   const isUploadSelfProject = isSelfProjectCompany(uploadForm.company);
   const isUploadValid = Boolean(
-    uploadForm.file && uploadForm.company && uploadForm.project,
+    uploadForm.file &&
+      uploadForm.company &&
+      uploadForm.project &&
+      uploadForm.is_paid !== "" &&
+      uploadForm.approver_id,
   );
 
   const handleLogout = () => {
@@ -466,6 +470,7 @@ export default function InvoiceFormPage() {
                     }
                     select
                     size="small"
+                    required
                   >
                     <MenuItem value="">
                       <em>-</em>
@@ -491,6 +496,7 @@ export default function InvoiceFormPage() {
                     select
                     size="small"
                     disabled={!uploadForm.company || isUploadSelfProject}
+                    required
                   >
                     <MenuItem value="">
                       <em>-</em>
@@ -507,8 +513,15 @@ export default function InvoiceFormPage() {
                     onChange={(event) =>
                       setUploadField("is_paid", event.target.value)
                     }
+                    error={submitAttempted && uploadForm.is_paid === ""}
+                    helperText={
+                      submitAttempted && uploadForm.is_paid === ""
+                        ? t("validation.required")
+                        : ""
+                    }
                     select
                     size="small"
+                    required
                   >
                     <MenuItem value="">
                       <em>-</em>
@@ -522,8 +535,15 @@ export default function InvoiceFormPage() {
                     onChange={(event) =>
                       setUploadField("approver_id", event.target.value)
                     }
+                    error={submitAttempted && !uploadForm.approver_id}
+                    helperText={
+                      submitAttempted && !uploadForm.approver_id
+                        ? t("validation.required")
+                        : ""
+                    }
                     select
                     size="small"
+                    required
                   >
                     <MenuItem value="">
                       <em>-</em>

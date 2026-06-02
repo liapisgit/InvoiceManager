@@ -43,7 +43,7 @@ model Invoice {
   fees_or_stamps String?
   total_amount   Decimal?  @db.Decimal(10, 2)
   issuer_iban           String?
-  is_paid         Boolean?
+  payment_status String?
   comments       String? 
   company        String?
   category       String?

@@ -6,6 +6,7 @@ const approvalStatusSchema = z.enum([
   "pending_approval",
   "not_approved",
 ]);
+const paymentStatusSchema = z.enum(["paid", "to_be_paid", "urgent"]);
 const optionalStatusSchema = z.preprocess(
   (value) => (value === "" ? undefined : value),
   statusSchema.optional(),
@@ -39,7 +40,7 @@ export const createInvoiceSchema = z.object({
     .positive("Total amount must be positive")
     .optional(),
   issuer_iban: z.string().optional(),
-  is_paid: z.boolean().optional(),
+  payment_status: paymentStatusSchema.optional(),
   comments: z.string().optional(),
   company: z.string().optional(),
   category: z.string().optional(),
@@ -78,7 +79,7 @@ export const updateInvoiceSchema = z.object({
     .positive("Total amount must be positive")
     .optional(),
   issuer_iban: z.string().optional(),
-  is_paid: z.boolean().optional(),
+  payment_status: paymentStatusSchema.optional(),
   comments: z.string().optional(),
   company: z.string().optional(),
   category: z.string().optional(),

@@ -43,7 +43,7 @@ const initialUploadForm = {
   file: null,
   company: "",
   project: "",
-  is_paid: "",
+  payment_status: "",
   comments: "",
   approval_status: "",
   approver_id: "",
@@ -92,7 +92,7 @@ export default function InvoiceFormPage() {
     uploadForm.file &&
       uploadForm.company &&
       uploadForm.project &&
-      uploadForm.is_paid !== "" &&
+      uploadForm.payment_status &&
       uploadForm.approver_id,
   );
 
@@ -319,9 +319,7 @@ export default function InvoiceFormPage() {
         formData.append("image", uploadForm.file);
         formData.append("company", uploadForm.company);
         formData.append("project", uploadForm.project);
-        if (uploadForm.is_paid !== "") {
-          formData.append("is_paid", uploadForm.is_paid);
-        }
+        formData.append("payment_status", uploadForm.payment_status);
         if (uploadForm.comments.trim()) {
           formData.append("comments", uploadForm.comments.trim());
         }
@@ -508,14 +506,14 @@ export default function InvoiceFormPage() {
                     ))}
                   </TextField>
                   <TextField
-                    label={t("fields.is_paid")}
-                    value={uploadForm.is_paid}
+                    label={t("fields.payment_status")}
+                    value={uploadForm.payment_status}
                     onChange={(event) =>
-                      setUploadField("is_paid", event.target.value)
+                      setUploadField("payment_status", event.target.value)
                     }
-                    error={submitAttempted && uploadForm.is_paid === ""}
+                    error={submitAttempted && !uploadForm.payment_status}
                     helperText={
-                      submitAttempted && uploadForm.is_paid === ""
+                      submitAttempted && !uploadForm.payment_status
                         ? t("validation.required")
                         : ""
                     }
@@ -526,8 +524,11 @@ export default function InvoiceFormPage() {
                     <MenuItem value="">
                       <em>-</em>
                     </MenuItem>
-                    <MenuItem value="true">{t("paymentState.paid")}</MenuItem>
-                    <MenuItem value="false">{t("paymentState.toBePaid")}</MenuItem>
+                    <MenuItem value="paid">{t("paymentState.paid")}</MenuItem>
+                    <MenuItem value="to_be_paid">
+                      {t("paymentState.toBePaid")}
+                    </MenuItem>
+                    <MenuItem value="urgent">{t("paymentState.urgent")}</MenuItem>
                   </TextField>
                   <TextField
                     label={t("fields.approver_id")}

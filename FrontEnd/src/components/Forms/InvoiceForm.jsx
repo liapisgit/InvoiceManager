@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Paper, Box, Typography, IconButton } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "../Inputs/TextField";
-import Checkbox from "../Inputs/Checkbox";
 import DatePicker from "../Inputs/DatePicker";
 import FileUploadSingleImage from "../Inputs/FileUploadSingleImage";
 import ReceiptIcon from "@mui/icons-material/Receipt";
@@ -29,7 +28,7 @@ const initialForm = {
   fees_or_stamps: "",
   total_amount: "",
   issuer_iban: "",
-  is_paid: false,
+  payment_status: "",
   comments: "",
   file_url: "",
   file_path: "",
@@ -53,11 +52,6 @@ const normalizeIncomingFormData = (data = {}) => {
   Object.keys(next).forEach((key) => {
     if (key === "file") {
       next.file = null;
-      return;
-    }
-
-    if (key === "is_paid") {
-      next.is_paid = typeof data.is_paid === "boolean" ? data.is_paid : false;
       return;
     }
 
@@ -161,10 +155,6 @@ const isMoney = (v) => /^[0-9]+([.,][0-9]{1,2})?$/.test(String(v ?? "").trim());
 const PARTIAL_UPDATE_IGNORED_FIELDS = new Set(["id", "file", "approval_status"]);
 
 const valuesMatch = (first, second) => {
-  if (typeof first === "boolean" || typeof second === "boolean") {
-    return first === second;
-  }
-
   return String(first ?? "") === String(second ?? "");
 };
 
@@ -230,8 +220,8 @@ export default function InvoiceForm({
       if (isEmpty(formData.number)) e.number = t("validation.required");
       if (isEmpty(formData.issuer_vat_number))
         e.issuer_vat_number = t("validation.required");
-      if (formData.is_paid !== true && formData.is_paid !== false)
-        e.is_paid = t("validation.checkbox");
+      if (isEmpty(formData.payment_status))
+        e.payment_status = t("validation.required");
     }
 
     // Optional fields still need valid formats when they are filled.
@@ -290,9 +280,9 @@ export default function InvoiceForm({
     () =>
       Boolean(
         formData.file ||
-        formData.is_paid ||
+        formData.payment_status ||
         Object.entries(formData).some(([key, value]) => {
-          if (key === "file" || key === "is_paid") return false;
+          if (key === "file" || key === "payment_status") return false;
           return String(value ?? "").trim().length > 0;
         }),
       ),
@@ -399,20 +389,23 @@ export default function InvoiceForm({
           inputMode="numeric"
           size="small"
         />
-        <Box className="invoice-card__row-checkbox">
-          <Checkbox
-            label={t("fields.is_paid")}
-            checked={formData.is_paid}
-            onChange={(e) => setField("is_paid", e.target.checked)}
-            onBlur={() => markTouched("is_paid")}
-            size="small"
-          />
-          {showError("is_paid") && errors.is_paid ? (
-            <Typography variant="caption" color="error">
-              {errors.is_paid}
-            </Typography>
-          ) : null}
-        </Box>
+        <TextField
+          label={t("fields.payment_status")}
+          value={formData.payment_status}
+          onChange={(e) => setField("payment_status", e.target.value)}
+          onBlur={() => markTouched("payment_status")}
+          error={showError("payment_status") && !!errors.payment_status}
+          helperText={showError("payment_status") ? errors.payment_status : ""}
+          select
+          size="small"
+        >
+          <MenuItem value="">
+            <em>-</em>
+          </MenuItem>
+          <MenuItem value="paid">{t("paymentState.paid")}</MenuItem>
+          <MenuItem value="to_be_paid">{t("paymentState.toBePaid")}</MenuItem>
+          <MenuItem value="urgent">{t("paymentState.urgent")}</MenuItem>
+        </TextField>
         {!allowPartialUpdate ? (
           <TextField
             label={t("fields.approval_status")}

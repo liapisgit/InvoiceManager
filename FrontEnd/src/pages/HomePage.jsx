@@ -54,8 +54,10 @@ const formatValue = (field, value, language, t) => {
     if (Number.isNaN(date.getTime())) return String(value);
     return date.toLocaleDateString(language === "el" ? "el-GR" : "en-GB");
   }
-  if (field === "is_paid") {
-    return value ? t("paymentState.paid") : t("paymentState.toBePaid");
+  if (field === "payment_status") {
+    return t(`paymentState.${value}`, {
+      defaultValue: String(value).replaceAll("_", " "),
+    });
   }
   return String(value);
 };
@@ -161,6 +163,31 @@ const getApprovalChipConfig = (approvalStatus, t) => {
 
   return {
     label: t("dashboard.pendingApproval"),
+    color: "default",
+    variant: "outlined",
+  };
+};
+
+const getPaymentChipConfig = (paymentStatus, t) => {
+  if (paymentStatus === "paid") {
+    return {
+      label: t("paymentState.paid"),
+      color: "success",
+      variant: "filled",
+    };
+  }
+  if (paymentStatus === "urgent") {
+    return {
+      label: t("paymentState.urgent"),
+      color: "warning",
+      variant: "filled",
+    };
+  }
+
+  return {
+    label: paymentStatus
+      ? t(`paymentState.${paymentStatus}`, { defaultValue: paymentStatus })
+      : t("dashboard.emptyValue"),
     color: "default",
     variant: "outlined",
   };
@@ -548,6 +575,10 @@ export default function HomePage() {
                   invoice.approval_status,
                   t,
                 );
+                const paymentChip = getPaymentChipConfig(
+                  invoice.payment_status,
+                  t,
+                );
 
                 return (
                   <Paper
@@ -620,14 +651,14 @@ export default function HomePage() {
                           variant="outlined"
                         />
                         <Chip
-                          label={`${t("fields.is_paid")}: ${formatValue(
-                            "is_paid",
-                            invoice.is_paid,
+                          label={`${t("fields.payment_status")}: ${formatValue(
+                            "payment_status",
+                            invoice.payment_status,
                             i18n.language,
                             t,
                           )}`}
-                          color={invoice.is_paid ? "success" : "default"}
-                          variant={invoice.is_paid ? "filled" : "outlined"}
+                          color={paymentChip.color}
+                          variant={paymentChip.variant}
                         />
                         <Button
                           variant={isSelectedPreview ? "contained" : "outlined"}

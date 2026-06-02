@@ -15,7 +15,7 @@ mark           String?
 project        String?
 iban           String?
 invoice_date   DateTime
-isPaid         Boolean?
+payment_status Text?
 comments       String?
 vendor_name    String
 total_amount   Decimal  @db.Decimal(10, 2)

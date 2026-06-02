@@ -21,7 +21,7 @@ type CreateInvoiceData = {
   fees_or_stamps?: string;
   total_amount?: number;
   issuer_iban?: string;
-  is_paid?: boolean;
+  payment_status?: string;
   comments?: string;
   company?: string;
   category?: string;

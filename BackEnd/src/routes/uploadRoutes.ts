@@ -10,6 +10,7 @@ import { userRepository } from "../repositories/userRepository";
 
 const uploadRouter = Router();
 const SELF_APPROVER_VALUE = "__self__";
+const SELF_APPROVER_ID = "0";
 const getUserLabel = (user: Express.Request["user"]) =>
   `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
   user?.user_name ||
@@ -22,11 +23,11 @@ const getApprovalStatusForApprover = (
   return isSelfApproval ? "approved" : "pending_approval";
 };
 
-const parseOptionalBoolean = (value: unknown) => {
-  if (value === undefined || value === null || value === "") return undefined;
-  if (value === true || value === "true") return true;
-  if (value === false || value === "false") return false;
-  return undefined;
+const PAYMENT_STATUSES = new Set(["paid", "to_be_paid", "urgent"]);
+
+const parsePaymentStatus = (value: unknown) => {
+  const paymentStatus = String(value ?? "").trim();
+  return PAYMENT_STATUSES.has(paymentStatus) ? paymentStatus : "";
 };
 
 const buildExistingInvoiceResponse = ({
@@ -71,7 +72,21 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
 
     const submittedApproverId = String(req.body.approver_id ?? "").trim();
     const isSelfApproval = submittedApproverId === SELF_APPROVER_VALUE;
-    const approverId = isSelfApproval ? req.user!.user_id : submittedApproverId;
+    const approverId = isSelfApproval ? SELF_APPROVER_ID : submittedApproverId;
+    const paymentStatus = parsePaymentStatus(req.body.payment_status);
+
+    if (!paymentStatus) {
+      return res.status(400).json({
+        error: "Payment status is required",
+      });
+    }
+
+    if (!approverId) {
+      return res.status(400).json({
+        error: "Approver is required",
+      });
+    }
+
     const approvalStatus = getApprovalStatusForApprover(
       approverId,
       isSelfApproval,
@@ -89,13 +104,12 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
     const filePath = path.resolve(req.file.path);
     const relativeFilePath = path.join("uploads", req.file.filename);
     const displayName = String(req.file.originalname ?? "").trim();
-    const isPaid = parseOptionalBoolean(req.body.is_paid);
     const comments = String(req.body.comments ?? "").trim();
 
     const invoice = await invoiceRepository.create({
       company,
       project,
-      ...(isPaid === undefined ? {} : { is_paid: isPaid }),
+      payment_status: paymentStatus,
       ...(comments ? { comments } : {}),
       ...(approvalStatus ? { approval_status: approvalStatus } : {}),
       ...(approverId ? { approver_id: approverId } : {}),
@@ -114,9 +128,7 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
       formData.append("display_name", displayName);
     }
     formData.append("user", getUserLabel(req.user));
-    if (isPaid !== undefined) {
-      formData.append("is_paid", String(isPaid));
-    }
+    formData.append("payment_status", paymentStatus);
     if (comments) {
       formData.append("comments", comments);
     }

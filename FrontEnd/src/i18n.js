@@ -35,7 +35,9 @@ i18n.use(initReactI18next).init({
         },
         paymentState: {
           paid: "Πληρωμένο",
+          to_be_paid: "Για να πληρωθεί",
           toBePaid: "Για να πληρωθεί",
+          urgent: "Επείγον",
         },
         dashboard: {
           title: "Dashboard τιμολογίων",
@@ -153,7 +155,7 @@ i18n.use(initReactI18next).init({
           fees_or_stamps: "Τέλη/Χαρτόσημα",
           total_amount: "Σύνολο",
           issuer_iban: "IBAN Εκδότη",
-          is_paid: "Πληρωμή",
+          payment_status: "Πληρωμή",
           comments: "Σχόλια",
           receipt: "Απόδειξη",
           company: "Εταιρεία",
@@ -212,7 +214,9 @@ i18n.use(initReactI18next).init({
         },
         paymentState: {
           paid: "Paid",
+          to_be_paid: "To be paid",
           toBePaid: "To be paid",
+          urgent: "Urgent",
         },
         dashboard: {
           title: "Invoice dashboard",
@@ -328,7 +332,7 @@ i18n.use(initReactI18next).init({
           fees_or_stamps: "Fees or Stamps",
           total_amount: "Total Amount",
           issuer_iban: "Issuer IBAN",
-          is_paid: "Payment",
+          payment_status: "Payment",
           comments: "Comments",
           receipt: "Receipt",
           company: "Company",

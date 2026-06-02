@@ -76,65 +76,84 @@ const normalizeIncomingFormData = (data = {}) => {
 
 // Fill these with your static company -> project options.
 export const COMPANY_PROJECT_OPTIONS = {
-  "THE OLON DEVELOPMENTS ΜΟΝΟΠΡΟΣΩΠΗ IKE": [
-    "AIOLOU",
-    "ALAMANAS",
-    "APOLLONOS",
-    "ARMONIAS",
-    "ERMA , LEOF ATHINWN 122 ATHENS",
-    "FLEMING",
-    "HERITAGE OT11",
-    "HERITAGE OT23",
-    "HERITAGE OT29",
-    "HERITAGE OT36A",
-    "HERITAGE OT36B",
-    "IOUSTINIANOU",
-    "JULIA & CHRISTIAN KARAM_AFRODITIS",
-    "KIRKIS",
-    "LAGONISI",
-    "MARKETING",
-    "QONTRALESS CYPRUS",
-    "REAL ESTATE",
-    "XENOFONTOS 50",
-  ],
-  "THE OLON HOSPITALITY IKE": [
-    "AIGEWS 6",
+  "THE OLON HOSPITALITY": [
+    "DIADOXOU 39 2BDR",
+    "DIADOXOU 39 3BDR",
+    "EKAVIS 4",
+    "IASONOS 13",
+    "METAXA 7 2BDR",
+    "METAXA 7 3BDR",
+    "METAXA 33 EXECUTIVE",
+    "METAXA 33 SUPERIOR",
     "ATHINWN 46",
-    "CHECK-IN FACILITIES",
-    "DIADOXOU 39-2BD",
-    "DIADOXOU 39-3BD",
-    "EKAVIS",
     "FRYNIXOU 11",
-    "IASONOS",
-    "KAVOURIOU",
-    "LAMBRAKI 6",
+    "AIGEWS 6",
+    "KAVOURIOU 1",
     "LITOUS 26",
-    "METAXA 7-2BD",
-    "METAXA 7-3BD",
-    "METAXA 33-EXECUTIVE",
+    "NAYSIKAS 32",
     "METAXA 33-SUPERIOR",
     "NAYSIKAS 32",
-    "OFFICE EXPENSES",
-    "SAKI KARAGIORGA",
+    "SAKI KARAGIORGA 12-14",
+    "ARTEMIDOS 5",
+    "LAMBRAKI 6",
+    "OFFICE",
+    "STORAGE",
+    "OPERATION",
+    "MARKETING",
   ],
-  PERSONAL: [
-    "LASHA MAMISEISHVILI",
-    "GIORGOS SEMELIDIS",
-    "CHARALAMPOS KOKKALIS",
-    "KONSTANTINOS PALLIOS",
-    "ELENA TSOKA",
-    "CHRISTINA KALOMINIDOU",
-    "GIORGOS LIMNIALIS",
-    "FEDRA KOSTAKH",
-    "IOANNIS ARXODAKIS PAPADAKIS",
-    "KONSTANTINA NIKOLATOU",
-    "SPYRIDON STATHIS",
-    "KATERINA DALIANI",
-    "FOTINI CHARALAMPOPOULOU",
-    "GEORGE BERSENDES",
+  "THE OLON DEVELOPMENTS": [
+    "ALAMANAS, VOULA",
+    "APOLLONOS, ATHENS",
+    "IOUSTINIANOU, GLYFADA",
+    "OT11 HERITAGE, VOULIAGMENI",
+    "OT23 HERITAGE, VOULIAGMENI",
+    "OT29 HERITAGE, VOULIAGMENI",
+    "OT36 HERITAGE, VOULIAGMENI",
+    "ARMONIAS, KAVOURI",
+    "KIRKIS, VOULIAGMENI",
+    "FLEMING, VARI",
+    "XENOFONTOS, VOULA",
+    "AIOLOU 85, ATHENS",
+    "LAGONISI",
+    "REAL ESTATE",
+    "MARKETING",
+    "OFFICE EXPENDABLES",
+    "STORAGE",
+    "CLIENT LEADS",
   ],
+  "SEMELIDIS": [
+    "FLEMING, VARI",
+    "XENOFONTOS, VOULA",
+  ]
 };
-export const COMPANY_OPTIONS = Object.keys(COMPANY_PROJECT_OPTIONS);
+export const SELF_PROJECT_COMPANY_OPTIONS = [
+  "ALAMANAS ONE",
+  "A15",
+  "OLYRAS",
+  "HERITAGE",
+  "HOT",
+  "AIOLOU",
+  "LAGONISI VENTURES",
+  "QONTRALESS",
+  "PERSONAL",
+  "ALPHA AXIS",
+  "VOLUSPA",
+];
+const SELF_PROJECT_COMPANIES = new Set(SELF_PROJECT_COMPANY_OPTIONS);
+export const COMPANY_OPTIONS = [
+  "THE OLON HOSPITALITY",
+  "THE OLON DEVELOPMENTS",
+  ...SELF_PROJECT_COMPANY_OPTIONS,
+  "SEMELIDIS",
+];
+export const isSelfProjectCompany = (company) =>
+  SELF_PROJECT_COMPANIES.has(company);
+export const getProjectOptionsForCompany = (company) =>
+  isSelfProjectCompany(company)
+    ? [company]
+    : COMPANY_PROJECT_OPTIONS[company] || [];
+export const getDefaultProjectForCompany = (company) =>
+  isSelfProjectCompany(company) ? company : "";
 
 const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
@@ -183,9 +202,10 @@ export default function InvoiceForm({
   const [touched, setTouched] = useState({});
   const { t } = useTranslation();
   const projectOptions = useMemo(
-    () => COMPANY_PROJECT_OPTIONS[formData.company] || [],
+    () => getProjectOptionsForCompany(formData.company),
     [formData.company],
   );
+  const isSelfProject = isSelfProjectCompany(formData.company);
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -195,7 +215,7 @@ export default function InvoiceForm({
     setFormData((prev) => ({
       ...prev,
       company: value,
-      project: "",
+      project: getDefaultProjectForCompany(value),
     }));
   };
 
@@ -346,7 +366,7 @@ export default function InvoiceForm({
           helperText={showError("project") ? errors.project : ""}
           select
           size="small"
-          disabled={!formData.company}
+          disabled={!formData.company || isSelfProject}
         >
           <MenuItem value="">
             <em>-</em>

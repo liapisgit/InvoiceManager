@@ -26,7 +26,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../App.css";
 import InvoiceForm, {
   COMPANY_OPTIONS,
-  COMPANY_PROJECT_OPTIONS,
+  getDefaultProjectForCompany,
+  getProjectOptionsForCompany,
+  isSelfProjectCompany,
 } from "../components/Forms/InvoiceForm";
 import FileUploadSingleImage from "../components/Inputs/FileUploadSingleImage";
 import AppHeader from "../components/layout/AppHeader";
@@ -82,9 +84,10 @@ export default function InvoiceFormPage() {
   const isUiLocked =
     busyFormIndexes.size > 0 || isSubmitting || isFetchingInvoice;
   const uploadProjectOptions = useMemo(
-    () => COMPANY_PROJECT_OPTIONS[uploadForm.company] || [],
+    () => getProjectOptionsForCompany(uploadForm.company),
     [uploadForm.company],
   );
+  const isUploadSelfProject = isSelfProjectCompany(uploadForm.company);
   const isUploadValid = Boolean(
     uploadForm.file && uploadForm.company && uploadForm.project,
   );
@@ -131,7 +134,9 @@ export default function InvoiceFormPage() {
     setUploadForm((prev) => ({
       ...prev,
       [field]: value,
-      ...(field === "company" ? { project: "" } : {}),
+      ...(field === "company"
+        ? { project: getDefaultProjectForCompany(value) }
+        : {}),
       ...(field === "approver_id"
         ? { approval_status: getApprovalStatusForApprover(value) }
         : {}),
@@ -485,7 +490,7 @@ export default function InvoiceFormPage() {
                     }
                     select
                     size="small"
-                    disabled={!uploadForm.company}
+                    disabled={!uploadForm.company || isUploadSelfProject}
                   >
                     <MenuItem value="">
                       <em>-</em>

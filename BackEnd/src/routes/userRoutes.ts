@@ -50,6 +50,7 @@ userRouter.get("/approvers", authMiddleware, async (_req, res) => {
     return res.json(
       approvers.map((user) => ({
         id: user.id,
+        phone: user.phone,
         user_name: user.user_name,
         label: getUserLabel(user),
       })),

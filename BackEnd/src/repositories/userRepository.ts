@@ -5,10 +5,10 @@ export const userRepository = {
     return dbClient.user.findUnique({ where: { user_name } });
   },
 
-  async findApproverById(id: string) {
+  async findApproverByPhone(phone: string) {
     return dbClient.user.findFirst({
       where: {
-        id,
+        phone,
         is_approver: true,
         AND: [
           { first_name: { not: null } },
@@ -22,6 +22,7 @@ export const userRepository = {
         user_name: true,
         first_name: true,
         last_name: true,
+        phone: true,
       },
     });
   },
@@ -35,6 +36,8 @@ export const userRepository = {
           { first_name: { not: "" } },
           { last_name: { not: null } },
           { last_name: { not: "" } },
+          { phone: { not: null } },
+          { phone: { not: "" } },
         ],
       },
       orderBy: [{ first_name: "asc" }, { last_name: "asc" }, { user_name: "asc" }],
@@ -43,6 +46,7 @@ export const userRepository = {
         user_name: true,
         first_name: true,
         last_name: true,
+        phone: true,
       },
     });
   },
@@ -52,6 +56,18 @@ export const userRepository = {
       where: { id: { in: ids } },
       select: {
         id: true,
+        user_name: true,
+        first_name: true,
+        last_name: true,
+      },
+    });
+  },
+
+  async findManyByPhones(phones: string[]) {
+    return dbClient.user.findMany({
+      where: { phone: { in: phones } },
+      select: {
+        phone: true,
         user_name: true,
         first_name: true,
         last_name: true,

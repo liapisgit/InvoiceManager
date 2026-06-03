@@ -553,7 +553,7 @@ export default function InvoiceFormPage() {
                       {t("approvalStatus.selfApproval")}
                     </MenuItem>
                     {approverOptions.map((option) => (
-                      <MenuItem key={option.id} value={option.id}>
+                      <MenuItem key={option.id} value={option.phone}>
                         {option.label}
                       </MenuItem>
                     ))}

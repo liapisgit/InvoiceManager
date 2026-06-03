@@ -92,7 +92,7 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
       isSelfApproval,
     );
     const approver = approverId && !isSelfApproval
-      ? await userRepository.findApproverById(approverId)
+      ? await userRepository.findApproverByPhone(approverId)
       : null;
     if (approverId && !isSelfApproval && !approver) {
       return res.status(400).json({

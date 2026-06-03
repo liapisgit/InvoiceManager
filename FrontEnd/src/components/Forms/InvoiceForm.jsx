@@ -443,7 +443,7 @@ export default function InvoiceForm({
             <em>-</em>
           </MenuItem>
           {approverOptions.map((option) => (
-            <MenuItem key={option.id} value={option.id}>
+            <MenuItem key={option.id} value={option.phone}>
               {option.label}
             </MenuItem>
           ))}

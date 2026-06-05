@@ -147,23 +147,23 @@ const getStatusChipConfig = (status, t) => {
 };
 
 const getApprovalChipConfig = (approvalStatus, t) => {
-  if (approvalStatus === "approved") {
+  if (approvalStatus === "APPROVED") {
     return {
-      label: t("approvalStatus.approved"),
+      label: t("approvalStatus.APPROVED"),
       color: "success",
       variant: "filled",
     };
   }
-  if (approvalStatus === "not_approved") {
+  if (approvalStatus === "REJECTED") {
     return {
-      label: t("approvalStatus.not_approved"),
+      label: t("approvalStatus.REJECTED"),
       color: "error",
       variant: "outlined",
     };
   }
-  if (approvalStatus === "pending_approval") {
+  if (approvalStatus === "PENDING") {
     return {
-      label: t("approvalStatus.pending_approval"),
+      label: t("approvalStatus.PENDING"),
       color: "warning",
       variant: "outlined",
     };

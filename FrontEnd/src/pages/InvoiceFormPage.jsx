@@ -51,7 +51,7 @@ const initialUploadForm = {
 const SELF_APPROVER_VALUE = "__self__";
 const getApprovalStatusForApprover = (approverId) => {
   if (!approverId) return "";
-  return approverId === SELF_APPROVER_VALUE ? "approved" : "pending_approval";
+  return approverId === SELF_APPROVER_VALUE ? "APPROVED" : "PENDING";
 };
 
 export default function InvoiceFormPage() {

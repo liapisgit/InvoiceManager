@@ -20,7 +20,7 @@ const getApprovalStatusForApprover = (
   isSelfApproval: boolean,
 ) => {
   if (!approverId) return "";
-  return isSelfApproval ? "approved" : "pending_approval";
+  return isSelfApproval ? "APPROVED" : "PENDING";
 };
 
 const PAYMENT_STATUSES = new Set(["Paid", "To be Paid", "Urgent"]);

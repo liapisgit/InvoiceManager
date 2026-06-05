@@ -106,9 +106,9 @@ i18n.use(initReactI18next).init({
           duplicate: "Αντίγραφο",
         },
         approvalStatus: {
-          approved: "Εγκεκριμένο",
-          pending_approval: "Εκκρεμεί έγκριση",
-          not_approved: "Μη εγκεκριμένο",
+          APPROVED: "Εγκεκριμένο",
+          PENDING: "Εκκρεμεί έγκριση",
+          REJECTED: "Απορριφθέν",
           selfApproval: "Αυτοέγκριση",
         },
         invoiceEdit: {
@@ -284,9 +284,9 @@ i18n.use(initReactI18next).init({
           duplicate: "Duplicate",
         },
         approvalStatus: {
-          approved: "Approved",
-          pending_approval: "Pending approval",
-          not_approved: "Not approved",
+          APPROVED: "Approved",
+          PENDING: "Pending",
+          REJECTED: "Rejected",
           selfApproval: "Self-approval",
         },
         invoiceEdit: {

@@ -2,9 +2,9 @@ import { z } from "zod";
 
 const statusSchema = z.enum(["processing", "needs_review", "complete", "error","duplicate"]);
 const approvalStatusSchema = z.enum([
-  "approved",
-  "pending_approval",
-  "not_approved",
+  "APPROVED",
+  "PENDING",
+  "REJECTED",
 ]);
 const paymentStatusSchema = z.enum(["Paid", "To be Paid", "Urgent"]);
 const optionalStatusSchema = z.preprocess(

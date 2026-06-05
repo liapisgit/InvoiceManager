@@ -420,12 +420,12 @@ export default function InvoiceForm({
             <MenuItem value="">
               <em>{t("dashboard.pendingApproval")}</em>
             </MenuItem>
-            <MenuItem value="approved">{t("approvalStatus.approved")}</MenuItem>
-            <MenuItem value="pending_approval">
-              {t("approvalStatus.pending_approval")}
+            <MenuItem value="APPROVED">{t("approvalStatus.APPROVED")}</MenuItem>
+            <MenuItem value="PENDING">
+              {t("approvalStatus.PENDING")}
             </MenuItem>
-            <MenuItem value="not_approved">
-              {t("approvalStatus.not_approved")}
+            <MenuItem value="REJECTED">
+              {t("approvalStatus.REJECTED")}
             </MenuItem>
           </TextField>
         ) : null}

@@ -46,6 +46,16 @@ const isPresent = (value) => {
 };
 
 const UNASSIGNED_PROJECT_FILTER = "__UNASSIGNED__";
+const PAYMENT_STATUS_LABEL_KEYS = {
+  Paid: "paymentState.paid",
+  "To be Paid": "paymentState.toBePaid",
+  Urgent: "paymentState.urgent",
+};
+
+const formatPaymentStatus = (paymentStatus, t) => {
+  const labelKey = PAYMENT_STATUS_LABEL_KEYS[paymentStatus];
+  return labelKey ? t(labelKey) : String(paymentStatus).replaceAll("_", " ");
+};
 
 const formatValue = (field, value, language, t) => {
   if (value == null || value === "") return t("dashboard.emptyValue");
@@ -55,9 +65,7 @@ const formatValue = (field, value, language, t) => {
     return date.toLocaleDateString(language === "el" ? "el-GR" : "en-GB");
   }
   if (field === "payment_status") {
-    return t(`paymentState.${value}`, {
-      defaultValue: String(value).replaceAll("_", " "),
-    });
+    return formatPaymentStatus(value, t);
   }
   return String(value);
 };
@@ -169,16 +177,16 @@ const getApprovalChipConfig = (approvalStatus, t) => {
 };
 
 const getPaymentChipConfig = (paymentStatus, t) => {
-  if (paymentStatus === "paid") {
+  if (paymentStatus === "Paid") {
     return {
-      label: t("paymentState.paid"),
+      label: formatPaymentStatus(paymentStatus, t),
       color: "success",
       variant: "filled",
     };
   }
-  if (paymentStatus === "urgent") {
+  if (paymentStatus === "Urgent") {
     return {
-      label: t("paymentState.urgent"),
+      label: formatPaymentStatus(paymentStatus, t),
       color: "warning",
       variant: "filled",
     };
@@ -186,7 +194,7 @@ const getPaymentChipConfig = (paymentStatus, t) => {
 
   return {
     label: paymentStatus
-      ? t(`paymentState.${paymentStatus}`, { defaultValue: paymentStatus })
+      ? formatPaymentStatus(paymentStatus, t)
       : t("dashboard.emptyValue"),
     color: "default",
     variant: "outlined",

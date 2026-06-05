@@ -6,7 +6,7 @@ const approvalStatusSchema = z.enum([
   "pending_approval",
   "not_approved",
 ]);
-const paymentStatusSchema = z.enum(["paid", "to_be_paid", "urgent"]);
+const paymentStatusSchema = z.enum(["Paid", "To be Paid", "Urgent"]);
 const optionalStatusSchema = z.preprocess(
   (value) => (value === "" ? undefined : value),
   statusSchema.optional(),

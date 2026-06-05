@@ -524,11 +524,11 @@ export default function InvoiceFormPage() {
                     <MenuItem value="">
                       <em>-</em>
                     </MenuItem>
-                    <MenuItem value="paid">{t("paymentState.paid")}</MenuItem>
-                    <MenuItem value="to_be_paid">
+                    <MenuItem value="Paid">{t("paymentState.paid")}</MenuItem>
+                    <MenuItem value="To be Paid">
                       {t("paymentState.toBePaid")}
                     </MenuItem>
-                    <MenuItem value="urgent">{t("paymentState.urgent")}</MenuItem>
+                    <MenuItem value="Urgent">{t("paymentState.urgent")}</MenuItem>
                   </TextField>
                   <TextField
                     label={t("fields.approver_id")}

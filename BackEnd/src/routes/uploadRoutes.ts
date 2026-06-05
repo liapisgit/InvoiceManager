@@ -23,7 +23,7 @@ const getApprovalStatusForApprover = (
   return isSelfApproval ? "approved" : "pending_approval";
 };
 
-const PAYMENT_STATUSES = new Set(["paid", "to_be_paid", "urgent"]);
+const PAYMENT_STATUSES = new Set(["Paid", "To be Paid", "Urgent"]);
 
 const parsePaymentStatus = (value: unknown) => {
   const paymentStatus = String(value ?? "").trim();

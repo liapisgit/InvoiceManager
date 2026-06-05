@@ -214,8 +214,8 @@ i18n.use(initReactI18next).init({
         },
         paymentState: {
           paid: "Paid",
-          to_be_paid: "To be paid",
-          toBePaid: "To be paid",
+          to_be_paid: "To be Paid",
+          toBePaid: "To be Paid",
           urgent: "Urgent",
         },
         dashboard: {

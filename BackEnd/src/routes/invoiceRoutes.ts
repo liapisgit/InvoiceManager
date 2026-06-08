@@ -84,16 +84,30 @@ const buildInvoiceWebhookPayload = (invoice: Invoice) => {
   return JSON.parse(JSON.stringify(invoicePayload));
 };
 
+const getApproverLabelForWebhook = async (
+  invoice: Invoice,
+  user: AuthPayload,
+) => {
+  if (!invoice.approver_id) return "";
+  if (invoice.approver_id === SELF_APPROVER_ID) return getUserLabel(user);
+
+  const [approver] = await userRepository.findManyByPhones([invoice.approver_id]);
+  return approver ? getStoredUserLabel(approver) : invoice.approver_id;
+};
+
 const triggerInvoiceDataWebhook = async (invoice: Invoice, user: AuthPayload) => {
   const dataWebhookUrl = config.n8nInvoiceDataWebhookUrl?.trim();
   if (!dataWebhookUrl) return;
 
   try {
+    const approver = await getApproverLabelForWebhook(invoice, user);
+
     await axios.post(
       dataWebhookUrl,
       {
         ...buildInvoiceWebhookPayload(invoice),
         user: getUserLabel(user),
+        ...(approver ? { approver } : {}),
       },
       { headers: { "Content-Type": "application/json" } },
     );

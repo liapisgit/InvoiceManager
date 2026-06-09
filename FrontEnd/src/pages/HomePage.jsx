@@ -9,6 +9,7 @@ import {
   MenuItem,
   Paper,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -174,6 +175,24 @@ const getApprovalChipConfig = (approvalStatus, t) => {
     color: "default",
     variant: "outlined",
   };
+};
+
+const getApprovalTooltipTitle = (invoice, t) => {
+  const isFinalApprovalStatus =
+    invoice.approval_status === "APPROVED" ||
+    invoice.approval_status === "REJECTED";
+  if (!isFinalApprovalStatus) return "";
+
+  const approverLabel = String(
+    invoice.approverLabel ||
+      (invoice.approver_id === "0" ? invoice.createdByLabel : "") ||
+      invoice.approver_id ||
+      "",
+  ).trim();
+
+  return approverLabel
+    ? t("approvalStatus.approverTooltip", { approver: approverLabel })
+    : "";
 };
 
 const getPaymentChipConfig = (paymentStatus, t) => {
@@ -583,6 +602,7 @@ export default function HomePage() {
                   invoice.approval_status,
                   t,
                 );
+                const approvalTooltipTitle = getApprovalTooltipTitle(invoice, t);
                 const paymentChip = getPaymentChipConfig(
                   invoice.payment_status,
                   t,
@@ -644,11 +664,13 @@ export default function HomePage() {
                           color={statusChip.color}
                           variant={statusChip.variant}
                         />
-                        <Chip
-                          label={approvalChip.label}
-                          color={approvalChip.color}
-                          variant={approvalChip.variant}
-                        />
+                        <Tooltip title={approvalTooltipTitle} arrow>
+                          <Chip
+                            label={approvalChip.label}
+                            color={approvalChip.color}
+                            variant={approvalChip.variant}
+                          />
+                        </Tooltip>
                         <Chip
                           label={`${t("fields.invoice_date")}: ${formatValue(
                             "invoice_date",

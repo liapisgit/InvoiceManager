@@ -110,6 +110,7 @@ i18n.use(initReactI18next).init({
           PENDING: "Εκκρεμεί έγκριση",
           REJECTED: "Απορριφθέν",
           selfApproval: "Αυτοέγκριση",
+          approverTooltip: "Υπεύθυνος έγκρισης: {{approver}}",
         },
         invoiceEdit: {
           title: "Ενημέρωση τιμολογίου",
@@ -288,6 +289,7 @@ i18n.use(initReactI18next).init({
           PENDING: "Pending",
           REJECTED: "Rejected",
           selfApproval: "Self-approval",
+          approverTooltip: "Approver: {{approver}}",
         },
         invoiceEdit: {
           title: "Update invoice",

@@ -38,6 +38,7 @@ import {
   createInvoiceSchema,
   updateInvoiceSchema,
 } from "../schemas/invoiceSchemas";
+import InvoiceFilePreview from "../components/InvoiceFilePreview";
 
 const initialUploadForm = {
   file: null,
@@ -133,6 +134,26 @@ export default function InvoiceFormPage() {
     return forms.some((form) => form?.isDirty || !form?.id);
   }, [forms]);
   const canSubmit = isEditMode ? allValid && hasEditableChanges : isUploadValid;
+  const editPreviewInvoice = useMemo(
+    () => loadedForms.find((invoice) => invoice) ?? null,
+    [loadedForms],
+  );
+  const editPreviewSubtitle = useMemo(() => {
+    if (!editPreviewInvoice) return "";
+
+    const displayName = String(editPreviewInvoice.display_name ?? "").trim();
+    if (displayName) return displayName;
+
+    const parts = [
+      String(editPreviewInvoice.invoice_date ?? "").slice(0, 10),
+      editPreviewInvoice.issuer_name,
+      editPreviewInvoice.number,
+    ]
+      .map((part) => String(part ?? "").trim())
+      .filter(Boolean);
+
+    return parts.length ? parts.join(" - ") : t("dashboard.invoiceFallback");
+  }, [editPreviewInvoice, t]);
 
   const setUploadField = (field, value) => {
     setUploadForm((prev) => ({
@@ -419,7 +440,7 @@ export default function InvoiceFormPage() {
         }
       />
 
-      <Container maxWidth="md" className="app-root">
+      <Container maxWidth={isEditMode ? "xl" : "md"} className="app-root">
         <Paper elevation={0} className="forms-group">
           <Box className="forms-group__header">
             <Typography variant="subtitle1">
@@ -433,22 +454,47 @@ export default function InvoiceFormPage() {
           </Box>
 
           {isEditMode ? (
-            <Box className="forms-group__list">
-              {forms.map((_, index) => (
-                <InvoiceForm
-                  key={`${resetVersion}-${formLoadVersions[index] ?? 0}-${index}`}
-                  formIndex={index}
-                  onFormChange={handleFormChange}
-                  onRemove={handleRemoveForm}
-                  onAnalysisStateChange={handleAnalysisStateChange}
-                  onExistingInvoiceDetected={handleExistingInvoiceDetected}
-                  canRemove={forms.length > 1}
-                  submitAttempted={submitAttempted}
-                  externalData={loadedForms[index]}
-                  approverOptions={approverOptions}
-                  allowPartialUpdate
-                />
-              ))}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 460px" },
+                gap: 2,
+                alignItems: "start",
+              }}
+            >
+              <Box className="forms-group__list">
+                {forms.map((_, index) => (
+                  <InvoiceForm
+                    key={`${resetVersion}-${formLoadVersions[index] ?? 0}-${index}`}
+                    formIndex={index}
+                    onFormChange={handleFormChange}
+                    onRemove={handleRemoveForm}
+                    onAnalysisStateChange={handleAnalysisStateChange}
+                    onExistingInvoiceDetected={handleExistingInvoiceDetected}
+                    canRemove={forms.length > 1}
+                    submitAttempted={submitAttempted}
+                    externalData={loadedForms[index]}
+                    approverOptions={approverOptions}
+                    allowPartialUpdate
+                  />
+                ))}
+              </Box>
+              <InvoiceFilePreview
+                fileUrl={editPreviewInvoice?.file_url}
+                title={t("invoiceEdit.previewTitle")}
+                subtitle={editPreviewSubtitle}
+                emptyMessage={t("invoiceEdit.previewEmpty")}
+                helperMessage={t("invoiceEdit.previewHelper")}
+                frameTitle={t("dashboard.previewFrameTitle")}
+                unsupportedMessage={t("dashboard.previewUnsupported")}
+                openOriginalLabel={t("dashboard.openOriginalFile")}
+                altText={editPreviewSubtitle || t("dashboard.invoiceFallback")}
+                height={640}
+                sx={{
+                  position: { lg: "sticky" },
+                  top: { lg: 24 },
+                }}
+              />
             </Box>
           ) : (
             <Box className="forms-group__list">

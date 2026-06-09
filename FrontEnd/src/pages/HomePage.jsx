@@ -20,6 +20,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
+import InvoiceFilePreview from "../components/InvoiceFilePreview";
 import AppHeader from "../components/layout/AppHeader";
 import "../App.css";
 import { apiClient } from "../services/apiClient";
@@ -81,52 +82,6 @@ const getInvoiceIdentifier = (invoice, t) => {
   const parts = [datePart, issuerPart, numberPart].filter(Boolean);
 
   return parts.length ? parts.join("_") : t("dashboard.invoiceFallback");
-};
-
-const GOOGLE_DRIVE_FILE_ID_PATTERNS = [
-  /drive\.google\.com\/file\/d\/([^/]+)/i,
-  /drive\.google\.com\/open\?id=([^&]+)/i,
-  /drive\.google\.com\/uc\?[^#]*id=([^&]+)/i,
-  /docs\.google\.com\/uc\?[^#]*id=([^&]+)/i,
-];
-
-const getGoogleDriveFileId = (url) => {
-  const normalizedUrl = String(url ?? "").trim();
-  if (!normalizedUrl) return "";
-
-  for (const pattern of GOOGLE_DRIVE_FILE_ID_PATTERNS) {
-    const match = normalizedUrl.match(pattern);
-    if (match?.[1]) {
-      return decodeURIComponent(match[1]);
-    }
-  }
-
-  return "";
-};
-
-const getPreviewConfig = (fileUrl) => {
-  const normalizedUrl = String(fileUrl ?? "").trim();
-  if (!normalizedUrl) {
-    return { src: "", kind: "empty" };
-  }
-
-  const googleDriveFileId = getGoogleDriveFileId(normalizedUrl);
-  if (googleDriveFileId) {
-    return {
-      src: `https://drive.google.com/file/d/${googleDriveFileId}/preview`,
-      kind: "iframe",
-    };
-  }
-
-  const lowerUrl = normalizedUrl.toLowerCase();
-  if (/\.(png|jpe?g|webp|gif|bmp|svg)(\?|#|$)/i.test(lowerUrl)) {
-    return { src: normalizedUrl, kind: "image" };
-  }
-  if (/\.pdf(\?|#|$)/i.test(lowerUrl)) {
-    return { src: normalizedUrl, kind: "iframe" };
-  }
-
-  return { src: normalizedUrl, kind: "link" };
 };
 
 const getStatusChipConfig = (status, t) => {
@@ -751,123 +706,29 @@ export default function HomePage() {
               })}
             </Box>
 
-            <Paper
-              elevation={0}
+            <InvoiceFilePreview
+              fileUrl={selectedPreviewInvoice?.file_url}
+              title={t("dashboard.previewTitle")}
+              subtitle={
+                selectedPreviewInvoice
+                  ? getInvoiceIdentifier(selectedPreviewInvoice, t)
+                  : ""
+              }
+              emptyMessage={t("dashboard.previewEmpty")}
+              helperMessage={t("dashboard.previewHelper")}
+              frameTitle={t("dashboard.previewFrameTitle")}
+              unsupportedMessage={t("dashboard.previewUnsupported")}
+              openOriginalLabel={t("dashboard.openOriginalFile")}
+              altText={
+                selectedPreviewInvoice?.recipient_name ||
+                t("dashboard.invoiceFallback")
+              }
               sx={{
-                p: 2,
-                borderRadius: 4,
-                border: "1px solid #d1d5db",
                 position: { lg: "sticky" },
                 top: { lg: 24 },
                 minHeight: 520,
               }}
-            >
-              <Typography variant="h6" sx={{ mb: 0.5 }}>
-                {t("dashboard.previewTitle")}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {selectedPreviewInvoice
-                  ? getInvoiceIdentifier(selectedPreviewInvoice, t)
-                  : t("dashboard.previewEmpty")}
-              </Typography>
-
-              {selectedPreviewInvoice ? (
-                (() => {
-                  const previewConfig = getPreviewConfig(
-                    selectedPreviewInvoice.file_url,
-                  );
-
-                  let previewContent;
-
-                  if (previewConfig.kind === "image") {
-                    previewContent = (
-                      <Box
-                        component="img"
-                        src={previewConfig.src}
-                        alt={
-                          selectedPreviewInvoice.recipient_name ||
-                          t("dashboard.invoiceFallback")
-                        }
-                        sx={{
-                          width: "100%",
-                          height: 520,
-                          objectFit: "contain",
-                          borderRadius: 2,
-                          border: "1px solid #e5e7eb",
-                          backgroundColor: "#f8fafc",
-                        }}
-                      />
-                    );
-                  } else if (previewConfig.kind === "iframe") {
-                    previewContent = (
-                      <Box
-                        component="iframe"
-                        src={previewConfig.src}
-                        title={t("dashboard.previewFrameTitle")}
-                        sx={{
-                          width: "100%",
-                          height: 520,
-                          border: "1px solid #e5e7eb",
-                          borderRadius: 2,
-                          backgroundColor: "#fff",
-                        }}
-                      />
-                    );
-                  } else {
-                    previewContent = (
-                      <Box
-                        sx={{
-                          height: 520,
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          textAlign: "center",
-                          gap: 2,
-                          px: 3,
-                          borderRadius: 2,
-                          border: "1px solid #e5e7eb",
-                          backgroundColor: "#f8fafc",
-                        }}
-                      >
-                        <Typography variant="body2" color="text.secondary">
-                          {t("dashboard.previewUnsupported")}
-                        </Typography>
-                        <Button
-                          variant="contained"
-                          component="a"
-                          href={selectedPreviewInvoice.file_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {t("dashboard.openOriginalFile")}
-                        </Button>
-                      </Box>
-                    );
-                  }
-
-                  return previewContent;
-                })()
-              ) : (
-                <Box
-                  sx={{
-                    height: 520,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    px: 3,
-                    borderRadius: 2,
-                    border: "1px dashed #cbd5e1",
-                    backgroundColor: "#f8fafc",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    {t("dashboard.previewHelper")}
-                  </Typography>
-                </Box>
-              )}
-            </Paper>
+            />
           </Box>
         )}
       </Container>

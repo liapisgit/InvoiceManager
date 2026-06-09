@@ -117,6 +117,10 @@ i18n.use(initReactI18next).init({
           subtitle: "Τα πεδία φορτώθηκαν από τη βάση δεδομένων.",
           submit: "Αποθήκευση αλλαγών",
           fetchError: "Δεν ήταν δυνατή η φόρτωση του τιμολογίου.",
+          previewTitle: "Αρχικό αρχείο",
+          previewEmpty: "Δεν υπάρχει αρχείο για προεπισκόπηση.",
+          previewHelper:
+            "Όταν υπάρχει σύνδεσμος αρχείου στο τιμολόγιο, θα εμφανίζεται εδώ για έλεγχο δίπλα στα πεδία.",
         },
         invoice: {
           title: "Τιμολόγιο #{{index}}",
@@ -296,6 +300,10 @@ i18n.use(initReactI18next).init({
           subtitle: "The fields were loaded from the database.",
           submit: "Save changes",
           fetchError: "Could not load the invoice.",
+          previewTitle: "Original file",
+          previewEmpty: "No file is available to preview.",
+          previewHelper:
+            "When this invoice has a file link, it will appear here so you can review it beside the fields.",
         },
         invoice: {
           title: "Invoice #{{index}}",

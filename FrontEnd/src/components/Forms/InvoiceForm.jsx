@@ -230,14 +230,16 @@ export default function InvoiceForm({
   const errors = useMemo(() => {
     const e = {};
 
+    if (isEmpty(formData.project)) e.project = t("validation.required");
+    if (isEmpty(formData.company)) e.company = t("validation.required");
+    if (isEmpty(formData.payment_status))
+      e.payment_status = t("validation.required");
+    if (isEmpty(formData.approver_id)) e.approver_id = t("validation.required");
+
     if (!allowPartialUpdate) {
-      if (isEmpty(formData.project)) e.project = t("validation.required");
-      if (isEmpty(formData.company)) e.company = t("validation.required");
       if (isEmpty(formData.number)) e.number = t("validation.required");
       if (isEmpty(formData.issuer_vat_number))
         e.issuer_vat_number = t("validation.required");
-      if (isEmpty(formData.payment_status))
-        e.payment_status = t("validation.required");
     }
 
     // Optional fields still need valid formats when they are filled.
@@ -332,6 +334,9 @@ export default function InvoiceForm({
           >
             {t("invoice.hint")}
           </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {t("invoice.requiredFields")}
+          </Typography>
         </Box>
         <IconButton
           size="small"
@@ -353,6 +358,7 @@ export default function InvoiceForm({
           helperText={showError("company") ? errors.company : ""}
           select
           size="small"
+          required
         >
           <MenuItem value="">
             <em>-</em>
@@ -373,6 +379,7 @@ export default function InvoiceForm({
           select
           size="small"
           disabled={!formData.company || isSelfProject}
+          required
         >
           <MenuItem value="">
             <em>-</em>
@@ -414,6 +421,7 @@ export default function InvoiceForm({
           helperText={showError("payment_status") ? errors.payment_status : ""}
           select
           size="small"
+          required
         >
           <MenuItem value="">
             <em>-</em>
@@ -461,6 +469,7 @@ export default function InvoiceForm({
           select
           size="small"
           disabled={!canEditApprover}
+          required
         >
           <MenuItem value="">
             <em>-</em>

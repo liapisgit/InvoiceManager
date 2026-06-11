@@ -126,6 +126,8 @@ i18n.use(initReactI18next).init({
         invoice: {
           title: "Τιμολόγιο #{{index}}",
           hint: "Συμπλήρωσε όλα τα στοιχεία για να ολοκληρώσεις.",
+          requiredFields:
+            "Υποχρεωτικά πεδία: Εταιρεία, Έργο, Πληρωμή και Έγκριση.",
           remove: "Αφαίρεση τιμολογίου",
           removeConfirm: "Θες σίγουρα να αφαιρέσεις αυτό το τιμολόγιο;",
         },
@@ -310,6 +312,8 @@ i18n.use(initReactI18next).init({
         invoice: {
           title: "Invoice #{{index}}",
           hint: "Complete all fields to finish the review.",
+          requiredFields:
+            "Required fields: Company, Project, Payment, and Approval.",
           remove: "Remove invoice",
           removeConfirm: "Remove this invoice?",
         },

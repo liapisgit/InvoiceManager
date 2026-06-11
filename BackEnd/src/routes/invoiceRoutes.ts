@@ -200,10 +200,6 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
 
     const nextCompany = req.body.company ?? existingInvoice.company;
     const nextProject = req.body.project ?? existingInvoice.project;
-    const shouldMarkComplete =
-      existingInvoice.status === "needs_review" &&
-      hasValue(nextCompany) &&
-      hasValue(nextProject);
     const canEditApprover =
       String(existingInvoice.origin ?? "").trim().toLowerCase() === "email" ||
       !hasValue(existingInvoice.approver_id);
@@ -212,6 +208,29 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
       approver_id: submittedApproverId,
       ...safeBody
     } = req.body;
+    const nextPaymentStatus =
+      req.body.payment_status ?? existingInvoice.payment_status;
+    const nextApproverId =
+      canEditApprover && submittedApproverId !== undefined
+        ? submittedApproverId
+        : existingInvoice.approver_id;
+
+    if (
+      !hasValue(nextCompany) ||
+      !hasValue(nextProject) ||
+      !hasValue(nextPaymentStatus) ||
+      !hasValue(nextApproverId)
+    ) {
+      return res.status(400).json({
+        error: "Missing required invoice fields",
+        details:
+          "Company, project, payment status, and approver are required to update an invoice.",
+      });
+    }
+    const shouldMarkComplete =
+      existingInvoice.status === "needs_review" &&
+      hasValue(nextCompany) &&
+      hasValue(nextProject);
 
     const invoice = await invoiceRepository.update(id, {
       ...safeBody,

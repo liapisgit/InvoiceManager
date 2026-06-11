@@ -121,6 +121,7 @@ i18n.use(initReactI18next).init({
           previewEmpty: "Δεν υπάρχει αρχείο για προεπισκόπηση.",
           previewHelper:
             "Όταν υπάρχει σύνδεσμος αρχείου στο τιμολόγιο, θα εμφανίζεται εδώ για έλεγχο δίπλα στα πεδία.",
+          approverLocked: "Ο υπεύθυνος έγκρισης δεν μπορεί να αλλάξει.",
         },
         invoice: {
           title: "Τιμολόγιο #{{index}}",
@@ -304,6 +305,7 @@ i18n.use(initReactI18next).init({
           previewEmpty: "No file is available to preview.",
           previewHelper:
             "When this invoice has a file link, it will appear here so you can review it beside the fields.",
+          approverLocked: "The approver cannot be changed.",
         },
         invoice: {
           title: "Invoice #{{index}}",

@@ -204,10 +204,20 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
       existingInvoice.status === "needs_review" &&
       hasValue(nextCompany) &&
       hasValue(nextProject);
-    const { approval_status: _ignoredApprovalStatus, ...safeBody } = req.body;
+    const canEditApprover =
+      String(existingInvoice.origin ?? "").trim().toLowerCase() === "email" ||
+      !hasValue(existingInvoice.approver_id);
+    const {
+      approval_status: _ignoredApprovalStatus,
+      approver_id: submittedApproverId,
+      ...safeBody
+    } = req.body;
 
     const invoice = await invoiceRepository.update(id, {
       ...safeBody,
+      ...(canEditApprover && submittedApproverId !== undefined
+        ? { approver_id: submittedApproverId }
+        : {}),
       ...(shouldMarkComplete ? { status: "complete" } : {}),
       createdBy: req.user!.user_id,
     });

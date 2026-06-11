@@ -35,6 +35,7 @@ const initialForm = {
   display_name: "",
   file_hash: "",
   file_upload_id: "",
+  origin: "",
   status: "",
   approval_status: "",
   approver_id: "",
@@ -152,15 +153,21 @@ export const getDefaultProjectForCompany = (company) =>
 const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
 const isMoney = (v) => /^[0-9]+([.,][0-9]{1,2})?$/.test(String(v ?? "").trim());
-const PARTIAL_UPDATE_IGNORED_FIELDS = new Set(["id", "file", "approval_status"]);
+const PARTIAL_UPDATE_IGNORED_FIELDS = new Set([
+  "id",
+  "file",
+  "origin",
+  "approval_status",
+]);
 
 const valuesMatch = (first, second) => {
   return String(first ?? "") === String(second ?? "");
 };
 
-const getChangedFields = (formData, originalData) => {
+const getChangedFields = (formData, originalData, { canEditApprover } = {}) => {
   return Object.keys(initialForm).reduce((changedFields, key) => {
     if (PARTIAL_UPDATE_IGNORED_FIELDS.has(key)) return changedFields;
+    if (key === "approver_id" && !canEditApprover) return changedFields;
     if (valuesMatch(formData[key], originalData[key])) return changedFields;
 
     return {
@@ -196,6 +203,14 @@ export default function InvoiceForm({
     [formData.company],
   );
   const isSelfProject = isSelfProjectCompany(formData.company);
+  const canEditApprover = useMemo(() => {
+    if (!allowPartialUpdate) return true;
+
+    return (
+      String(originalFormData.origin ?? "").trim().toLowerCase() === "email" ||
+      isEmpty(originalFormData.approver_id)
+    );
+  }, [allowPartialUpdate, originalFormData]);
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -269,8 +284,8 @@ export default function InvoiceForm({
 
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
   const changedFields = useMemo(
-    () => getChangedFields(formData, originalFormData),
-    [formData, originalFormData],
+    () => getChangedFields(formData, originalFormData, { canEditApprover }),
+    [canEditApprover, formData, originalFormData],
   );
   const isDirty = useMemo(
     () => Object.keys(changedFields).length > 0,
@@ -435,9 +450,16 @@ export default function InvoiceForm({
           onChange={(e) => setField("approver_id", e.target.value)}
           onBlur={() => markTouched("approver_id")}
           error={showError("approver_id") && !!errors.approver_id}
-          helperText={showError("approver_id") ? errors.approver_id : ""}
+          helperText={
+            showError("approver_id") && errors.approver_id
+              ? errors.approver_id
+              : !canEditApprover
+                ? t("invoiceEdit.approverLocked")
+                : ""
+          }
           select
           size="small"
+          disabled={!canEditApprover}
         >
           <MenuItem value="">
             <em>-</em>

@@ -153,6 +153,7 @@ export const getDefaultProjectForCompany = (company) =>
 const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
 const isMoney = (v) => /^[0-9]+([.,][0-9]{1,2})?$/.test(String(v ?? "").trim());
+const SELF_APPROVER_ID = "0";
 const PARTIAL_UPDATE_IGNORED_FIELDS = new Set([
   "id",
   "file",
@@ -463,6 +464,9 @@ export default function InvoiceForm({
         >
           <MenuItem value="">
             <em>-</em>
+          </MenuItem>
+          <MenuItem value={SELF_APPROVER_ID}>
+            {t("approvalStatus.selfApproval")}
           </MenuItem>
           {approverOptions.map((option) => (
             <MenuItem key={option.id} value={option.phone}>

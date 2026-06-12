@@ -242,7 +242,9 @@ export default function HomePage() {
     () =>
       invoices.filter(
         (invoice) =>
-          invoice.status !== "duplicate" && invoice.status !== "error",
+          invoice.status !== "duplicate" &&
+          invoice.status !== "error" &&
+          invoice.status !== "processing",
       ),
     [invoices],
   );

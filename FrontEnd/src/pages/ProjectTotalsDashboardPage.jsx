@@ -117,7 +117,9 @@ export default function ProjectTotalsDashboardPage() {
     () =>
       invoices.filter(
         (invoice) =>
-          invoice.status !== "duplicate" && invoice.status !== "error",
+          invoice.status !== "duplicate" &&
+          invoice.status !== "error" &&
+          invoice.status !== "processing",
       ),
     [invoices],
   );

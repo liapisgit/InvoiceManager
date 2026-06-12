@@ -66,8 +66,9 @@ export const invoiceRepository = {
   },
 
   async findByMark(mark: string) {
-    return dbClient.invoice.findUnique({
+    return dbClient.invoice.findFirst({
       where: { mark },
+      orderBy: { createdAt: "desc" },
     });
   },
 

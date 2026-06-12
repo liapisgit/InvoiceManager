@@ -25,7 +25,7 @@ model Invoice {
   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   document_type String?
   invoice_date DateTime? @db.Date
-  mark  String? @unique
+  mark  String?
   series  String?
   number  String?
   issuer_vat_number String?

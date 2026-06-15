@@ -25,6 +25,10 @@ const getStoredUserLabel = (user: {
 const hasValue = (value: unknown) => String(value ?? "").trim().length > 0;
 
 const SELF_APPROVER_ID = "0";
+const getApprovalStatusForApprover = (approverId: string | null | undefined) => {
+  if (!hasValue(approverId)) return "";
+  return approverId === SELF_APPROVER_ID ? "APPROVED" : "PENDING";
+};
 
 const withInvoiceLabels = async (invoiceOrInvoices: Invoice | Invoice[]) => {
   const invoices = Array.isArray(invoiceOrInvoices)
@@ -200,9 +204,7 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
 
     const nextCompany = req.body.company ?? existingInvoice.company;
     const nextProject = req.body.project ?? existingInvoice.project;
-    const canEditApprover =
-      String(existingInvoice.origin ?? "").trim().toLowerCase() === "email" ||
-      !hasValue(existingInvoice.approver_id);
+    const canEditApprover = !hasValue(existingInvoice.approver_id);
     const {
       approval_status: _ignoredApprovalStatus,
       approver_id: submittedApproverId,
@@ -214,6 +216,10 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
       canEditApprover && submittedApproverId !== undefined
         ? submittedApproverId
         : existingInvoice.approver_id;
+    const nextApprovalStatus =
+      canEditApprover && submittedApproverId !== undefined
+        ? getApprovalStatusForApprover(nextApproverId)
+        : "";
 
     if (
       !hasValue(nextCompany) ||
@@ -235,7 +241,10 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
     const invoice = await invoiceRepository.update(id, {
       ...safeBody,
       ...(canEditApprover && submittedApproverId !== undefined
-        ? { approver_id: submittedApproverId }
+        ? {
+            approver_id: submittedApproverId,
+            approval_status: nextApprovalStatus,
+          }
         : {}),
       ...(shouldMarkComplete ? { status: "complete" } : {}),
       createdBy: req.user!.user_id,

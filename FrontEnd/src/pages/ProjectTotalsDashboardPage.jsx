@@ -35,7 +35,9 @@ const getProjectKey = (project) =>
   isPresent(project) ? String(project).trim() : UNASSIGNED_PROJECT_FILTER;
 
 const getProjectLabel = (projectKey, t) =>
-  projectKey === UNASSIGNED_PROJECT_FILTER ? t("dashboard.none") : projectKey;
+  projectKey === UNASSIGNED_PROJECT_FILTER
+    ? t("projectTotals.unassignedProject")
+    : projectKey;
 
 const getNumericAmount = (value) => {
   const amount = Number(value);

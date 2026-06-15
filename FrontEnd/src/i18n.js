@@ -91,6 +91,7 @@ i18n.use(initReactI18next).init({
           invoiceCountWithValue_one: "{{count}} τιμολόγιο",
           invoiceCountWithValue_other: "{{count}} τιμολόγια",
           percentage: "{{percentage}}% του συνόλου",
+          unassignedProject: "ΧΩΡΙΣ ΚΕΝΤΡΟ ΚΟΣΤΟΥΣ",
         },
         upload: {
           title: "Νέο τιμολόγιο",
@@ -278,6 +279,7 @@ i18n.use(initReactI18next).init({
           invoiceCountWithValue_one: "{{count}} invoice",
           invoiceCountWithValue_other: "{{count}} invoices",
           percentage: "{{percentage}}% of total",
+          unassignedProject: "NO COST CENTER",
         },
         upload: {
           title: "New invoice",

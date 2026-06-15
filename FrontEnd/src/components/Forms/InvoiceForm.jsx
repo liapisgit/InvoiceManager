@@ -206,12 +206,28 @@ export default function InvoiceForm({
   const isSelfProject = isSelfProjectCompany(formData.company);
   const canEditApprover = useMemo(() => {
     if (!allowPartialUpdate) return true;
-
-    return (
-      String(originalFormData.origin ?? "").trim().toLowerCase() === "email" ||
-      isEmpty(originalFormData.approver_id)
-    );
+    
+    return isEmpty(originalFormData.approver_id);
   }, [allowPartialUpdate, originalFormData]);
+  const approverDisplayLabel = useMemo(() => {
+    if (isEmpty(formData.approver_id)) return "";
+
+    const apiLabel = String(externalData?.approverLabel ?? "").trim();
+    if (apiLabel) return apiLabel;
+
+    if (formData.approver_id === SELF_APPROVER_ID) {
+      return (
+        String(externalData?.createdByLabel ?? "").trim() ||
+        t("approvalStatus.selfApproval")
+      );
+    }
+
+    const matchingApprover = approverOptions.find(
+      (option) => String(option.phone ?? "") === String(formData.approver_id),
+    );
+
+    return matchingApprover?.label || String(formData.approver_id);
+  }, [approverOptions, externalData, formData.approver_id, t]);
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -453,36 +469,51 @@ export default function InvoiceForm({
             </MenuItem>
           </TextField>
         ) : null}
-        <TextField
-          label={t("fields.approver_id")}
-          value={formData.approver_id}
-          onChange={(e) => setField("approver_id", e.target.value)}
-          onBlur={() => markTouched("approver_id")}
-          error={showError("approver_id") && !!errors.approver_id}
-          helperText={
-            showError("approver_id") && errors.approver_id
-              ? errors.approver_id
-              : !canEditApprover
-                ? t("invoiceEdit.approverLocked")
-                : ""
-          }
-          select
-          size="small"
-          disabled={!canEditApprover}
-          required
-        >
-          <MenuItem value="">
-            <em>-</em>
-          </MenuItem>
-          <MenuItem value={SELF_APPROVER_ID}>
-            {t("approvalStatus.selfApproval")}
-          </MenuItem>
-          {approverOptions.map((option) => (
-            <MenuItem key={option.id} value={option.phone}>
-              {option.label}
+        {!canEditApprover ? (
+          <TextField
+            label={t("fields.approver_id")}
+            value={formData.approver_id}
+            onBlur={() => markTouched("approver_id")}
+            error={showError("approver_id") && !!errors.approver_id}
+            helperText={
+              showError("approver_id") && errors.approver_id
+                ? errors.approver_id
+                : t("invoiceEdit.approverLocked")
+            }
+            select
+            size="small"
+            disabled
+            required
+          >
+            <MenuItem value={formData.approver_id}>
+              {approverDisplayLabel || "-"}
             </MenuItem>
-          ))}
-        </TextField>
+          </TextField>
+        ) : (
+          <TextField
+            label={t("fields.approver_id")}
+            value={formData.approver_id}
+            onChange={(e) => setField("approver_id", e.target.value)}
+            onBlur={() => markTouched("approver_id")}
+            error={showError("approver_id") && !!errors.approver_id}
+            helperText={showError("approver_id") ? errors.approver_id : ""}
+            select
+            size="small"
+            required
+          >
+            <MenuItem value="">
+              <em>-</em>
+            </MenuItem>
+            <MenuItem value={SELF_APPROVER_ID}>
+              {t("approvalStatus.selfApproval")}
+            </MenuItem>
+            {approverOptions.map((option) => (
+              <MenuItem key={option.id} value={option.phone}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
       </Box>
       <Box className="invoice-card__grid">
         <TextField

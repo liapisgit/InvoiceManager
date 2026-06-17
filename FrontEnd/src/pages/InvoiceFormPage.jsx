@@ -49,6 +49,7 @@ const initialUploadForm = {
   approval_status: "",
   approver_id: "",
 };
+const PERSONAL_COMPANY = "PERSONAL";
 const SELF_APPROVER_VALUE = "__self__";
 const getApprovalStatusForApprover = (approverId) => {
   if (!approverId) return "";
@@ -89,6 +90,7 @@ export default function InvoiceFormPage() {
     [uploadForm.company],
   );
   const isUploadSelfProject = isSelfProjectCompany(uploadForm.company);
+  const isUploadPersonalCompany = uploadForm.company === PERSONAL_COMPANY;
   const isUploadValid = Boolean(
     uploadForm.file &&
       uploadForm.company &&
@@ -156,16 +158,36 @@ export default function InvoiceFormPage() {
   }, [editPreviewInvoice, t]);
 
   const setUploadField = (field, value) => {
-    setUploadForm((prev) => ({
-      ...prev,
-      [field]: value,
-      ...(field === "company"
-        ? { project: getDefaultProjectForCompany(value) }
-        : {}),
-      ...(field === "approver_id"
-        ? { approval_status: getApprovalStatusForApprover(value) }
-        : {}),
-    }));
+    setUploadForm((prev) => {
+      const next = {
+        ...prev,
+        [field]: value,
+      };
+
+      if (field === "company") {
+        const isPersonalCompany = value === PERSONAL_COMPANY;
+        const wasPersonalCompany = prev.company === PERSONAL_COMPANY;
+
+        next.project = getDefaultProjectForCompany(value);
+
+        if (isPersonalCompany) {
+          next.approver_id = SELF_APPROVER_VALUE;
+          next.approval_status = getApprovalStatusForApprover(SELF_APPROVER_VALUE);
+        } else if (
+          wasPersonalCompany &&
+          prev.approver_id === SELF_APPROVER_VALUE
+        ) {
+          next.approver_id = "";
+          next.approval_status = "";
+        }
+      }
+
+      if (field === "approver_id") {
+        next.approval_status = getApprovalStatusForApprover(value);
+      }
+
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -590,6 +612,7 @@ export default function InvoiceFormPage() {
                     }
                     select
                     size="small"
+                    disabled={isUploadPersonalCompany}
                     required
                   >
                     <MenuItem value="">

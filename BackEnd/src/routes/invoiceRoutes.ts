@@ -120,7 +120,7 @@ const triggerInvoiceDataWebhook = async (invoice: Invoice, user: AuthPayload) =>
   }
 };
 
-const triggerDeleteDuplicateWebhook = async (id: string) => {
+const triggerDeleteDuplicateWebhook = async (invoice: Invoice) => {
   const deleteDuplicatesWebhookUrl = requireEnv(
     config.n8nDeleteDuplicatesWebhookUrl?.trim(),
     "N8N_DELETE_DUPLICATES_WEBHOOK_URL",
@@ -128,7 +128,11 @@ const triggerDeleteDuplicateWebhook = async (id: string) => {
 
   await axios.post(
     deleteDuplicatesWebhookUrl,
-    { id },
+    {
+      id: invoice.id,
+      file_url: invoice.file_url ?? null,
+      file_upload_id: invoice.file_upload_id ?? null,
+    },
     { headers: { "Content-Type": "application/json" } },
   );
 };
@@ -287,7 +291,7 @@ invoiceRouter.delete("/:id", async (req, res) => {
       return res.status(404).json({ error: "Invoice not found" });
     }
 
-    await triggerDeleteDuplicateWebhook(id);
+    await triggerDeleteDuplicateWebhook(existingInvoice);
     await invoiceRepository.delete(id);
     res.status(204).send();
   } catch (error: any) {

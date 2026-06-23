@@ -7,7 +7,7 @@ import {
 } from "../schemas/invoiceSchemas";
 import { invoiceRepository } from "../repositories/invoiceRepository";
 import { userRepository } from "../repositories/userRepository";
-import { config } from "../config/env";
+import { config, requireEnv } from "../config/env";
 import type { Invoice } from "../generated/prisma/client";
 import type { AuthPayload } from "../types/express";
 
@@ -118,6 +118,19 @@ const triggerInvoiceDataWebhook = async (invoice: Invoice, user: AuthPayload) =>
   } catch (n8nErr) {
     console.error("n8n invoice-data webhook failed:", n8nErr);
   }
+};
+
+const triggerDeleteDuplicateWebhook = async (id: string) => {
+  const deleteDuplicatesWebhookUrl = requireEnv(
+    config.n8nDeleteDuplicatesWebhookUrl?.trim(),
+    "N8N_DELETE_DUPLICATES_WEBHOOK_URL",
+  );
+
+  await axios.post(
+    deleteDuplicatesWebhookUrl,
+    { id },
+    { headers: { "Content-Type": "application/json" } },
+  );
 };
 
 // Create a new invoice
@@ -264,10 +277,25 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
 // Delete invoice
 invoiceRouter.delete("/:id", async (req, res) => {
   try {
-    await invoiceRepository.delete(req.params.id);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: "Invoice id is required" });
+    }
+
+    const existingInvoice = await invoiceRepository.findById(id);
+    if (!existingInvoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    await triggerDeleteDuplicateWebhook(id);
+    await invoiceRepository.delete(id);
     res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error: "Failed to delete invoice" });
+  } catch (error: any) {
+    console.error("Error deleting invoice:", error);
+    res.status(500).json({
+      error: "Failed to delete invoice",
+      details: error?.message || "Unknown error",
+    });
   }
 });
 

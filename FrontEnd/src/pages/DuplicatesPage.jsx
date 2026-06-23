@@ -12,14 +12,11 @@ import {
   DialogContentText,
   DialogTitle,
   Paper,
-  Radio,
   Snackbar,
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
@@ -120,7 +117,6 @@ export default function DuplicatesPage() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState([]);
-  const [keepByMark, setKeepByMark] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -160,21 +156,6 @@ export default function DuplicatesPage() {
   useEffect(() => {
     loadInvoices();
   }, [loadInvoices]);
-
-  useEffect(() => {
-    setKeepByMark((current) => {
-      const next = {};
-      duplicateGroups.forEach((group) => {
-        const existingKeeper = current[group.mark];
-        next[group.mark] = group.invoices.some(
-          (invoice) => invoice.id === existingKeeper,
-        )
-          ? existingKeeper
-          : group.invoices[0]?.id || "";
-      });
-      return next;
-    });
-  }, [duplicateGroups]);
 
   const handleLogout = () => {
     clearToken();
@@ -376,7 +357,6 @@ export default function DuplicatesPage() {
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {group.invoices.map((invoice, index) => {
-                    const isKeeper = keepByMark[group.mark] === invoice.id;
                     const visibleFields = DETAIL_FIELDS.filter((field) =>
                       isPresent(invoice[field]),
                     );
@@ -388,9 +368,7 @@ export default function DuplicatesPage() {
                         sx={{
                           p: 2,
                           borderRadius: 3,
-                          border: isKeeper
-                            ? "1px solid #51af8b"
-                            : "1px solid #e5e7eb",
+                          border: "1px solid #e5e7eb",
                           backgroundColor: "#fff",
                         }}
                       >
@@ -405,18 +383,6 @@ export default function DuplicatesPage() {
                           }}
                         >
                           <Box sx={{ display: "flex", gap: 1.5 }}>
-                            <Radio
-                              checked={isKeeper}
-                              onChange={() =>
-                                setKeepByMark((current) => ({
-                                  ...current,
-                                  [group.mark]: invoice.id,
-                                }))
-                              }
-                              inputProps={{
-                                "aria-label": t("duplicates.keepRecord"),
-                              }}
-                            />
                             <Box>
                               <Typography variant="subtitle1">
                                 {index + 1}. {getInvoiceIdentifier(invoice, t)}
@@ -434,37 +400,14 @@ export default function DuplicatesPage() {
 
                           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             <Button
-                              variant={isKeeper ? "contained" : "outlined"}
-                              size="small"
-                              startIcon={<CheckCircleIcon />}
-                              onClick={() =>
-                                setKeepByMark((current) => ({
-                                  ...current,
-                                  [group.mark]: invoice.id,
-                                }))
-                              }
-                            >
-                              {t("duplicates.keepRecord")}
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<EditIcon />}
-                              onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
-                            >
-                              {t("dashboard.updateInvoice")}
-                            </Button>
-                            <Button
                               variant="outlined"
                               color="error"
                               size="small"
                               startIcon={<DeleteIcon />}
-                              disabled={isKeeper || isDeleting}
+                              disabled={isDeleting}
                               onClick={() => setDeleteTarget({ invoice, mark: group.mark })}
                             >
-                              {isKeeper
-                                ? t("duplicates.keepingRecord")
-                                : t("duplicates.deleteRecord")}
+                              {t("duplicates.deleteRecord")}
                             </Button>
                           </Box>
                         </Box>
@@ -541,7 +484,7 @@ export default function DuplicatesPage() {
               variant="contained"
               disabled={isDeleting}
             >
-              {t("duplicates.deleteRecord")}
+              {t("duplicates.confirmDelete")}
             </Button>
           </DialogActions>
         </Dialog>

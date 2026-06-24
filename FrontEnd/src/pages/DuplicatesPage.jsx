@@ -45,6 +45,8 @@ const isPresent = (value) => {
 
 const normalizeMark = (mark) => String(mark ?? "").trim();
 
+const normalizeDisplayName = (displayName) => String(displayName ?? "").trim();
+
 const formatPaymentStatus = (paymentStatus, t) => {
   const labelKeys = {
     Paid: "paymentState.paid",
@@ -92,25 +94,38 @@ const getCreatedTimestamp = (invoice) => {
 };
 
 const buildDuplicateGroups = (invoices) => {
-  const groupsByMark = invoices.reduce((groups, invoice) => {
+  const groupsByDuplicateKey = invoices.reduce((groups, invoice) => {
     const mark = normalizeMark(invoice.mark);
-    if (!mark) return groups;
+    const displayName = normalizeDisplayName(invoice.display_name);
+    const duplicateKey = mark || displayName;
+    if (!duplicateKey) return groups;
 
-    const group = groups.get(mark) ?? [];
-    group.push(invoice);
-    groups.set(mark, group);
+    const duplicateField = mark ? "mark" : "display_name";
+    const groupKey = `${duplicateField}:${duplicateKey}`;
+
+    const group = groups.get(groupKey) ?? {
+      type: duplicateField,
+      value: duplicateKey,
+      invoices: [],
+    };
+    group.invoices.push(invoice);
+    groups.set(groupKey, group);
     return groups;
   }, new Map());
 
-  return [...groupsByMark.entries()]
-    .filter(([, groupInvoices]) => groupInvoices.length > 1)
-    .map(([mark, groupInvoices]) => ({
-      mark,
-      invoices: [...groupInvoices].sort(
+  return [...groupsByDuplicateKey.values()]
+    .filter((group) => group.invoices.length > 1)
+    .map((group) => ({
+      ...group,
+      key: `${group.type}:${group.value}`,
+      invoices: [...group.invoices].sort(
         (first, second) => getCreatedTimestamp(second) - getCreatedTimestamp(first),
       ),
     }))
-    .sort((first, second) => first.mark.localeCompare(second.mark));
+    .sort(
+      (first, second) =>
+        first.type.localeCompare(second.type) || first.value.localeCompare(second.value),
+    );
 };
 
 export default function DuplicatesPage() {
@@ -320,7 +335,7 @@ export default function DuplicatesPage() {
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {duplicateGroups.map((group) => (
               <Paper
-                key={group.mark}
+                key={group.key}
                 elevation={0}
                 sx={{
                   p: 3,
@@ -341,10 +356,16 @@ export default function DuplicatesPage() {
                 >
                   <Box>
                     <Typography variant="h6">
-                      {t("duplicates.markTitle", { mark: group.mark })}
+                      {group.type === "mark"
+                        ? t("duplicates.markTitle", { mark: group.value })
+                        : t("duplicates.displayNameTitle", {
+                            displayName: group.value,
+                          })}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {t("duplicates.groupHelp")}
+                      {group.type === "mark"
+                        ? t("duplicates.groupHelp")
+                        : t("duplicates.displayNameGroupHelp")}
                     </Typography>
                   </Box>
                   <Chip
@@ -405,7 +426,13 @@ export default function DuplicatesPage() {
                               size="small"
                               startIcon={<DeleteIcon />}
                               disabled={isDeleting}
-                              onClick={() => setDeleteTarget({ invoice, mark: group.mark })}
+                              onClick={() =>
+                                setDeleteTarget({
+                                  invoice,
+                                  groupType: group.type,
+                                  groupValue: group.value,
+                                })
+                              }
                             >
                               {t("duplicates.deleteRecord")}
                             </Button>
@@ -467,10 +494,15 @@ export default function DuplicatesPage() {
           <DialogContent>
             <DialogContentText>
               {deleteTarget
-                ? t("duplicates.deletePrompt", {
-                    invoice: getInvoiceIdentifier(deleteTarget.invoice, t),
-                    mark: deleteTarget.mark,
-                  })
+                ? deleteTarget.groupType === "mark"
+                  ? t("duplicates.deletePrompt", {
+                      invoice: getInvoiceIdentifier(deleteTarget.invoice, t),
+                      mark: deleteTarget.groupValue,
+                    })
+                  : t("duplicates.deleteDisplayNamePrompt", {
+                      invoice: getInvoiceIdentifier(deleteTarget.invoice, t),
+                      displayName: deleteTarget.groupValue,
+                    })
                 : ""}
             </DialogContentText>
           </DialogContent>

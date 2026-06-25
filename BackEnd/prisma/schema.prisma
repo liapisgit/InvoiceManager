@@ -65,7 +65,7 @@ model Invoice {
 model CompanyVatRegistry {
   vat_number   String   @id
   company_name String
-  issuer_company Boolean   @default(false)
+  is_issuer    Boolean  @default(false)
   source       String?  @default("auto")
   created_at   DateTime? @default(now())
   updated_at   DateTime? @default(now())

@@ -84,8 +84,7 @@ const withInvoiceLabels = async (invoiceOrInvoices: Invoice | Invoice[]) => {
 };
 
 const buildInvoiceWebhookPayload = (invoice: Invoice) => {
-  const { id, createdAt, lastUpdatedAt, ...invoicePayload } = invoice;
-  return JSON.parse(JSON.stringify(invoicePayload));
+  return JSON.parse(JSON.stringify(invoice));
 };
 
 const getApproverLabelForWebhook = async (

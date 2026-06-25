@@ -95,6 +95,7 @@ export const COMPANY_PROJECT_OPTIONS = {
     "STORAGE",
     "OPERATION",
     "MARKETING",
+    "SEMELIDIS",
   ],
   "THE OLON DEVELOPMENTS": [
     "ALAMANAS, VOULA",
@@ -115,6 +116,7 @@ export const COMPANY_PROJECT_OPTIONS = {
     "OFFICE EXPENDABLES",
     "STORAGE",
     "CLIENT LEADS",
+    "SEMELIDIS",
   ],
   "SEMELIDIS": [
     "FLEMING, VARI",

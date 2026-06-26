@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Chip,
   CircularProgress,
   Container,
-  MenuItem,
   Paper,
   TextField,
   Tooltip,
@@ -47,6 +47,18 @@ const isPresent = (value) => {
   if (typeof value === "boolean") return true;
   return String(value ?? "").trim().length > 0;
 };
+
+const normalizeSearchValue = (value) => String(value ?? "").trim().toLowerCase();
+const matchesTextFilter = (value, filter) => {
+  const normalizedFilter = normalizeSearchValue(filter);
+  if (!normalizedFilter) return true;
+
+  return normalizeSearchValue(value).includes(normalizedFilter);
+};
+const getSearchOptionValue = (option) =>
+  typeof option === "string" ? option : option?.value || "";
+const getSearchOptionLabel = (option) =>
+  typeof option === "string" ? option : option?.label || "";
 
 const UNASSIGNED_PROJECT_FILTER = "__UNASSIGNED__";
 const PAYMENT_STATUS_LABEL_KEYS = {
@@ -181,6 +193,8 @@ export default function HomePage() {
   const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState([]);
   const [filters, setFilters] = useState({
+    number: "",
+    issuer_name: "",
     recipient_name: "",
     project: "",
     invoice_date: getCurrentMonthFilter(),
@@ -259,6 +273,8 @@ export default function HomePage() {
       ].sort((first, second) => String(first).localeCompare(String(second)));
 
     return {
+      numbers: uniqueValues("number"),
+      issuers: uniqueValues("issuer_name"),
       recipients: uniqueValues("recipient_name"),
       projects: uniqueValues("project"),
       users: [
@@ -273,21 +289,21 @@ export default function HomePage() {
 
   const filteredInvoices = useMemo(() => {
     return dashboardInvoices.filter((invoice) => {
-      if (
-        filters.recipient_name &&
-        invoice.recipient_name !== filters.recipient_name
-      ) {
+      if (!matchesTextFilter(invoice.number, filters.number)) {
+        return false;
+      }
+      if (!matchesTextFilter(invoice.issuer_name, filters.issuer_name)) {
+        return false;
+      }
+      if (!matchesTextFilter(invoice.recipient_name, filters.recipient_name)) {
         return false;
       }
       if (filters.project === UNASSIGNED_PROJECT_FILTER) {
         if (isPresent(invoice.project)) return false;
-      } else if (filters.project && invoice.project !== filters.project) {
+      } else if (!matchesTextFilter(invoice.project, filters.project)) {
         return false;
       }
-      if (
-        filters.user &&
-        (invoice.createdByLabel || invoice.createdBy) !== filters.user
-      ) {
+      if (!matchesTextFilter(invoice.createdByLabel || invoice.createdBy, filters.user)) {
         return false;
       }
       if (
@@ -311,6 +327,40 @@ export default function HomePage() {
       setSelectedPreviewInvoice(null);
     }
   }, [filteredInvoices, selectedPreviewInvoice]);
+
+  const renderSearchFilter = ({ label, value, options, onChange }) => {
+    const optionList = options || [];
+    const displayValue =
+      value === UNASSIGNED_PROJECT_FILTER ? t("dashboard.none") : value;
+
+    return (
+      <Autocomplete
+        freeSolo
+        options={optionList}
+        value={value || null}
+        inputValue={displayValue}
+        onInputChange={(_, nextValue, reason) => {
+          if (reason === "reset") return;
+          onChange(nextValue);
+        }}
+        onChange={(_, nextValue) => {
+          onChange(getSearchOptionValue(nextValue));
+        }}
+        getOptionLabel={getSearchOptionLabel}
+        isOptionEqualToValue={(option, selectedValue) =>
+          getSearchOptionValue(option) === getSearchOptionValue(selectedValue)
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={label}
+            placeholder={t("dashboard.all")}
+            size="small"
+          />
+        )}
+      />
+    );
+  };
 
   return (
     <>
@@ -426,60 +476,43 @@ export default function HomePage() {
               gap: 2,
             }}
           >
-            <TextField
-              label={t("fields.recipient_name")}
-              value={filters.recipient_name}
-              onChange={(event) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  recipient_name: event.target.value,
-                }))
-              }
-              select
-              size="small"
-            >
-              <MenuItem value="">{t("dashboard.all")}</MenuItem>
-              {filterOptions.recipients.map((recipient) => (
-                <MenuItem key={recipient} value={recipient}>
-                  {recipient}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label={t("fields.project")}
-              value={filters.project}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, project: event.target.value }))
-              }
-              select
-              size="small"
-            >
-              <MenuItem value="">{t("dashboard.all")}</MenuItem>
-              <MenuItem value={UNASSIGNED_PROJECT_FILTER}>
-                {t("dashboard.none")}
-              </MenuItem>
-              {filterOptions.projects.map((project) => (
-                <MenuItem key={project} value={project}>
-                  {project}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label={t("dashboard.userFilter")}
-              value={filters.user}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, user: event.target.value }))
-              }
-              select
-              size="small"
-            >
-              <MenuItem value="">{t("dashboard.all")}</MenuItem>
-              {filterOptions.users.map((user) => (
-                <MenuItem key={user} value={user}>
-                  {user}
-                </MenuItem>
-              ))}
-            </TextField>
+            {renderSearchFilter({
+              label: t("fields.number"),
+              value: filters.number,
+              options: filterOptions.numbers,
+              onChange: (number) =>
+                setFilters((prev) => ({ ...prev, number })),
+            })}
+            {renderSearchFilter({
+              label: t("fields.issuer_name"),
+              value: filters.issuer_name,
+              options: filterOptions.issuers,
+              onChange: (issuer_name) =>
+                setFilters((prev) => ({ ...prev, issuer_name })),
+            })}
+            {renderSearchFilter({
+              label: t("fields.recipient_name"),
+              value: filters.recipient_name,
+              options: filterOptions.recipients,
+              onChange: (recipient_name) =>
+                setFilters((prev) => ({ ...prev, recipient_name })),
+            })}
+            {renderSearchFilter({
+              label: t("fields.project"),
+              value: filters.project,
+              options: [
+                { value: UNASSIGNED_PROJECT_FILTER, label: t("dashboard.none") },
+                ...filterOptions.projects,
+              ],
+              onChange: (project) =>
+                setFilters((prev) => ({ ...prev, project })),
+            })}
+            {renderSearchFilter({
+              label: t("dashboard.userFilter"),
+              value: filters.user,
+              options: filterOptions.users,
+              onChange: (user) => setFilters((prev) => ({ ...prev, user })),
+            })}
             <TextField
               label={t("fields.invoice_date")}
               value={filters.invoice_date}
@@ -500,6 +533,8 @@ export default function HomePage() {
               variant="text"
               onClick={() =>
                 setFilters({
+                  number: "",
+                  issuer_name: "",
                   recipient_name: "",
                   project: "",
                   invoice_date: "",

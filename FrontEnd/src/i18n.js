@@ -42,7 +42,7 @@ i18n.use(initReactI18next).init({
         dashboard: {
           title: "Dashboard τιμολογίων",
           subtitle:
-            "Δες τα τιμολόγια και φιλτράρισέ τα ανά αποδέκτη, έργο, χρήστη ή ημερομηνία.",
+            "Δες τα τιμολόγια και φιλτράρισέ τα ανά αριθμό, εκδότη, αποδέκτη, έργο, χρήστη ή ημερομηνία.",
           results: "{{count}} από {{total}} τιμολόγια",
           costCenter: "ΚΕΝΤΡΟ ΚΟΣΤΟΥΣ",
           previewSelected: "Εμφανίζεται στην προεπισκόπηση",
@@ -262,7 +262,7 @@ i18n.use(initReactI18next).init({
         dashboard: {
           title: "Invoice dashboard",
           subtitle:
-            "View invoices and filter them by recipient, project, user, or invoice date.",
+            "View invoices and filter them by number, issuer, recipient, project, user, or invoice date.",
           results: "{{count}} of {{total}} invoices",
           costCenter: "Cost Center",
           previewSelected: "Shown in preview",

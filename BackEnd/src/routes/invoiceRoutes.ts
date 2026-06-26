@@ -24,6 +24,24 @@ const getStoredUserLabel = (user: {
 
 const hasValue = (value: unknown) => String(value ?? "").trim().length > 0;
 
+const DISPLAY_NAME_FIELDS = ["invoice_date", "issuer_name", "number"] as const;
+const getInvoiceDateDisplayPart = (value: unknown) => {
+  if (!value) return "";
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+
+  return String(value).slice(0, 10);
+};
+const buildInvoiceDisplayName = (invoice: {
+  invoice_date?: unknown;
+  issuer_name?: unknown;
+  number?: unknown;
+}) =>
+  [
+    getInvoiceDateDisplayPart(invoice.invoice_date),
+    String(invoice.issuer_name ?? "").trim(),
+    String(invoice.number ?? "").trim(),
+  ].join("_");
+
 const SELF_APPROVER_ID = "0";
 const getApprovalStatusForApprover = (approverId: string | null | undefined) => {
   if (!hasValue(approverId)) return "";
@@ -253,9 +271,26 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
       existingInvoice.status === "needs_review" &&
       hasValue(nextCompany) &&
       hasValue(nextProject);
+    const shouldUpdateDisplayName = DISPLAY_NAME_FIELDS.some(
+      (field) => Object.prototype.hasOwnProperty.call(safeBody, field),
+    );
+    const getNextDisplayNameField = (
+      field: (typeof DISPLAY_NAME_FIELDS)[number],
+    ) =>
+      Object.prototype.hasOwnProperty.call(safeBody, field)
+        ? safeBody[field]
+        : existingInvoice[field];
+    const nextDisplayName = shouldUpdateDisplayName
+      ? buildInvoiceDisplayName({
+          invoice_date: getNextDisplayNameField("invoice_date"),
+          issuer_name: getNextDisplayNameField("issuer_name"),
+          number: getNextDisplayNameField("number"),
+        })
+      : undefined;
 
     const invoice = await invoiceRepository.update(id, {
       ...safeBody,
+      ...(nextDisplayName !== undefined ? { display_name: nextDisplayName } : {}),
       ...(canEditApprover && submittedApproverId !== undefined
         ? {
             approver_id: submittedApproverId,

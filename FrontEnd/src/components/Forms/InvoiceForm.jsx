@@ -208,7 +208,7 @@ export default function InvoiceForm({
   const isSelfProject = isSelfProjectCompany(formData.company);
   const canEditApprover = useMemo(() => {
     if (!allowPartialUpdate) return true;
-    
+
     return isEmpty(originalFormData.approver_id);
   }, [allowPartialUpdate, originalFormData]);
   const approverDisplayLabel = useMemo(() => {
@@ -260,46 +260,51 @@ export default function InvoiceForm({
         e.issuer_vat_number = t("validation.required");
     }
 
-    // Optional fields still need valid formats when they are filled.
-    if (!isEmpty(formData.number) && !isNumeric(formData.number))
-      e.number = t("validation.numbersOnly");
-    if (!isEmpty(formData.issuer_vat_number) && !isNumeric(formData.issuer_vat_number))
-      e.issuer_vat_number = t("validation.numbersOnly");
-    else if (
-      !isEmpty(formData.issuer_vat_number) &&
-      String(formData.issuer_vat_number).trim().length !== 9
-    )
-      e.issuer_vat_number = t("validation.afmLength");
-    if (!isEmpty(formData.mark) && !isNumeric(formData.mark))
-      e.mark = t("validation.numbersOnly");
-    if (!isEmpty(formData.series) && !isNumeric(formData.series))
-      e.series = t("validation.numbersOnly");
-    if (
-      !isEmpty(formData.recipient_vat_number) &&
-      !isNumeric(formData.recipient_vat_number)
-    )
-      e.recipient_vat_number = t("validation.numbersOnly");
-    if (
-      !isEmpty(formData.value_before_discount) &&
-      !isMoney(formData.value_before_discount)
-    )
-      e.value_before_discount = t("validation.money");
-    if (
-      !isEmpty(formData.discount_amount) &&
-      !isMoney(formData.discount_amount)
-    )
-      e.discount_amount = t("validation.money");
-    if (!isEmpty(formData.net_amount) && !isMoney(formData.net_amount))
-      e.net_amount = t("validation.money");
-    if (!isEmpty(formData.vat_amount) && !isMoney(formData.vat_amount))
-      e.vat_amount = t("validation.money");
-    if (
-      !isEmpty(formData.withholding_amount) &&
-      !isMoney(formData.withholding_amount)
-    )
-      e.withholding_amount = t("validation.money");
-    if (!isEmpty(formData.total_amount) && !isMoney(formData.total_amount))
-      e.total_amount = t("validation.money");
+    if (!allowPartialUpdate) {
+      // Optional fields still need valid formats when they are filled.
+      if (!isEmpty(formData.number) && !isNumeric(formData.number))
+        e.number = t("validation.numbersOnly");
+      if (
+        !isEmpty(formData.issuer_vat_number) &&
+        !isNumeric(formData.issuer_vat_number)
+      )
+        e.issuer_vat_number = t("validation.numbersOnly");
+      else if (
+        !isEmpty(formData.issuer_vat_number) &&
+        String(formData.issuer_vat_number).trim().length !== 9
+      )
+        e.issuer_vat_number = t("validation.afmLength");
+      if (!isEmpty(formData.mark) && !isNumeric(formData.mark))
+        e.mark = t("validation.numbersOnly");
+      if (!isEmpty(formData.series) && !isNumeric(formData.series))
+        e.series = t("validation.numbersOnly");
+      if (
+        !isEmpty(formData.recipient_vat_number) &&
+        !isNumeric(formData.recipient_vat_number)
+      )
+        e.recipient_vat_number = t("validation.numbersOnly");
+      if (
+        !isEmpty(formData.value_before_discount) &&
+        !isMoney(formData.value_before_discount)
+      )
+        e.value_before_discount = t("validation.money");
+      if (
+        !isEmpty(formData.discount_amount) &&
+        !isMoney(formData.discount_amount)
+      )
+        e.discount_amount = t("validation.money");
+      if (!isEmpty(formData.net_amount) && !isMoney(formData.net_amount))
+        e.net_amount = t("validation.money");
+      if (!isEmpty(formData.vat_amount) && !isMoney(formData.vat_amount))
+        e.vat_amount = t("validation.money");
+      if (
+        !isEmpty(formData.withholding_amount) &&
+        !isMoney(formData.withholding_amount)
+      )
+        e.withholding_amount = t("validation.money");
+      if (!isEmpty(formData.total_amount) && !isMoney(formData.total_amount))
+        e.total_amount = t("validation.money");
+    }
     return e;
   }, [allowPartialUpdate, formData, t]);
 

@@ -25,6 +25,24 @@ const getStoredUserLabel = (user: {
 const hasValue = (value: unknown) => String(value ?? "").trim().length > 0;
 
 const DISPLAY_NAME_FIELDS = ["invoice_date", "issuer_name", "number"] as const;
+const COMPANY_VAT_REGISTRY_FIELDS = [
+  {
+    nameField: "issuer_name",
+    vatField: "issuer_vat_number",
+    is_issuer: true,
+  },
+  {
+    nameField: "recipient_name",
+    vatField: "recipient_vat_number",
+    is_issuer: false,
+  },
+] as const;
+
+const hasOwn = (data: object, field: PropertyKey) =>
+  Object.prototype.hasOwnProperty.call(data, field);
+
+const toTrimmedString = (value: unknown) => String(value ?? "").trim();
+
 const getInvoiceDateDisplayPart = (value: unknown) => {
   if (!value) return "";
   if (value instanceof Date) return value.toISOString().slice(0, 10);
@@ -41,6 +59,45 @@ const buildInvoiceDisplayName = (invoice: {
     String(invoice.issuer_name ?? "").trim(),
     String(invoice.number ?? "").trim(),
   ].join("_");
+
+const buildCompanyVatRegistryEntries = (
+  submittedInvoice: Record<string, unknown>,
+  existingInvoice: Invoice,
+) => {
+  const entries = new Map<
+    string,
+    { vat_number: string; company_name: string; is_issuer: boolean }
+  >();
+
+  for (const { nameField, vatField, is_issuer } of COMPANY_VAT_REGISTRY_FIELDS) {
+    const shouldUpdateRegistry =
+      hasOwn(submittedInvoice, nameField) || hasOwn(submittedInvoice, vatField);
+
+    if (!shouldUpdateRegistry) continue;
+
+    const companyName = toTrimmedString(
+      hasOwn(submittedInvoice, nameField)
+        ? submittedInvoice[nameField]
+        : existingInvoice[nameField],
+    );
+    const vatNumber = toTrimmedString(
+      hasOwn(submittedInvoice, vatField)
+        ? submittedInvoice[vatField]
+        : existingInvoice[vatField],
+    );
+
+    if (!companyName || !vatNumber) continue;
+
+    const existingEntry = entries.get(vatNumber);
+    entries.set(vatNumber, {
+      vat_number: vatNumber,
+      company_name: companyName,
+      is_issuer: existingEntry?.is_issuer || is_issuer,
+    });
+  }
+
+  return [...entries.values()];
+};
 
 const SELF_APPROVER_ID = "0";
 const getApprovalStatusForApprover = (approverId: string | null | undefined) => {
@@ -288,7 +345,7 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
         })
       : undefined;
 
-    const invoice = await invoiceRepository.update(id, {
+    const updateData = {
       ...safeBody,
       ...(nextDisplayName !== undefined ? { display_name: nextDisplayName } : {}),
       ...(canEditApprover && submittedApproverId !== undefined
@@ -299,7 +356,18 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
         : {}),
       ...(shouldMarkComplete ? { status: "complete" } : {}),
       createdBy: req.user!.user_id,
-    });
+    };
+    const registryEntries = buildCompanyVatRegistryEntries(
+      safeBody,
+      existingInvoice,
+    );
+    const invoice = registryEntries.length
+      ? await invoiceRepository.updateWithCompanyVatRegistry(
+          id,
+          updateData,
+          registryEntries,
+        )
+      : await invoiceRepository.update(id, updateData);
     await triggerInvoiceDataWebhook(invoice, req.user!);
     res.json(await withInvoiceLabels(invoice));
   } catch (error: any) {

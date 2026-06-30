@@ -40,6 +40,12 @@ type CreateInvoiceData = {
 
 type UpdateInvoiceData = Partial<CreateInvoiceData>;
 
+type CompanyVatRegistryEntry = {
+  vat_number: string;
+  company_name: string;
+  is_issuer: boolean;
+};
+
 export const invoiceRepository = {
   // async create(data: CreateInvoiceData) {
   //   return dbClient.invoice.create({
@@ -83,6 +89,38 @@ export const invoiceRepository = {
     return dbClient.invoice.update({
       where: { id },
       data,
+    });
+  },
+
+  async updateWithCompanyVatRegistry(
+    id: string,
+    data: UpdateInvoiceData,
+    registryEntries: CompanyVatRegistryEntry[],
+  ) {
+    return dbClient.$transaction(async (tx) => {
+      const invoice = await tx.invoice.update({
+        where: { id },
+        data,
+      });
+
+      for (const entry of registryEntries) {
+        await tx.companyVatRegistry.upsert({
+          where: { vat_number: entry.vat_number },
+          update: {
+            company_name: entry.company_name,
+            is_issuer: entry.is_issuer,
+            updated_at: new Date(),
+          },
+          create: {
+            vat_number: entry.vat_number,
+            company_name: entry.company_name,
+            is_issuer: entry.is_issuer,
+            source: "auto",
+          },
+        });
+      }
+
+      return invoice;
     });
   },
 

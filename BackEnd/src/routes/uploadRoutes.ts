@@ -124,6 +124,7 @@ uploadRouter.post("/invoice", upload.single("image"), async (req, res) => {
     formData.append("company", company);
     formData.append("project", project);
     formData.append("file_path", relativeFilePath);
+    formData.append("createdBy", req.user!.user_id);
     if (displayName) {
       formData.append("display_name", displayName);
     }
@@ -179,6 +180,7 @@ uploadRouter.post("/image", upload.single("image"), async (req, res) => {
     const formData = new FormData();
     const filePath = path.resolve(req.file.path);
     formData.append("user", getUserLabel(req.user));
+    formData.append("createdBy", req.user!.user_id);
     formData.append("invoice_image", fs.createReadStream(filePath), {
       filename: req.file.originalname,
       contentType: req.file.mimetype,

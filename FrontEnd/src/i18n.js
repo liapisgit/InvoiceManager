@@ -33,6 +33,9 @@ i18n.use(initReactI18next).init({
           yes: "Ναι",
           no: "Όχι",
         },
+        admin: {
+          navLabel: "Ρυθμίσεις",
+        },
         paymentState: {
           paid: "Πληρωμένο",
           to_be_paid: "Για να πληρωθεί",
@@ -252,6 +255,9 @@ i18n.use(initReactI18next).init({
         common: {
           yes: "Yes",
           no: "No",
+        },
+        admin: {
+          navLabel: "Settings",
         },
         paymentState: {
           paid: "Paid",

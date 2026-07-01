@@ -24,16 +24,22 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 import "../App.css";
-import InvoiceForm, {
-  COMPANY_OPTIONS,
+import InvoiceForm from "../components/Forms/InvoiceForm";
+import {
+  fetchCompanies,
+  getCompanyByLabel,
+  getCompanyLabel,
   getDefaultProjectForCompany,
   getProjectOptionsForCompany,
+  isAutoSelfApproveCompany,
   isSelfProjectCompany,
-} from "../components/Forms/InvoiceForm";
+  PERSONAL_COMPANY,
+  SELF_APPROVER_VALUE,
+} from "../services/catalog";
 import FileUploadSingleImage from "../components/Inputs/FileUploadSingleImage";
 import AppHeader from "../components/layout/AppHeader";
 import { apiClient } from "../services/apiClient";
-import { clearToken } from "../services/auth";
+import { clearToken, getUserProjectNameFromToken } from "../services/auth";
 import {
   createInvoiceSchema,
   updateInvoiceSchema,
@@ -49,8 +55,6 @@ const initialUploadForm = {
   approval_status: "",
   approver_id: "",
 };
-const PERSONAL_COMPANY = "PERSONAL";
-const SELF_APPROVER_VALUE = "__self__";
 const getApprovalStatusForApprover = (approverId) => {
   if (!approverId) return "";
   return approverId === SELF_APPROVER_VALUE ? "APPROVED" : "PENDING";
@@ -71,6 +75,8 @@ export default function InvoiceFormPage() {
   const [busyFormIndexes, setBusyFormIndexes] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingInvoice, setIsFetchingInvoice] = useState(false);
+  const [isFetchingCatalog, setIsFetchingCatalog] = useState(false);
+  const [catalogCompanies, setCatalogCompanies] = useState([]);
   const [uploadForm, setUploadForm] = useState(initialUploadForm);
   const [approverOptions, setApproverOptions] = useState([]);
   const [isOpeningExistingInvoice, setIsOpeningExistingInvoice] = useState(false);
@@ -83,14 +89,33 @@ export default function InvoiceFormPage() {
     message: "",
   });
   const { t } = useTranslation();
+  const personalProjectName = getUserProjectNameFromToken();
   const isUiLocked =
-    busyFormIndexes.size > 0 || isSubmitting || isFetchingInvoice;
-  const uploadProjectOptions = useMemo(
-    () => getProjectOptionsForCompany(uploadForm.company),
-    [uploadForm.company],
+    busyFormIndexes.size > 0 ||
+    isSubmitting ||
+    isFetchingInvoice ||
+    isFetchingCatalog;
+  const companyOptions = useMemo(
+    () => catalogCompanies.map((company) => getCompanyLabel(company)),
+    [catalogCompanies],
   );
-  const isUploadSelfProject = isSelfProjectCompany(uploadForm.company);
+  const uploadProjectOptions = useMemo(
+    () => getProjectOptionsForCompany(catalogCompanies, uploadForm.company),
+    [catalogCompanies, uploadForm.company],
+  );
+  const selectedUploadCompany = useMemo(
+    () => getCompanyByLabel(catalogCompanies, uploadForm.company),
+    [catalogCompanies, uploadForm.company],
+  );
+  const isUploadSelfProject = isSelfProjectCompany(
+    catalogCompanies,
+    uploadForm.company,
+  );
   const isUploadPersonalCompany = uploadForm.company === PERSONAL_COMPANY;
+  const isUploadAutoSelfApprove = isAutoSelfApproveCompany(
+    catalogCompanies,
+    uploadForm.company,
+  );
   const isUploadValid = Boolean(
     uploadForm.file &&
       uploadForm.company &&
@@ -166,17 +191,20 @@ export default function InvoiceFormPage() {
 
       if (field === "company") {
         const isPersonalCompany = value === PERSONAL_COMPANY;
-        const wasPersonalCompany = prev.company === PERSONAL_COMPANY;
+        const selectedCompany = getCompanyByLabel(catalogCompanies, value);
+        const shouldSelfApprove = Boolean(selectedCompany?.auto_self_approve);
+        const wasSelfApproved = prev.approver_id === SELF_APPROVER_VALUE;
 
-        next.project = getDefaultProjectForCompany(value);
+        next.project = getDefaultProjectForCompany(
+          catalogCompanies,
+          value,
+          personalProjectName,
+        );
 
-        if (isPersonalCompany) {
+        if (shouldSelfApprove || isPersonalCompany) {
           next.approver_id = SELF_APPROVER_VALUE;
           next.approval_status = getApprovalStatusForApprover(SELF_APPROVER_VALUE);
-        } else if (
-          wasPersonalCompany &&
-          prev.approver_id === SELF_APPROVER_VALUE
-        ) {
+        } else if (wasSelfApproved) {
           next.approver_id = "";
           next.approval_status = "";
         }
@@ -192,6 +220,24 @@ export default function InvoiceFormPage() {
 
   useEffect(() => {
     let isActive = true;
+
+    setIsFetchingCatalog(true);
+    fetchCompanies()
+      .then((companies) => {
+        if (!isActive) return;
+        setCatalogCompanies(companies);
+      })
+      .catch((error) => {
+        if (!isActive) return;
+        console.error("Error fetching companies:", error);
+        setErrorMessage(t("app.error"));
+        setShowError(true);
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsFetchingCatalog(false);
+        }
+      });
 
     apiClient
       .get("/api/users/approvers")
@@ -497,6 +543,8 @@ export default function InvoiceFormPage() {
                     submitAttempted={submitAttempted}
                     externalData={loadedForms[index]}
                     approverOptions={approverOptions}
+                    catalogCompanies={catalogCompanies}
+                    personalProjectName={personalProjectName}
                     allowPartialUpdate
                   />
                 ))}
@@ -541,7 +589,7 @@ export default function InvoiceFormPage() {
                     <MenuItem value="">
                       <em>-</em>
                     </MenuItem>
-                    {COMPANY_OPTIONS.map((option) => (
+                    {companyOptions.map((option) => (
                       <MenuItem key={option} value={option}>
                         {option}
                       </MenuItem>
@@ -561,13 +609,22 @@ export default function InvoiceFormPage() {
                     }
                     select
                     size="small"
-                    disabled={!uploadForm.company || isUploadSelfProject}
+                    disabled={
+                      !uploadForm.company ||
+                      isUploadSelfProject ||
+                      isUploadPersonalCompany
+                    }
                     required
                   >
                     <MenuItem value="">
                       <em>-</em>
                     </MenuItem>
-                    {uploadProjectOptions.map((option) => (
+                    {(
+                      (isUploadSelfProject || isUploadPersonalCompany) &&
+                      selectedUploadCompany
+                        ? [uploadForm.project]
+                        : uploadProjectOptions
+                    ).map((option) => (
                       <MenuItem key={option} value={option}>
                         {option}
                       </MenuItem>
@@ -612,7 +669,7 @@ export default function InvoiceFormPage() {
                     }
                     select
                     size="small"
-                    disabled={isUploadPersonalCompany}
+                    disabled={isUploadAutoSelfApprove}
                     required
                   >
                     <MenuItem value="">

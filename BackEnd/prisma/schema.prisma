@@ -15,6 +15,7 @@ model User {
   user_name     String   @unique 
   phone         String?
   is_approver   Boolean  @default(false)
+  is_admin      Boolean  @default(false)
   approver_number String?
   password  String
   createdAt DateTime @default(now())
@@ -63,10 +64,28 @@ model Invoice {
 }
 
 model CompanyVatRegistry {
-  vat_number   String   @id
-  company_name String
-  is_issuer    Boolean  @default(false)
-  source       String?  @default("auto")
-  created_at   DateTime? @default(now())
-  updated_at   DateTime? @default(now())
+  id                   String    @id @default(uuid())
+  vat_number           String?   @unique
+  company_name         String
+  company_display_name String?   @unique
+  is_issuer            Boolean   @default(false)
+  is_self_project      Boolean   @default(false)
+  auto_self_approve    Boolean   @default(false)
+  is_active            Boolean   @default(true)
+  source               String?   @default("auto")
+  created_at           DateTime? @default(now())
+  updated_at           DateTime? @default(now())
+  projects             Project[]
+}
+
+model Project {
+  id            String             @id @default(uuid())
+  company_id    String
+  name          String
+  is_active     Boolean            @default(true)
+  created_at    DateTime?          @default(now())
+  updated_at    DateTime?          @default(now())
+  company       CompanyVatRegistry @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@unique([company_id, name])
 }

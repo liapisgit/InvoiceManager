@@ -21,6 +21,7 @@ import AppHeader from "../components/layout/AppHeader";
 import "../App.css";
 import { apiClient } from "../services/apiClient";
 import { clearToken } from "../services/auth";
+import { PERSONAL_COMPANY } from "../services/catalog";
 
 const UNASSIGNED_PROJECT_FILTER = "__UNASSIGNED__";
 
@@ -31,8 +32,15 @@ const isPresent = (value) => {
   return String(value ?? "").trim().length > 0;
 };
 
-const getProjectKey = (project) =>
-  isPresent(project) ? String(project).trim() : UNASSIGNED_PROJECT_FILTER;
+const getProjectKey = (invoice) => {
+  if (String(invoice?.company ?? "").trim() === PERSONAL_COMPANY) {
+    return PERSONAL_COMPANY;
+  }
+
+  return isPresent(invoice?.project)
+    ? String(invoice.project).trim()
+    : UNASSIGNED_PROJECT_FILTER;
+};
 
 const getProjectLabel = (projectKey, t) =>
   projectKey === UNASSIGNED_PROJECT_FILTER
@@ -128,7 +136,7 @@ export default function ProjectTotalsDashboardPage() {
 
   const filterOptions = useMemo(() => {
     const projects = [
-      ...new Set(dashboardInvoices.map((invoice) => getProjectKey(invoice.project))),
+      ...new Set(dashboardInvoices.map((invoice) => getProjectKey(invoice))),
     ].sort((first, second) =>
       getProjectLabel(first, t).localeCompare(getProjectLabel(second, t)),
     );
@@ -146,7 +154,7 @@ export default function ProjectTotalsDashboardPage() {
 
   const filteredInvoices = useMemo(() => {
     return dashboardInvoices.filter((invoice) => {
-      if (filters.project && getProjectKey(invoice.project) !== filters.project) {
+      if (filters.project && getProjectKey(invoice) !== filters.project) {
         return false;
       }
 
@@ -165,7 +173,7 @@ export default function ProjectTotalsDashboardPage() {
     const totalsByProject = new Map();
 
     filteredInvoices.forEach((invoice) => {
-      const projectKey = getProjectKey(invoice.project);
+      const projectKey = getProjectKey(invoice);
       const currentProject = totalsByProject.get(projectKey) ?? {
         projectKey,
         invoiceCount: 0,

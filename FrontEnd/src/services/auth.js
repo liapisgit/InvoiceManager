@@ -35,3 +35,11 @@ export function getUserFullNameFromToken() {
   const last = payload.last_name ?? "";
   return `${first} ${last}`.trim();
 }
+
+export function getUserProjectNameFromToken() {
+  return getUserFullNameFromToken().toUpperCase();
+}
+
+export function isAdmin() {
+  return Boolean(getTokenPayload()?.is_admin);
+}

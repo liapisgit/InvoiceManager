@@ -7,6 +7,14 @@ import FileUploadSingleImage from "../Inputs/FileUploadSingleImage";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useTranslation } from "react-i18next";
+import {
+  getCompanyByLabel,
+  getCompanyLabel,
+  getDefaultProjectForCompany,
+  getProjectOptionsForCompany,
+  isSelfProjectCompany,
+  PERSONAL_COMPANY,
+} from "../../services/catalog";
 
 const initialForm = {
   id: "",
@@ -69,89 +77,6 @@ const normalizeIncomingFormData = (data = {}) => {
   return next;
 };
 
-// Fill these with your static company -> project options.
-export const COMPANY_PROJECT_OPTIONS = {
-  "THE OLON HOSPITALITY": [
-    "DIADOXOU 39 2BDR",
-    "DIADOXOU 39 3BDR",
-    "EKAVIS 4",
-    "IASONOS 13",
-    "METAXA 7 2BDR",
-    "METAXA 7 3BDR",
-    "METAXA 33 EXECUTIVE",
-    "METAXA 33 SUPERIOR",
-    "ATHINWN 46",
-    "FRYNIXOU 11",
-    "AIGEWS 6",
-    "KAVOURIOU 1",
-    "LITOUS 26",
-    "NAYSIKAS 32",
-    "METAXA 33-SUPERIOR",
-    "NAYSIKAS 32",
-    "SAKI KARAGIORGA 12-14",
-    "ARTEMIDOS 5",
-    "LAMBRAKI 6",
-    "OFFICE",
-    "STORAGE",
-    "OPERATION",
-    "MARKETING",
-    "SEMELIDIS",
-  ],
-  "THE OLON DEVELOPMENTS": [
-    "ALAMANAS, VOULA",
-    "APOLLONOS, ATHENS",
-    "IOUSTINIANOU, GLYFADA",
-    "OT11 HERITAGE, VOULIAGMENI",
-    "OT23 HERITAGE, VOULIAGMENI",
-    "OT29 HERITAGE, VOULIAGMENI",
-    "OT36 HERITAGE, VOULIAGMENI",
-    "ARMONIAS, KAVOURI",
-    "KIRKIS, VOULIAGMENI",
-    "FLEMING, VARI",
-    "XENOFONTOS, VOULA",
-    "AIOLOU 85, ATHENS",
-    "LAGONISI",
-    "REAL ESTATE",
-    "MARKETING",
-    "OFFICE EXPENDABLES",
-    "STORAGE",
-    "CLIENT LEADS",
-    "SEMELIDIS",
-  ],
-  "SEMELIDIS": [
-    "FLEMING, VARI",
-    "XENOFONTOS, VOULA",
-  ]
-};
-export const SELF_PROJECT_COMPANY_OPTIONS = [
-  "ALAMANAS ONE",
-  "A15",
-  "OLYRAS",
-  "HERITAGE",
-  "HOT",
-  "AIOLOU",
-  "LAGONISI VENTURES",
-  "QONTRALESS",
-  "PERSONAL",
-  "ALPHA AXIS",
-  "VOLUSPA",
-];
-const SELF_PROJECT_COMPANIES = new Set(SELF_PROJECT_COMPANY_OPTIONS);
-export const COMPANY_OPTIONS = [
-  "THE OLON HOSPITALITY",
-  "THE OLON DEVELOPMENTS",
-  ...SELF_PROJECT_COMPANY_OPTIONS,
-  "SEMELIDIS",
-];
-export const isSelfProjectCompany = (company) =>
-  SELF_PROJECT_COMPANIES.has(company);
-export const getProjectOptionsForCompany = (company) =>
-  isSelfProjectCompany(company)
-    ? [company]
-    : COMPANY_PROJECT_OPTIONS[company] || [];
-export const getDefaultProjectForCompany = (company) =>
-  isSelfProjectCompany(company) ? company : "";
-
 const isEmpty = (v) => String(v ?? "").trim().length === 0;
 const isNumeric = (v) => /^[0-9]+$/.test(String(v ?? "").trim());
 const isMoney = (v) => /^[0-9]+([.,][0-9]{1,2})?$/.test(String(v ?? "").trim());
@@ -188,6 +113,8 @@ export default function InvoiceForm({
   submitAttempted = false,
   externalData = null,
   approverOptions = [],
+  catalogCompanies = [],
+  personalProjectName = "",
   allowPartialUpdate = false,
 }) {
   const originalFormData = useMemo(
@@ -201,11 +128,20 @@ export default function InvoiceForm({
   // track touched for nicer UX
   const [touched, setTouched] = useState({});
   const { t } = useTranslation();
-  const projectOptions = useMemo(
-    () => getProjectOptionsForCompany(formData.company),
-    [formData.company],
+  const companyOptions = useMemo(
+    () => catalogCompanies.map((company) => getCompanyLabel(company)),
+    [catalogCompanies],
   );
-  const isSelfProject = isSelfProjectCompany(formData.company);
+  const selectedCompany = useMemo(
+    () => getCompanyByLabel(catalogCompanies, formData.company),
+    [catalogCompanies, formData.company],
+  );
+  const projectOptions = useMemo(
+    () => getProjectOptionsForCompany(catalogCompanies, formData.company),
+    [catalogCompanies, formData.company],
+  );
+  const isPersonalCompany = formData.company === PERSONAL_COMPANY;
+  const isSelfProject = isSelfProjectCompany(catalogCompanies, formData.company);
   const canEditApprover = useMemo(() => {
     if (!allowPartialUpdate) return true;
 
@@ -236,10 +172,17 @@ export default function InvoiceForm({
   };
 
   const handleCompanyChange = (value) => {
+    const nextCompany = getCompanyByLabel(catalogCompanies, value);
+    const shouldSelfApprove = Boolean(nextCompany?.auto_self_approve);
     setFormData((prev) => ({
       ...prev,
       company: value,
-      project: getDefaultProjectForCompany(value),
+      project: getDefaultProjectForCompany(
+        catalogCompanies,
+        value,
+        personalProjectName,
+      ),
+      ...(shouldSelfApprove ? { approver_id: SELF_APPROVER_ID } : {}),
     }));
   };
 
@@ -386,7 +329,7 @@ export default function InvoiceForm({
           <MenuItem value="">
             <em>-</em>
           </MenuItem>
-          {COMPANY_OPTIONS.map((option) => (
+          {companyOptions.map((option) => (
             <MenuItem key={option} value={option}>
               {option}
             </MenuItem>
@@ -401,13 +344,16 @@ export default function InvoiceForm({
           helperText={showError("project") ? errors.project : ""}
           select
           size="small"
-          disabled={!formData.company || isSelfProject}
+          disabled={!formData.company || isSelfProject || isPersonalCompany}
           required
         >
           <MenuItem value="">
             <em>-</em>
           </MenuItem>
-          {projectOptions.map((option) => (
+          {((isSelfProject || isPersonalCompany) && selectedCompany
+            ? [formData.project]
+            : projectOptions
+          ).map((option) => (
             <MenuItem key={option} value={option}>
               {option}
             </MenuItem>

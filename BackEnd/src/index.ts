@@ -5,6 +5,7 @@ import cors from "cors";
 import userRouter from "./routes/userRoutes";
 import invoiceRouter from "./routes/invoiceRoutes";
 import uploadRouter from "./routes/uploadRoutes";
+import companyRouter from "./routes/companyRoutes";
 import { config } from "./config/env";
 import { authMiddleware } from "./middlewares/authMiddleware";
 
@@ -27,6 +28,7 @@ app.get("/health", (req, res) => {
 app.use("/api/users", userRouter);
 app.use("/api/invoices", authMiddleware, invoiceRouter);
 app.use("/api/upload", authMiddleware, uploadRouter);
+app.use("/api/companies", authMiddleware, companyRouter);
 
 if (hasFrontendBuild) {
   app.use(express.static(frontendDistPath));

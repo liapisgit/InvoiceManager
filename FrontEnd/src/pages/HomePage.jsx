@@ -17,6 +17,7 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import SettingsIcon from "@mui/icons-material/Settings";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +26,8 @@ import InvoiceFilePreview from "../components/InvoiceFilePreview";
 import AppHeader from "../components/layout/AppHeader";
 import "../App.css";
 import { apiClient } from "../services/apiClient";
-import { clearToken } from "../services/auth";
+import { clearToken, isAdmin } from "../services/auth";
+import { PERSONAL_COMPANY } from "../services/catalog";
 
 const DISPLAY_FIELDS = [
   "recipient_name",
@@ -61,6 +63,13 @@ const getSearchOptionLabel = (option) =>
   typeof option === "string" ? option : option?.label || "";
 
 const UNASSIGNED_PROJECT_FILTER = "__UNASSIGNED__";
+const getProjectFilterKey = (invoice) => {
+  if (String(invoice?.company ?? "").trim() === PERSONAL_COMPANY) {
+    return PERSONAL_COMPANY;
+  }
+
+  return invoice?.project;
+};
 const PAYMENT_STATUS_LABEL_KEYS = {
   Paid: "paymentState.paid",
   "To be Paid": "paymentState.toBePaid",
@@ -276,7 +285,11 @@ export default function HomePage() {
       numbers: uniqueValues("number"),
       issuers: uniqueValues("issuer_name"),
       recipients: uniqueValues("recipient_name"),
-      projects: uniqueValues("project"),
+      projects: [
+        ...new Set(
+          dashboardInvoices.map(getProjectFilterKey).filter(isPresent),
+        ),
+      ].sort((first, second) => String(first).localeCompare(String(second))),
       users: [
         ...new Set(
           dashboardInvoices
@@ -299,8 +312,8 @@ export default function HomePage() {
         return false;
       }
       if (filters.project === UNASSIGNED_PROJECT_FILTER) {
-        if (isPresent(invoice.project)) return false;
-      } else if (!matchesTextFilter(invoice.project, filters.project)) {
+        if (isPresent(getProjectFilterKey(invoice))) return false;
+      } else if (!matchesTextFilter(getProjectFilterKey(invoice), filters.project)) {
         return false;
       }
       if (!matchesTextFilter(invoice.createdByLabel || invoice.createdBy, filters.user)) {
@@ -403,6 +416,19 @@ export default function HomePage() {
             >
               {t("duplicates.navLabel")}
             </Button>
+            {isAdmin() ? (
+              <Button
+                variant="outlined"
+                onClick={() => navigate("/settings")}
+                startIcon={<SettingsIcon />}
+                sx={{
+                  color: "#fff",
+                  borderColor: "rgba(255,255,255,0.45)",
+                }}
+              >
+                {t("admin.navLabel")}
+              </Button>
+            ) : null}
             <Button
               variant="outlined"
               onClick={() => loadInvoices()}

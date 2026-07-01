@@ -5,6 +5,7 @@ export type AuthPayload = JwtPayload & {
   user_name: string;
   first_name: string;
   last_name: string;
+  is_admin?: boolean;
 };
 
 declare global {

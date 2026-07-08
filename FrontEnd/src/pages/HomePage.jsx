@@ -404,17 +404,6 @@ export default function HomePage() {
             >
               {t("projectTotals.navLabel")}
             </Button>
-            <Button
-              variant="outlined"
-              onClick={() => navigate("/dashboard/duplicates")}
-              startIcon={<ContentCopyIcon />}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("duplicates.navLabel")}
-            </Button>
             {isAdmin() ? (
               <Button
                 variant="outlined"

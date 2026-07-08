@@ -12,7 +12,6 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import InvoiceFormPage from "./pages/InvoiceFormPage";
 import ProjectTotalsDashboardPage from "./pages/ProjectTotalsDashboardPage";
-import DuplicatesPage from "./pages/DuplicatesPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import AdminRoute from "./components/auth/AdminRoute";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -62,14 +61,6 @@ createRoot(document.getElementById("root")).render(
               element={
                 <ProtectedRoute>
                   <ProjectTotalsDashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/duplicates"
-              element={
-                <ProtectedRoute>
-                  <DuplicatesPage />
                 </ProtectedRoute>
               }
             />

@@ -75,38 +75,6 @@ i18n.use(initReactI18next).init({
           backToDashboard: "Επιστροφή στο dashboard",
           pendingApproval: "Εκκρεμεί έγκριση",
         },
-        duplicates: {
-          navLabel: "Duplicates",
-          title: "Έλεγχος διπλότυπων",
-          subtitle:
-            "Τα διπλότυπα εντοπίζονται από τιμολόγια που έχουν το ίδιο MARK ή, όταν λείπει το MARK, το ίδιο εμφανιζόμενο όνομα.",
-          groupCount_one: "{{count}} ομάδα",
-          groupCount_other: "{{count}} ομάδες",
-          invoiceCount_one: "{{count}} τιμολόγιο",
-          invoiceCount_other: "{{count}} τιμολόγια",
-          markTitle: "MARK {{mark}}",
-          displayNameTitle: "Εμφανιζόμενο όνομα {{displayName}}",
-          groupHelp:
-            "Έλεγξε τις καταχωρήσεις με ίδιο MARK και διέγραψε όποια δεν χρειάζεται.",
-          displayNameGroupHelp:
-            "Έλεγξε τις καταχωρήσεις χωρίς MARK που έχουν το ίδιο εμφανιζόμενο όνομα και διέγραψε όποια δεν χρειάζεται.",
-          records_one: "{{count}} εγγραφή",
-          records_other: "{{count}} εγγραφές",
-          deleteRecord: "Διαγραφή",
-          confirmDelete: "Ναι, είμαι σίγουρος",
-          createdBy: "Χρήστης: {{user}}",
-          emptyTitle: "Δεν βρέθηκαν διπλότυπα",
-          emptyDescription:
-            "Δεν υπάρχουν δύο ή περισσότερα τιμολόγια με το ίδιο MARK ή ίδιο εμφανιζόμενο όνομα όταν λείπει το MARK.",
-          fetchError: "Δεν ήταν δυνατή η φόρτωση των διπλότυπων.",
-          deleteTitle: "Διαγραφή τιμολογίου",
-          deletePrompt:
-            "Είσαι σίγουρος ότι θέλεις να διαγράψεις το {{invoice}} από την ομάδα MARK {{mark}};",
-          deleteDisplayNamePrompt:
-            "Είσαι σίγουρος ότι θέλεις να διαγράψεις το {{invoice}} από την ομάδα με εμφανιζόμενο όνομα {{displayName}};",
-          deleteSuccess: "Το τιμολόγιο διαγράφηκε.",
-          deleteError: "Δεν ήταν δυνατή η διαγραφή του τιμολογίου.",
-        },
         projectTotals: {
           navLabel: "Σύνολα ανά έργο",
           title: "Σύνολα τιμολογίων ανά έργο",
@@ -297,38 +265,6 @@ i18n.use(initReactI18next).init({
           invoiceFallback: "Invoice",
           backToDashboard: "Back to dashboard",
           pendingApproval: "Pending approval",
-        },
-        duplicates: {
-          navLabel: "Duplicates",
-          title: "Duplicate review",
-          subtitle:
-            "Duplicates are detected from invoices that share the same MARK, or the same display name when MARK is missing.",
-          groupCount_one: "{{count}} group",
-          groupCount_other: "{{count}} groups",
-          invoiceCount_one: "{{count}} invoice",
-          invoiceCount_other: "{{count}} invoices",
-          markTitle: "MARK {{mark}}",
-          displayNameTitle: "Display name {{displayName}}",
-          groupHelp:
-            "Review records with the same MARK and delete any record you do not need.",
-          displayNameGroupHelp:
-            "Review records without a MARK that share the same display name and delete any record you do not need.",
-          records_one: "{{count}} record",
-          records_other: "{{count}} records",
-          deleteRecord: "Delete",
-          confirmDelete: "Yes, I am sure",
-          createdBy: "User: {{user}}",
-          emptyTitle: "No duplicates found",
-          emptyDescription:
-            "There are no two or more invoices with the same MARK, or the same display name when MARK is missing.",
-          fetchError: "Could not load duplicate invoices.",
-          deleteTitle: "Delete invoice",
-          deletePrompt:
-            "Are you sure you want to delete {{invoice}} from duplicate group MARK {{mark}}?",
-          deleteDisplayNamePrompt:
-            "Are you sure you want to delete {{invoice}} from duplicate group display name {{displayName}}?",
-          deleteSuccess: "Invoice deleted.",
-          deleteError: "Could not delete the invoice.",
         },
         projectTotals: {
           navLabel: "Project totals",

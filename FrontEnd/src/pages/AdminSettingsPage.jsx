@@ -60,7 +60,9 @@ export default function AdminSettingsPage() {
   const [companyForm, setCompanyForm] = useState(emptyCompanyForm);
   const [editingCompanyId, setEditingCompanyId] = useState("");
   const [projectForm, setProjectForm] = useState(emptyProjectForm);
+  const [editingProjectId, setEditingProjectId] = useState("");
   const [editingUsers, setEditingUsers] = useState({});
+  const [selectedUserId, setSelectedUserId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -75,6 +77,29 @@ export default function AdminSettingsPage() {
   const selectedProjectCompany = useMemo(
     () => companies.find((company) => company.id === projectForm.company_id),
     [companies, projectForm.company_id],
+  );
+
+  const selectedEditingCompany = useMemo(
+    () => companies.find((company) => company.id === editingCompanyId),
+    [companies, editingCompanyId],
+  );
+
+  const editableProjects = useMemo(
+    () =>
+      (selectedProjectCompany?.projects ?? []).filter(
+        (project) => !project.derived_from_company && !project.derived_from_user,
+      ),
+    [selectedProjectCompany],
+  );
+
+  const selectedEditingProject = useMemo(
+    () => editableProjects.find((project) => project.id === editingProjectId),
+    [editableProjects, editingProjectId],
+  );
+
+  const selectedUser = useMemo(
+    () => users.find((user) => user.id === selectedUserId),
+    [users, selectedUserId],
   );
 
   const canManageProjects =
@@ -129,6 +154,16 @@ export default function AdminSettingsPage() {
     setEditingCompanyId("");
   };
 
+  const handleCompanySelection = (companyId) => {
+    const company = companies.find((currentCompany) => currentCompany.id === companyId);
+    if (!company) {
+      resetCompanyForm();
+      return;
+    }
+
+    handleEditCompany(company);
+  };
+
   const handleEditCompany = (company) => {
     setEditingCompanyId(company.id);
     setCompanyForm({
@@ -169,6 +204,7 @@ export default function AdminSettingsPage() {
     setIsSaving(true);
     try {
       await apiClient.delete(`/api/companies/${companyId}`);
+      resetCompanyForm();
       await loadData();
     } catch (error) {
       console.error("Error removing company:", error);
@@ -182,11 +218,18 @@ export default function AdminSettingsPage() {
     if (!projectForm.company_id || !projectForm.name.trim()) return;
     setIsSaving(true);
     try {
-      await apiClient.post("/api/companies/projects", {
-        company_id: projectForm.company_id,
-        name: projectForm.name.trim(),
-      });
+      if (editingProjectId) {
+        await apiClient.patch(`/api/companies/projects/${editingProjectId}`, {
+          name: projectForm.name.trim(),
+        });
+      } else {
+        await apiClient.post("/api/companies/projects", {
+          company_id: projectForm.company_id,
+          name: projectForm.name.trim(),
+        });
+      }
       setProjectForm(emptyProjectForm);
+      setEditingProjectId("");
       await loadData();
     } catch (error) {
       console.error("Error saving project:", error);
@@ -196,6 +239,31 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleProjectCompanySelection = (companyId) => {
+    setProjectForm({
+      ...emptyProjectForm,
+      company_id: companyId,
+    });
+    setEditingProjectId("");
+  };
+
+  const handleProjectSelection = (projectId) => {
+    const project = editableProjects.find((currentProject) => currentProject.id === projectId);
+    if (!project) {
+      setEditingProjectId("");
+      setProjectForm((current) => ({ ...current, name: "" }));
+      return;
+    }
+
+    setEditingProjectId(project.id);
+    setProjectForm((current) => ({ ...current, name: project.name ?? "" }));
+  };
+
+  const resetProjectForm = () => {
+    setProjectForm(emptyProjectForm);
+    setEditingProjectId("");
+  };
+
   const handleDeactivateProject = async (projectId) => {
     if (!window.confirm(t("admin.confirmRemove", { defaultValue: "Remove this item?" }))) {
       return;
@@ -203,6 +271,8 @@ export default function AdminSettingsPage() {
     setIsSaving(true);
     try {
       await apiClient.delete(`/api/companies/projects/${projectId}`);
+      setEditingProjectId("");
+      setProjectForm((current) => ({ ...current, name: "" }));
       await loadData();
     } catch (error) {
       console.error("Error removing project:", error);
@@ -238,6 +308,8 @@ export default function AdminSettingsPage() {
       },
     }));
   };
+
+  const selectedEditingUser = selectedUser ? (editingUsers[selectedUser.id] ?? {}) : {};
 
   return (
     <>
@@ -302,6 +374,30 @@ export default function AdminSettingsPage() {
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>
                   {t("admin.companies", { defaultValue: "Companies" })}
                 </Typography>
+                <TextField
+                  label={t("admin.companyToEdit", { defaultValue: "Company to edit" })}
+                  value={editingCompanyId}
+                  onChange={(event) => handleCompanySelection(event.target.value)}
+                  select
+                  size="small"
+                  fullWidth
+                  helperText={t("admin.companyEditHint", {
+                    defaultValue: "Leave empty to add a new company.",
+                  })}
+                  sx={{ mb: 2 }}
+                >
+                  <MenuItem value="">
+                    {t("admin.addNewCompany", { defaultValue: "Add new company" })}
+                  </MenuItem>
+                  {companies.map((company) => (
+                    <MenuItem key={company.id} value={company.id}>
+                      {company.company_display_name}
+                      {company.is_active
+                        ? ""
+                        : ` (${t("admin.inactive", { defaultValue: "inactive" })})`}
+                    </MenuItem>
+                  ))}
+                </TextField>
                 <Box
                   sx={{
                     display: "grid",
@@ -369,8 +465,12 @@ export default function AdminSettingsPage() {
                     label={t("admin.active", { defaultValue: "Active" })}
                   />
                 </Box>
-                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-                  <Button variant="contained" onClick={handleSaveCompany} disabled={isBusy}>
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleSaveCompany}
+                    disabled={isBusy || !companyForm.company_display_name.trim()}
+                  >
                     {editingCompanyId
                       ? t("admin.updateCompany", { defaultValue: "Update company" })
                       : t("admin.addCompany", { defaultValue: "Add company" })}
@@ -380,47 +480,15 @@ export default function AdminSettingsPage() {
                       {t("existingInvoice.cancel")}
                     </Button>
                   ) : null}
-                </Box>
-
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                  {companies.map((company) => (
-                    <Paper
-                      key={company.id}
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        borderRadius: 2,
-                        border: "1px solid #e5e7eb",
-                        opacity: company.is_active ? 1 : 0.55,
-                      }}
+                  {selectedEditingCompany?.is_active ? (
+                    <Button
+                      color="error"
+                      onClick={() => handleDeactivateCompany(selectedEditingCompany.id)}
+                      disabled={isBusy}
                     >
-                      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-                        <Box>
-                          <Typography variant="subtitle2">
-                            {company.company_display_name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {company.company_name}
-                            {company.vat_number ? ` · ${company.vat_number}` : ""}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                          <Button size="small" onClick={() => handleEditCompany(company)}>
-                            {t("dashboard.updateInvoice")}
-                          </Button>
-                          {company.is_active ? (
-                            <Button
-                              size="small"
-                              color="error"
-                              onClick={() => handleDeactivateCompany(company.id)}
-                            >
-                              {t("duplicates.deleteRecord")}
-                            </Button>
-                          ) : null}
-                        </Box>
-                      </Box>
-                    </Paper>
-                  ))}
+                      {t("duplicates.deleteRecord")}
+                    </Button>
+                  ) : null}
                 </Box>
               </Box>
 
@@ -441,12 +509,7 @@ export default function AdminSettingsPage() {
                   <TextField
                     label={t("fields.company")}
                     value={projectForm.company_id}
-                    onChange={(event) =>
-                      setProjectForm((current) => ({
-                        ...current,
-                        company_id: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => handleProjectCompanySelection(event.target.value)}
                     select
                     size="small"
                   >
@@ -454,6 +517,29 @@ export default function AdminSettingsPage() {
                     {activeCompanies.map((company) => (
                       <MenuItem key={company.id} value={company.id}>
                         {company.company_display_name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    label={t("admin.projectToEdit", { defaultValue: "Project to edit" })}
+                    value={editingProjectId}
+                    onChange={(event) => handleProjectSelection(event.target.value)}
+                    select
+                    size="small"
+                    disabled={!canManageProjects}
+                    helperText={t("admin.projectEditHint", {
+                      defaultValue: "Leave empty to add a new project.",
+                    })}
+                  >
+                    <MenuItem value="">
+                      {t("admin.addNewProject", { defaultValue: "Add new project" })}
+                    </MenuItem>
+                    {editableProjects.map((project) => (
+                      <MenuItem key={project.id} value={project.id}>
+                        {project.name}
+                        {project.is_active
+                          ? ""
+                          : ` (${t("admin.inactive", { defaultValue: "inactive" })})`}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -478,42 +564,39 @@ export default function AdminSettingsPage() {
                     }
                   />
                 </Box>
-                <Button
-                  variant="contained"
-                  onClick={handleSaveProject}
-                  disabled={isBusy || !canManageProjects}
-                >
-                  {t("admin.addProject", { defaultValue: "Add project" })}
-                </Button>
-
-                {selectedProjectCompany ? (
-                  <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-                    {(selectedProjectCompany.projects ?? []).map((project) => (
-                      <Paper
-                        key={project.id}
-                        elevation={0}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          border: "1px solid #e5e7eb",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Typography>{project.name}</Typography>
-                        {project.is_active ? (
-                          <Button
-                            size="small"
-                            color="error"
-                            onClick={() => handleDeactivateProject(project.id)}
-                          >
-                            {t("duplicates.deleteRecord")}
-                          </Button>
-                        ) : null}
-                      </Paper>
-                    ))}
-                  </Box>
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleSaveProject}
+                    disabled={isBusy || !canManageProjects || !projectForm.name.trim()}
+                  >
+                    {editingProjectId
+                      ? t("admin.updateProject", { defaultValue: "Update project" })
+                      : t("admin.addProject", { defaultValue: "Add project" })}
+                  </Button>
+                  {editingProjectId ? (
+                    <Button onClick={resetProjectForm} disabled={isBusy}>
+                      {t("existingInvoice.cancel")}
+                    </Button>
+                  ) : null}
+                  {selectedEditingProject?.is_active ? (
+                    <Button
+                      color="error"
+                      onClick={() => handleDeactivateProject(selectedEditingProject.id)}
+                      disabled={isBusy}
+                    >
+                      {t("duplicates.deleteRecord")}
+                    </Button>
+                  ) : null}
+                </Box>
+                {selectedProjectCompany &&
+                !canManageProjects &&
+                selectedProjectCompany.company_display_name !== PERSONAL_COMPANY ? (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {t("admin.selfProjectManagedByCompany", {
+                      defaultValue: "Self-project companies use the company name as the project.",
+                    })}
+                  </Typography>
                 ) : null}
               </Box>
 
@@ -523,91 +606,101 @@ export default function AdminSettingsPage() {
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>
                   {t("admin.people", { defaultValue: "People" })}
                 </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {users.map((user) => {
-                    const editingUser = editingUsers[user.id] ?? {};
-                    return (
-                      <Paper
-                        key={user.id}
-                        elevation={0}
-                        sx={{ p: 2, borderRadius: 2, border: "1px solid #e5e7eb" }}
-                      >
-                        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                          {getUserLabel(user)} ({user.user_name})
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                            gap: 2,
-                            alignItems: "center",
-                          }}
-                        >
-                          <TextField
-                            label={t("admin.firstName", { defaultValue: "First name" })}
-                            value={editingUser.first_name ?? ""}
-                            onChange={(event) =>
-                              setUserField(user.id, "first_name", event.target.value)
-                            }
-                            size="small"
-                          />
-                          <TextField
-                            label={t("admin.lastName", { defaultValue: "Last name" })}
-                            value={editingUser.last_name ?? ""}
-                            onChange={(event) =>
-                              setUserField(user.id, "last_name", event.target.value)
-                            }
-                            size="small"
-                          />
-                          <TextField
-                            label={t("admin.phone", { defaultValue: "Phone" })}
-                            value={editingUser.phone ?? ""}
-                            onChange={(event) =>
-                              setUserField(user.id, "phone", event.target.value)
-                            }
-                            size="small"
-                          />
-                          <TextField
-                            label={t("admin.approverNumber", {
-                              defaultValue: "Approver number",
-                            })}
-                            value={editingUser.approver_number ?? ""}
+                <TextField
+                  label={t("admin.userToEdit", { defaultValue: "User to edit" })}
+                  value={selectedUserId}
+                  onChange={(event) => setSelectedUserId(event.target.value)}
+                  select
+                  size="small"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                >
+                  <MenuItem value="">-</MenuItem>
+                  {users.map((user) => (
+                    <MenuItem key={user.id} value={user.id}>
+                      {getUserLabel(user)} ({user.user_name})
+                    </MenuItem>
+                  ))}
+                </TextField>
+                {selectedUser ? (
+                  <Paper
+                    elevation={0}
+                    sx={{ p: 2, borderRadius: 2, border: "1px solid #e5e7eb" }}
+                  >
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                      {getUserLabel(selectedUser)} ({selectedUser.user_name})
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                        gap: 2,
+                        alignItems: "center",
+                      }}
+                    >
+                      <TextField
+                        label={t("admin.firstName", { defaultValue: "First name" })}
+                        value={selectedEditingUser.first_name ?? ""}
+                        onChange={(event) =>
+                          setUserField(selectedUser.id, "first_name", event.target.value)
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        label={t("admin.lastName", { defaultValue: "Last name" })}
+                        value={selectedEditingUser.last_name ?? ""}
+                        onChange={(event) =>
+                          setUserField(selectedUser.id, "last_name", event.target.value)
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        label={t("admin.phone", { defaultValue: "Phone" })}
+                        value={selectedEditingUser.phone ?? ""}
+                        onChange={(event) =>
+                          setUserField(selectedUser.id, "phone", event.target.value)
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        label={t("admin.approverNumber", {
+                          defaultValue: "Approver number",
+                        })}
+                        value={selectedEditingUser.approver_number ?? ""}
+                        onChange={(event) =>
+                          setUserField(
+                            selectedUser.id,
+                            "approver_number",
+                            event.target.value,
+                          )
+                        }
+                        size="small"
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={Boolean(selectedEditingUser.is_approver)}
                             onChange={(event) =>
                               setUserField(
-                                user.id,
-                                "approver_number",
-                                event.target.value,
+                                selectedUser.id,
+                                "is_approver",
+                                event.target.checked,
                               )
                             }
-                            size="small"
                           />
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={Boolean(editingUser.is_approver)}
-                                onChange={(event) =>
-                                  setUserField(
-                                    user.id,
-                                    "is_approver",
-                                    event.target.checked,
-                                  )
-                                }
-                              />
-                            }
-                            label={t("admin.approver", { defaultValue: "Approver" })}
-                          />
-                          <Button
-                            variant="outlined"
-                            onClick={() => handleSaveUser(user.id)}
-                            disabled={isBusy}
-                          >
-                            {t("invoiceEdit.submit")}
-                          </Button>
-                        </Box>
-                      </Paper>
-                    );
-                  })}
-                </Box>
+                        }
+                        label={t("admin.approver", { defaultValue: "Approver" })}
+                      />
+                      <Button
+                        variant="outlined"
+                        onClick={() => handleSaveUser(selectedUser.id)}
+                        disabled={isBusy}
+                      >
+                        {t("invoiceEdit.submit")}
+                      </Button>
+                    </Box>
+                  </Paper>
+                ) : null}
               </Box>
             </Box>
           )}

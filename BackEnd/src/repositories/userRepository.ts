@@ -32,7 +32,7 @@ export const userRepository = {
     data: {
       first_name?: string | null;
       last_name?: string | null;
-      phone?: string | null;
+      phone?: string;
       approver_number?: string | null;
       is_approver?: boolean;
     },
@@ -86,7 +86,6 @@ export const userRepository = {
           { first_name: { not: "" } },
           { last_name: { not: null } },
           { last_name: { not: "" } },
-          { phone: { not: null } },
           { phone: { not: "" } },
         ],
       },

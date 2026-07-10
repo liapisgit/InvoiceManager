@@ -93,7 +93,10 @@ export default function AdminSettingsPage() {
   );
 
   const selectedEditingProject = useMemo(
-    () => editableProjects.find((project) => project.id === editingProjectId),
+    () =>
+      editableProjects.find(
+        (project) => String(project.id) === String(editingProjectId),
+      ),
     [editableProjects, editingProjectId],
   );
 
@@ -248,7 +251,9 @@ export default function AdminSettingsPage() {
   };
 
   const handleProjectSelection = (projectId) => {
-    const project = editableProjects.find((currentProject) => currentProject.id === projectId);
+    const project = editableProjects.find(
+      (currentProject) => String(currentProject.id) === String(projectId),
+    );
     if (!project) {
       setEditingProjectId("");
       setProjectForm((current) => ({ ...current, name: "" }));

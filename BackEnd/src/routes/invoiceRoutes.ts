@@ -23,6 +23,8 @@ const getStoredUserLabel = (user: {
 }) => `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.user_name;
 
 const hasValue = (value: unknown) => String(value ?? "").trim().length > 0;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const DISPLAY_NAME_FIELDS = ["invoice_date", "issuer_name", "number"] as const;
 const COMPANY_VAT_REGISTRY_FIELDS = [
@@ -110,16 +112,30 @@ const withInvoiceLabels = async (invoiceOrInvoices: Invoice | Invoice[]) => {
     ? invoiceOrInvoices
     : [invoiceOrInvoices];
 
-  const userIds = [
+  const createdByValues = [
     ...new Set(
       invoices
         .map((invoice) => invoice.createdBy)
-        .filter((createdBy): createdBy is string => Boolean(createdBy)),
+        .filter((createdBy): createdBy is string => Boolean(createdBy))
+        .map((createdBy) => createdBy.trim()),
     ),
   ];
-  const users = userIds.length ? await userRepository.findManyByIds(userIds) : [];
-  const userLabels = new Map(
-    users.map((user) => [user.id, getStoredUserLabel(user)]),
+
+  const userIds = createdByValues.filter((createdBy) =>
+    UUID_REGEX.test(createdBy),
+  );
+  const userPhones = createdByValues.filter(
+    (createdBy) => !UUID_REGEX.test(createdBy),
+  );
+  const [usersById, usersByPhone] = await Promise.all([
+    userIds.length ? userRepository.findManyByIds(userIds) : [],
+    userPhones.length ? userRepository.findManyByPhones(userPhones) : [],
+  ]);
+  const userLabels = new Map<string, string>(
+    usersById.map((user) => [user.id, getStoredUserLabel(user)]),
+  );
+  usersByPhone.forEach((user) =>
+    userLabels.set(user.phone, getStoredUserLabel(user)),
   );
   const approverPhones = [
     ...new Set(
@@ -235,6 +251,7 @@ invoiceRouter.get("/", async (req, res) => {
     const invoices = await invoiceRepository.findAll();
     res.json(await withInvoiceLabels(invoices));
   } catch (error) {
+    console.error("Error fetching invoices:", error);
     res.status(500).json({ error: "Failed to fetch invoices" });
   }
 });
@@ -248,6 +265,7 @@ invoiceRouter.get("/by-mark/:mark", async (req, res) => {
     }
     res.json(await withInvoiceLabels(invoice));
   } catch (error) {
+    console.error("Error fetching invoice by mark:", error);
     res.status(500).json({ error: "Failed to fetch invoice" });
   }
 });
@@ -263,6 +281,7 @@ invoiceRouter.get("/by-file-upload-id/:fileUploadId", async (req, res) => {
     }
     res.json(await withInvoiceLabels(invoice));
   } catch (error) {
+    console.error("Error fetching invoice by file upload id:", error);
     res.status(500).json({ error: "Failed to fetch invoice" });
   }
 });
@@ -276,6 +295,7 @@ invoiceRouter.get("/:id", async (req, res) => {
     }
     res.json(await withInvoiceLabels(invoice));
   } catch (error) {
+    console.error("Error fetching invoice by id:", error);
     res.status(500).json({ error: "Failed to fetch invoice" });
   }
 });

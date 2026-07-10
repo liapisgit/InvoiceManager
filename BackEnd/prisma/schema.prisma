@@ -1,91 +1,103 @@
 generator client {
   provider = "prisma-client"
-  url     =  env("DATABASE_URL")
+  url      = env("DATABASE_URL")
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["olon_automations_v2"]
 }
 
 model User {
-  id        String     @id @default(uuid())
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   first_name      String?
-  last_name      String?
-  user_name     String   @unique 
-  phone         String?
-  is_approver   Boolean  @default(false)
-  is_admin      Boolean  @default(false)
+  last_name       String?
+  user_name       String   @unique
+  phone           String   @unique @map("phone_id")
+  is_approver     Boolean? @default(false)
+  is_admin        Boolean  @default(false)
   approver_number String?
-  password  String
-  createdAt DateTime @default(now())
-  lastUpdatedAt DateTime @updatedAt
+  password        String
+  createdAt       DateTime @default(now()) @map("created_at")
+  lastUpdatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+  @@schema("olon_automations_v2")
 }
 
 model Invoice {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  document_type String?
-  invoice_date DateTime? @db.Date
-  mark  String?
-  series  String?
-  number  String?
-  issuer_vat_number String?
-  issuer_name String?
-  recipient_vat_number String?
-  recipient_name String?
-  recipient_code String?
-  project        String?
-  payment_method String?
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  document_type         String?
+  invoice_date          DateTime? @db.Date
+  mark                  String?
+  series                String?
+  number                String?
+  issuer_vat_number     String?
+  issuer_name           String?
+  recipient_vat_number  String?
+  recipient_name        String?
+  recipient_code        String?
+  project               String?
+  payment_method        String?
   value_before_discount Decimal?  @db.Decimal(10, 2)
-  discount_amount Decimal?  @db.Decimal(10, 2)
-  net_amount Decimal?  @db.Decimal(10, 2)
-  vat_amount Decimal?  @db.Decimal(10, 2)
-  withholding_amount Decimal? @db.Decimal(10, 2)
-  fees_or_stamps String?
-  total_amount   Decimal?  @db.Decimal(10, 2)
+  discount_amount       Decimal?  @db.Decimal(10, 2)
+  net_amount            Decimal?  @db.Decimal(10, 2)
+  vat_amount            Decimal?  @db.Decimal(10, 2)
+  withholding_amount    Decimal?  @db.Decimal(10, 2)
+  fees_or_stamps        String?
+  total_amount          Decimal?  @db.Decimal(10, 2)
   issuer_iban           String?
-  payment_status String?
-  comments       String? 
-  company        String?
-  category       String?
-  expense_type   String?
-  file_url       String?
-  file_path      String?
-  display_name   String?
-  file_hash      String?
-  file_upload_id String?
-  origin         String @default("app")
-  status         String @default("complete")
-  approval_status String?
-  approver_id    String?
-  createdBy      String?
-  createdAt      DateTime @default(now())
-  lastUpdatedAt  DateTime @updatedAt
+  payment_status        String?
+  comments              String?
+  company               String?
+  category              String?
+  expense_type          String?
+  file_url              String?
+  file_path             String?
+  display_name          String?
+  file_hash             String?
+  file_upload_id        String?
+  origin                String    @default("app")
+  status                String    @default("complete")
+  approval_status       String?
+  approver_id           String?
+  createdBy             String?   @map("created_by")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  lastUpdatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("invm_invoice_sessions")
+  @@schema("olon_automations_v2")
 }
 
 model CompanyVatRegistry {
-  id                   String    @id @default(uuid())
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vat_number           String?   @unique
-  company_name         String
-  company_display_name String?   @unique
+  company_name         String?   @unique @map("company_legal_name")
+  company_display_name String?   @unique @map("invm_company_display_name")
   is_issuer            Boolean   @default(false)
   is_self_project      Boolean   @default(false)
   auto_self_approve    Boolean   @default(false)
   is_active            Boolean   @default(true)
-  source               String?   @default("auto")
+  source               String?
   created_at           DateTime? @default(now())
   updated_at           DateTime? @default(now())
   projects             Project[]
+
+  @@map("companies")
+  @@schema("olon_automations_v2")
 }
 
 model Project {
-  id            String             @id @default(uuid())
-  company_id    String
-  name          String
+  id            Int                @id @default(autoincrement())
+  company_id    String             @db.Uuid
+  name          String             @map("project_name")
   is_active     Boolean            @default(true)
   created_at    DateTime?          @default(now())
   updated_at    DateTime?          @default(now())
   company       CompanyVatRegistry @relation(fields: [company_id], references: [id], onDelete: Cascade)
 
   @@unique([company_id, name])
+  @@map("invm_projects")
+  @@schema("olon_automations_v2")
 }

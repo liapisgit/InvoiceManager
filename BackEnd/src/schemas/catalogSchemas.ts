@@ -46,7 +46,7 @@ export const updateProjectSchema = z.object({
 export const updateUserSchema = z.object({
   first_name: optionalTrimmedString,
   last_name: optionalTrimmedString,
-  phone: optionalTrimmedString,
+  phone: z.string().trim().min(1).optional(),
   approver_number: optionalTrimmedString,
   is_approver: z.boolean().optional(),
 });

@@ -15,6 +15,12 @@ import {
 
 const companyRouter = Router();
 
+const getProjectIdParam = (id: string | undefined) => {
+  if (!id) return null;
+  const projectId = Number(id);
+  return Number.isInteger(projectId) && projectId > 0 ? projectId : null;
+};
+
 companyRouter.get("/", async (_req, res) => {
   try {
     const companies = await companyRepository.findCatalog();
@@ -121,10 +127,11 @@ companyRouter.patch(
   async (req, res) => {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      if (!id) {
+      const projectId = getProjectIdParam(id);
+      if (!projectId) {
         return res.status(StatusCodes.BAD_REQUEST).json({ error: "Project id is required" });
       }
-      const project = await projectRepository.update(id, req.body);
+      const project = await projectRepository.update(projectId, req.body);
       return res.json(project);
     } catch (error: any) {
       console.error("Error updating project:", error);
@@ -139,10 +146,11 @@ companyRouter.patch(
 companyRouter.delete("/projects/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    if (!id) {
+    const projectId = getProjectIdParam(id);
+    if (!projectId) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: "Project id is required" });
     }
-    await projectRepository.deactivate(id);
+    await projectRepository.deactivate(projectId);
     return res.status(StatusCodes.NO_CONTENT).send();
   } catch (error: any) {
     console.error("Error deactivating project:", error);

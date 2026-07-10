@@ -190,7 +190,7 @@ export const projectRepository = {
     });
   },
 
-  async update(id: string, data: ProjectWriteData) {
+  async update(id: number, data: ProjectWriteData) {
     return dbClient.project.update({
       where: { id },
       data: {
@@ -200,7 +200,7 @@ export const projectRepository = {
     });
   },
 
-  async deactivate(id: string) {
+  async deactivate(id: number) {
     return dbClient.project.update({
       where: { id },
       data: {

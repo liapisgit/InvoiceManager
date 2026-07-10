@@ -2,7 +2,7 @@ import axios from "axios";
 import { getToken, clearToken } from "./auth";
 
 const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || "http://192.168.1.102:8080"
+  import.meta.env.VITE_API_BASE_URL || "http://192.168.1.102:8081"
 ).replace(/\/$/, "");
 
 export const apiClient = axios.create({

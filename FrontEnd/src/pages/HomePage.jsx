@@ -7,6 +7,7 @@ import {
   Chip,
   CircularProgress,
   Container,
+  MenuItem,
   Paper,
   TextField,
   Tooltip,
@@ -36,6 +37,7 @@ const DISPLAY_FIELDS = [
 ];
 
 const getInvoiceMonthKey = (value) => (value ? String(value).slice(0, 7) : "");
+const getInvoiceDateKey = (value) => (value ? String(value).slice(0, 10) : "");
 const getCurrentMonthFilter = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -43,6 +45,17 @@ const getCurrentMonthFilter = () => {
 
   return `${year}-${month}`;
 };
+const createInitialFilters = () => ({
+  number: "",
+  issuer_name: "",
+  recipient_name: "",
+  project: "",
+  date_filter_mode: "month",
+  invoice_date: getCurrentMonthFilter(),
+  invoice_date_start: "",
+  invoice_date_end: "",
+  user: "",
+});
 
 const isPresent = (value) => {
   if (typeof value === "boolean") return true;
@@ -200,14 +213,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState([]);
-  const [filters, setFilters] = useState({
-    number: "",
-    issuer_name: "",
-    recipient_name: "",
-    project: "",
-    invoice_date: getCurrentMonthFilter(),
-    user: "",
-  });
+  const [filters, setFilters] = useState(createInitialFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -318,11 +324,24 @@ export default function HomePage() {
       if (!matchesTextFilter(invoice.createdByLabel || invoice.createdBy, filters.user)) {
         return false;
       }
-      if (
-        filters.invoice_date &&
-        getInvoiceMonthKey(invoice.invoice_date) !== filters.invoice_date
-      ) {
-        return false;
+      if (filters.date_filter_mode === "period") {
+        const invoiceDate = getInvoiceDateKey(invoice.invoice_date);
+        if (!invoiceDate && (filters.invoice_date_start || filters.invoice_date_end)) {
+          return false;
+        }
+        if (filters.invoice_date_start && invoiceDate < filters.invoice_date_start) {
+          return false;
+        }
+        if (filters.invoice_date_end && invoiceDate > filters.invoice_date_end) {
+          return false;
+        }
+      } else {
+        if (
+          filters.invoice_date &&
+          getInvoiceMonthKey(invoice.invoice_date) !== filters.invoice_date
+        ) {
+          return false;
+        }
       }
       return true;
     });
@@ -528,33 +547,72 @@ export default function HomePage() {
               onChange: (user) => setFilters((prev) => ({ ...prev, user })),
             })}
             <TextField
-              label={t("fields.invoice_date")}
-              value={filters.invoice_date}
+              select
+              label={t("dashboard.dateFilterMode")}
+              value={filters.date_filter_mode}
               onChange={(event) =>
                 setFilters((prev) => ({
                   ...prev,
-                  invoice_date: event.target.value,
+                  date_filter_mode: event.target.value,
                 }))
               }
-              type="month"
               size="small"
-              InputLabelProps={{ shrink: true }}
-            />
+            >
+              <MenuItem value="month">{t("dashboard.dateFilterByMonth")}</MenuItem>
+              <MenuItem value="period">{t("dashboard.dateFilterByPeriod")}</MenuItem>
+            </TextField>
+            {filters.date_filter_mode === "period" ? (
+              <>
+                <TextField
+                  label={t("dashboard.invoiceStartDate")}
+                  value={filters.invoice_date_start}
+                  onChange={(event) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      invoice_date_start: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ max: filters.invoice_date_end || undefined }}
+                />
+                <TextField
+                  label={t("dashboard.invoiceEndDate")}
+                  value={filters.invoice_date_end}
+                  onChange={(event) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      invoice_date_end: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ min: filters.invoice_date_start || undefined }}
+                />
+              </>
+            ) : (
+              <TextField
+                label={t("fields.invoice_date")}
+                value={filters.invoice_date}
+                onChange={(event) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    invoice_date: event.target.value,
+                  }))
+                }
+                type="month"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+              />
+            )}
           </Box>
 
           <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
             <Button
               variant="text"
-              onClick={() =>
-                setFilters({
-                  number: "",
-                  issuer_name: "",
-                  recipient_name: "",
-                  project: "",
-                  invoice_date: "",
-                  user: "",
-                })
-              }
+              onClick={() => setFilters({ ...createInitialFilters(), invoice_date: "" })}
             >
               {t("dashboard.clearFilters")}
             </Button>

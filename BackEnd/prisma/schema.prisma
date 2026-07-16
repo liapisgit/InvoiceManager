@@ -18,6 +18,7 @@ model User {
   is_admin      Boolean  @default(false)
   approver_number String?
   password  String
+  user_gdrive_folder_id String?
   createdAt DateTime @default(now())
   lastUpdatedAt DateTime @updatedAt
 }
@@ -73,6 +74,7 @@ model CompanyVatRegistry {
   auto_self_approve    Boolean   @default(false)
   is_active            Boolean   @default(true)
   source               String?   @default("auto")
+  company_gdrive_folder_id String?
   created_at           DateTime? @default(now())
   updated_at           DateTime? @default(now())
   projects             Project[]
@@ -83,6 +85,7 @@ model Project {
   company_id    String
   name          String
   is_active     Boolean            @default(true)
+  project_gdrive_folder_id String?
   created_at    DateTime?          @default(now())
   updated_at    DateTime?          @default(now())
   company       CompanyVatRegistry @relation(fields: [company_id], references: [id], onDelete: Cascade)

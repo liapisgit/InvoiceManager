@@ -6,6 +6,7 @@ import { userLoginSchema } from "../schemas/userSchemas";
 import { userRepository } from "../repositories/userRepository";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { adminMiddleware } from "../middlewares/adminMiddleware";
+import { triggerCatalogWebhook } from "../lib/catalogWebhook";
 import jwt from "jsonwebtoken";
 
 const userRouter = Router();
@@ -90,6 +91,12 @@ userRouter.patch(
         return res.status(StatusCodes.BAD_REQUEST).json({ error: "User id is required" });
       }
       const user = await userRepository.update(id, req.body);
+      await triggerCatalogWebhook({
+        entity: "user",
+        action: "updated",
+        data: user,
+        actor: req.user,
+      });
       return res.json(user);
     } catch (error: any) {
       console.error("Error updating user:", error);

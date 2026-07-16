@@ -16,6 +16,8 @@ export const config = {
   n8nInvoiceDataWebhookUrl: process.env.N8N_INVOICE_DATA_WEBHOOK_URL ?? "",
   n8nDeleteDuplicatesWebhookUrl:
     process.env.N8N_DELETE_DUPLICATES_WEBHOOK_URL ?? "",
+  /** Catalog CRUD webhook (user/company/project); optional — if unset, forwarding is skipped */
+  n8nCatalogWebhookUrl: process.env.N8N_CATALOG_WEBHOOK_URL ?? "",
   frontendDistPath:
     process.env.FRONTEND_DIST_PATH || path.resolve(process.cwd(), "public"),
 };

@@ -49,6 +49,7 @@ export const userRepository = {
         approver_number: true,
         is_approver: true,
         is_admin: true,
+        user_gdrive_folder_id: true,
         createdAt: true,
         lastUpdatedAt: true,
       },

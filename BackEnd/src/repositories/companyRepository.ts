@@ -168,13 +168,9 @@ export const companyRepository = {
     });
   },
 
-  async deactivate(id: string) {
-    return dbClient.companyVatRegistry.update({
+  async delete(id: string) {
+    return dbClient.companyVatRegistry.delete({
       where: { id },
-      data: {
-        is_active: false,
-        updated_at: new Date(),
-      },
     });
   },
 };
@@ -200,13 +196,9 @@ export const projectRepository = {
     });
   },
 
-  async deactivate(id: string) {
-    return dbClient.project.update({
+  async delete(id: string) {
+    return dbClient.project.delete({
       where: { id },
-      data: {
-        is_active: false,
-        updated_at: new Date(),
-      },
     });
   },
 };

@@ -35,6 +35,14 @@ i18n.use(initReactI18next).init({
         },
         admin: {
           navLabel: "Ρυθμίσεις",
+          delete: "Διαγραφή",
+          cancel: "Ακύρωση",
+          deleteCompanyTitle: "Διαγραφή εταιρείας",
+          deleteProjectTitle: "Διαγραφή έργου",
+          confirmDeleteCompany:
+            "Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά την εταιρεία «{{name}}» και όλα τα έργα της; Η ενέργεια δεν αναιρείται.",
+          confirmDeleteProject:
+            "Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά το έργο «{{name}}»; Η ενέργεια δεν αναιρείται.",
         },
         paymentState: {
           paid: "Πληρωμένο",
@@ -231,6 +239,14 @@ i18n.use(initReactI18next).init({
         },
         admin: {
           navLabel: "Settings",
+          delete: "Delete",
+          cancel: "Cancel",
+          deleteCompanyTitle: "Delete company",
+          deleteProjectTitle: "Delete project",
+          confirmDeleteCompany:
+            "Are you sure you want to permanently delete the company \"{{name}}\" and all of its projects? This cannot be undone.",
+          confirmDeleteProject:
+            "Are you sure you want to permanently delete the project \"{{name}}\"? This cannot be undone.",
         },
         paymentState: {
           paid: "Paid",

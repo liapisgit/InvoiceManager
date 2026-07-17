@@ -6,6 +6,11 @@ import {
   Checkbox,
   CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   FormControlLabel,
   MenuItem,
@@ -14,6 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -66,6 +72,12 @@ export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    type: null,
+    id: "",
+    name: "",
+  });
 
   const isBusy = isLoading || isSaving;
 
@@ -79,22 +91,12 @@ export default function AdminSettingsPage() {
     [companies, projectForm.company_id],
   );
 
-  const selectedEditingCompany = useMemo(
-    () => companies.find((company) => company.id === editingCompanyId),
-    [companies, editingCompanyId],
-  );
-
   const editableProjects = useMemo(
     () =>
       (selectedProjectCompany?.projects ?? []).filter(
         (project) => !project.derived_from_company && !project.derived_from_user,
       ),
     [selectedProjectCompany],
-  );
-
-  const selectedEditingProject = useMemo(
-    () => editableProjects.find((project) => project.id === editingProjectId),
-    [editableProjects, editingProjectId],
   );
 
   const selectedUser = useMemo(
@@ -197,17 +199,58 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const handleDeactivateCompany = async (companyId) => {
-    if (!window.confirm(t("admin.confirmRemove", { defaultValue: "Remove this item?" }))) {
-      return;
-    }
+  const openDeleteCompanyDialog = () => {
+    if (!editingCompanyId) return;
+    setDeleteDialog({
+      open: true,
+      type: "company",
+      id: editingCompanyId,
+      name: companyForm.company_display_name.trim() || companyForm.company_name.trim(),
+    });
+  };
+
+  const openDeleteProjectDialog = () => {
+    if (!editingProjectId) return;
+    setDeleteDialog({
+      open: true,
+      type: "project",
+      id: editingProjectId,
+      name: projectForm.name.trim(),
+    });
+  };
+
+  const closeDeleteDialog = () => {
+    if (isSaving) return;
+    setDeleteDialog({
+      open: false,
+      type: null,
+      id: "",
+      name: "",
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteDialog.id || !deleteDialog.type) return;
+
     setIsSaving(true);
     try {
-      await apiClient.delete(`/api/companies/${companyId}`);
-      resetCompanyForm();
+      if (deleteDialog.type === "company") {
+        await apiClient.delete(`/api/companies/${deleteDialog.id}`);
+        resetCompanyForm();
+      } else {
+        await apiClient.delete(`/api/companies/projects/${deleteDialog.id}`);
+        setEditingProjectId("");
+        setProjectForm((current) => ({ ...current, name: "" }));
+      }
+      setDeleteDialog({
+        open: false,
+        type: null,
+        id: "",
+        name: "",
+      });
       await loadData();
     } catch (error) {
-      console.error("Error removing company:", error);
+      console.error(`Error deleting ${deleteDialog.type}:`, error);
       setErrorMessage(t("admin.saveError", { defaultValue: "Could not save changes." }));
     } finally {
       setIsSaving(false);
@@ -262,24 +305,6 @@ export default function AdminSettingsPage() {
   const resetProjectForm = () => {
     setProjectForm(emptyProjectForm);
     setEditingProjectId("");
-  };
-
-  const handleDeactivateProject = async (projectId) => {
-    if (!window.confirm(t("admin.confirmRemove", { defaultValue: "Remove this item?" }))) {
-      return;
-    }
-    setIsSaving(true);
-    try {
-      await apiClient.delete(`/api/companies/projects/${projectId}`);
-      setEditingProjectId("");
-      setProjectForm((current) => ({ ...current, name: "" }));
-      await loadData();
-    } catch (error) {
-      console.error("Error removing project:", error);
-      setErrorMessage(t("admin.saveError", { defaultValue: "Could not save changes." }));
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   const handleSaveUser = async (userId) => {
@@ -480,13 +505,15 @@ export default function AdminSettingsPage() {
                       {t("existingInvoice.cancel")}
                     </Button>
                   ) : null}
-                  {selectedEditingCompany?.is_active ? (
+                  {editingCompanyId ? (
                     <Button
                       color="error"
-                      onClick={() => handleDeactivateCompany(selectedEditingCompany.id)}
+                      variant="outlined"
+                      startIcon={<DeleteOutlineIcon />}
+                      onClick={openDeleteCompanyDialog}
                       disabled={isBusy}
                     >
-                      {t("duplicates.deleteRecord")}
+                      {t("admin.delete")}
                     </Button>
                   ) : null}
                 </Box>
@@ -579,13 +606,15 @@ export default function AdminSettingsPage() {
                       {t("existingInvoice.cancel")}
                     </Button>
                   ) : null}
-                  {selectedEditingProject?.is_active ? (
+                  {editingProjectId ? (
                     <Button
                       color="error"
-                      onClick={() => handleDeactivateProject(selectedEditingProject.id)}
+                      variant="outlined"
+                      startIcon={<DeleteOutlineIcon />}
+                      onClick={openDeleteProjectDialog}
                       disabled={isBusy}
                     >
-                      {t("duplicates.deleteRecord")}
+                      {t("admin.delete")}
                     </Button>
                   ) : null}
                 </Box>
@@ -705,6 +734,46 @@ export default function AdminSettingsPage() {
             </Box>
           )}
         </Paper>
+
+        <Dialog
+          open={deleteDialog.open}
+          onClose={closeDeleteDialog}
+          fullWidth
+          maxWidth="xs"
+        >
+          <DialogTitle>
+            {deleteDialog.type === "company"
+              ? t("admin.deleteCompanyTitle")
+              : t("admin.deleteProjectTitle")}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {deleteDialog.type === "company"
+                ? t("admin.confirmDeleteCompany", { name: deleteDialog.name })
+                : t("admin.confirmDeleteProject", { name: deleteDialog.name })}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDeleteDialog} disabled={isSaving}>
+              {t("admin.cancel")}
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              color="error"
+              variant="contained"
+              startIcon={
+                isSaving ? (
+                  <CircularProgress color="inherit" size={16} />
+                ) : (
+                  <DeleteOutlineIcon />
+                )
+              }
+              disabled={isSaving}
+            >
+              {t("admin.delete")}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );

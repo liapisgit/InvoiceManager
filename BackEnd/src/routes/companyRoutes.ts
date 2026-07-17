@@ -98,7 +98,7 @@ companyRouter.delete("/:id", adminMiddleware, async (req, res) => {
     if (!id) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: "Company id is required" });
     }
-    const company = await companyRepository.deactivate(id);
+    const company = await companyRepository.delete(id);
     await triggerCatalogWebhook({
       entity: "company",
       action: "deleted",
@@ -107,9 +107,12 @@ companyRouter.delete("/:id", adminMiddleware, async (req, res) => {
     });
     return res.status(StatusCodes.NO_CONTENT).send();
   } catch (error: any) {
-    console.error("Error deactivating company:", error);
+    console.error("Error deleting company:", error);
+    if (error?.code === "P2025") {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: "Company not found" });
+    }
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      error: "Failed to remove company",
+      error: "Failed to delete company",
       details: error?.message || "Unknown error",
     });
   }
@@ -173,7 +176,7 @@ companyRouter.delete("/projects/:id", adminMiddleware, async (req, res) => {
     if (!id) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: "Project id is required" });
     }
-    const project = await projectRepository.deactivate(id);
+    const project = await projectRepository.delete(id);
     await triggerCatalogWebhook({
       entity: "project",
       action: "deleted",
@@ -182,9 +185,12 @@ companyRouter.delete("/projects/:id", adminMiddleware, async (req, res) => {
     });
     return res.status(StatusCodes.NO_CONTENT).send();
   } catch (error: any) {
-    console.error("Error deactivating project:", error);
+    console.error("Error deleting project:", error);
+    if (error?.code === "P2025") {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: "Project not found" });
+    }
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      error: "Failed to remove project",
+      error: "Failed to delete project",
       details: error?.message || "Unknown error",
     });
   }

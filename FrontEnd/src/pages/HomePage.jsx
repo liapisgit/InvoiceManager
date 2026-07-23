@@ -7,6 +7,11 @@ import {
   Chip,
   CircularProgress,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   MenuItem,
   Paper,
   TextField,
@@ -15,6 +20,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -218,11 +224,41 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedPreviewInvoice, setSelectedPreviewInvoice] = useState(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const hasLoadedInvoicesRef = useRef(false);
 
   const handleLogout = () => {
     clearToken();
     navigate("/login", { replace: true });
+  };
+
+  const closeDeleteDialog = () => {
+    if (!isDeleting) {
+      setInvoiceToDelete(null);
+    }
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/api/invoices/${invoiceToDelete.id}`);
+      setInvoices((currentInvoices) =>
+        currentInvoices.filter((invoice) => invoice.id !== invoiceToDelete.id),
+      );
+      setSelectedPreviewInvoice((currentInvoice) =>
+        currentInvoice?.id === invoiceToDelete.id ? null : currentInvoice,
+      );
+      setInvoiceToDelete(null);
+      setErrorMessage("");
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      setErrorMessage(t("dashboard.deleteError"));
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const loadInvoices = useCallback(async ({ background = false } = {}) => {
@@ -787,6 +823,17 @@ export default function HomePage() {
                         >
                           {t("dashboard.updateInvoice")}
                         </Button>
+                        {isAdmin() ? (
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => setInvoiceToDelete(invoice)}
+                          >
+                            {t("dashboard.deleteInvoice")}
+                          </Button>
+                        ) : null}
                       </Box>
                     </Box>
 
@@ -853,6 +900,37 @@ export default function HomePage() {
           </Box>
         )}
       </Container>
+
+      <Dialog
+        open={Boolean(invoiceToDelete)}
+        onClose={closeDeleteDialog}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>{t("dashboard.deleteInvoiceTitle")}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t("dashboard.confirmDeleteInvoice", {
+              name: invoiceToDelete
+                ? getInvoiceIdentifier(invoiceToDelete, t)
+                : "",
+            })}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} disabled={isDeleting}>
+            {t("dashboard.cancelDelete")}
+          </Button>
+          <Button
+            onClick={handleDeleteInvoice}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {t("dashboard.deleteInvoice")}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

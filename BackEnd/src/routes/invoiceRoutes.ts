@@ -7,6 +7,7 @@ import {
 } from "../schemas/invoiceSchemas";
 import { invoiceRepository } from "../repositories/invoiceRepository";
 import { userRepository } from "../repositories/userRepository";
+import { adminMiddleware } from "../middlewares/adminMiddleware";
 import { config, requireEnv } from "../config/env";
 import type { Invoice } from "../generated/prisma/client";
 import type { AuthPayload } from "../types/express";
@@ -381,7 +382,7 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
 
 
 // Delete invoice
-invoiceRouter.delete("/:id", async (req, res) => {
+invoiceRouter.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     if (!id) {

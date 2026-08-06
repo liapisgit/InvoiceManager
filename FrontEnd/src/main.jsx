@@ -10,6 +10,7 @@ import "./i18n";
 import theme from "./theme";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
+import MyInvoicesPage from "./pages/MyInvoicesPage";
 import InvoiceFormPage from "./pages/InvoiceFormPage";
 import ProjectTotalsDashboardPage from "./pages/ProjectTotalsDashboardPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
@@ -37,6 +38,14 @@ createRoot(document.getElementById("root")).render(
               element={
                 <ProtectedRoute>
                   <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-invoices"
+              element={
+                <ProtectedRoute>
+                  <MyInvoicesPage />
                 </ProtectedRoute>
               }
             />

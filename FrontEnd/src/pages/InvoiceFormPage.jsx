@@ -424,11 +424,10 @@ export default function InvoiceFormPage() {
 
         await apiClient.post("/api/upload/invoice", formData);
         setUploadForm(initialUploadForm);
-        setShowSuccess(true);
         setSubmitAttempted(false);
         setErrorMessage("");
         setShowError(false);
-        navigate("/");
+        navigate("/", { state: { invoiceRegistered: true } });
         return;
       }
 

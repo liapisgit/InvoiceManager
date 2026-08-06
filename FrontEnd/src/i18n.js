@@ -120,6 +120,7 @@ i18n.use(initReactI18next).init({
           subtitle:
             "Ανέβασε το αρχείο και συμπλήρωσε τα βασικά στοιχεία κόστους.",
           submit: "Ανέβασμα τιμολογίου",
+          success: "Το τιμολόγιο καταχωρήθηκε επιτυχώς.",
         },
         invoiceStatus: {
           processing: "Σε επεξεργασία",
@@ -329,6 +330,7 @@ i18n.use(initReactI18next).init({
           title: "New invoice",
           subtitle: "Upload the file and fill in the basic cost details.",
           submit: "Upload invoice",
+          success: "The invoice has been registered successfully.",
         },
         invoiceStatus: {
           processing: "Processing",

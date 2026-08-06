@@ -14,6 +14,7 @@ import {
   DialogTitle,
   MenuItem,
   Paper,
+  Snackbar,
   TextField,
   Tooltip,
   Typography,
@@ -26,7 +27,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import SettingsIcon from "@mui/icons-material/Settings";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import InvoiceFilePreview from "../components/InvoiceFilePreview";
 import AppHeader from "../components/layout/AppHeader";
@@ -217,16 +218,25 @@ const getPaymentChipConfig = (paymentStatus, t) => {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
   const [invoices, setInvoices] = useState([]);
   const [filters, setFilters] = useState(createInitialFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [selectedPreviewInvoice, setSelectedPreviewInvoice] = useState(null);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const hasLoadedInvoicesRef = useRef(false);
+
+  useEffect(() => {
+    if (!location.state?.invoiceRegistered) return;
+
+    setSuccessMessage(t("upload.success"));
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.pathname, location.state, navigate, t]);
 
   const handleLogout = () => {
     clearToken();
@@ -931,6 +941,21 @@ export default function HomePage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={Boolean(successMessage)}
+        autoHideDuration={6000}
+        onClose={() => setSuccessMessage("")}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage("")}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

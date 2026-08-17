@@ -129,6 +129,11 @@ i18n.use(initReactI18next).init({
           error: "Σφάλμα",
           duplicate: "Αντίγραφο",
         },
+        duplicateNotification: {
+          title: "Το τιμολόγιο υπάρχει ήδη",
+          message: "Το τιμολόγιο που ανέβασες υπάρχει ήδη.",
+          messageWithName: 'Το τιμολόγιο "{{name}}" που ανέβασες υπάρχει ήδη.',
+        },
         approvalStatus: {
           APPROVED: "Εγκεκριμένο",
           PENDING: "Εκκρεμεί έγκριση",
@@ -338,6 +343,11 @@ i18n.use(initReactI18next).init({
           complete: "Complete",
           error: "Error",
           duplicate: "Duplicate",
+        },
+        duplicateNotification: {
+          title: "Invoice already exists",
+          message: "The invoice you uploaded already exists.",
+          messageWithName: 'The invoice "{{name}}" you uploaded already exists.',
         },
         approvalStatus: {
           APPROVED: "Approved",

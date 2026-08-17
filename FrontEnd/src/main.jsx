@@ -16,6 +16,7 @@ import AdminSettingsPage from "./pages/AdminSettingsPage";
 import AdminRoute from "./components/auth/AdminRoute";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PublicRoute from "./components/auth/PublicRoute";
+import DuplicateInvoiceNotifier from "./components/DuplicateInvoiceNotifier";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -23,6 +24,7 @@ createRoot(document.getElementById("root")).render(
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <BrowserRouter>
+          <DuplicateInvoiceNotifier />
           <Routes>
             <Route
               path="/login"

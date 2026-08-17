@@ -40,6 +40,7 @@ import FileUploadSingleImage from "../components/Inputs/FileUploadSingleImage";
 import AppHeader from "../components/layout/AppHeader";
 import { apiClient } from "../services/apiClient";
 import { clearToken, getUserProjectNameFromToken } from "../services/auth";
+import { trackInvoiceForDuplicateNotification } from "../services/duplicateNotifications";
 import {
   createInvoiceSchema,
   updateInvoiceSchema,
@@ -422,7 +423,8 @@ export default function InvoiceFormPage() {
           formData.append("approver_id", uploadForm.approver_id);
         }
 
-        await apiClient.post("/api/upload/invoice", formData);
+        const response = await apiClient.post("/api/upload/invoice", formData);
+        trackInvoiceForDuplicateNotification(response.data);
         setUploadForm(initialUploadForm);
         setSubmitAttempted(false);
         setErrorMessage("");

@@ -65,6 +65,13 @@ export const invoiceRepository = {
     });
   },
 
+  async findByCreatedBy(createdBy: string) {
+    return dbClient.invoice.findMany({
+      where: { createdBy },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
   async findById(id: string) {
     return dbClient.invoice.findUnique({
       where: { id },

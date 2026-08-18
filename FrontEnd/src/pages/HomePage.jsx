@@ -23,6 +23,7 @@ import AddIcon from "@mui/icons-material/Add";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SettingsIcon from "@mui/icons-material/Settings";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -216,7 +217,7 @@ const getPaymentChipConfig = (paymentStatus, t) => {
   };
 };
 
-export default function HomePage() {
+export default function HomePage({ onlyMine = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation();
@@ -281,7 +282,9 @@ export default function HomePage() {
     }
 
     try {
-      const response = await apiClient.get("/api/invoices");
+      const response = await apiClient.get(
+        onlyMine ? "/api/invoices/mine" : "/api/invoices",
+      );
       setInvoices(Array.isArray(response.data) ? response.data : []);
       hasLoadedInvoicesRef.current = true;
       setErrorMessage("");
@@ -294,7 +297,7 @@ export default function HomePage() {
         setIsRefreshing(false);
       }
     }
-  }, [t]);
+  }, [onlyMine, t]);
 
   useEffect(() => {
     loadInvoices();
@@ -460,6 +463,17 @@ export default function HomePage() {
             </Button>
             <Button
               variant="outlined"
+              onClick={() => navigate(onlyMine ? "/" : "/my-invoices")}
+              startIcon={<ReceiptLongIcon />}
+              sx={{
+                color: "#fff",
+                borderColor: "rgba(255,255,255,0.45)",
+              }}
+            >
+              {t(onlyMine ? "myInvoices.allInvoices" : "myInvoices.navLabel")}
+            </Button>
+            <Button
+              variant="outlined"
               onClick={() => navigate("/dashboard/project-totals")}
               startIcon={<AssessmentIcon />}
               sx={{
@@ -535,9 +549,11 @@ export default function HomePage() {
             }}
           >
             <Box>
-              <Typography variant="h6">{t("dashboard.title")}</Typography>
+              <Typography variant="h6">
+                {t(onlyMine ? "myInvoices.title" : "dashboard.title")}
+              </Typography>
               <Typography variant="body2" color="text.secondary">
-                {t("dashboard.subtitle")}
+                {t(onlyMine ? "myInvoices.subtitle" : "dashboard.subtitle")}
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary">
@@ -586,12 +602,14 @@ export default function HomePage() {
               onChange: (project) =>
                 setFilters((prev) => ({ ...prev, project })),
             })}
-            {renderSearchFilter({
-              label: t("dashboard.userFilter"),
-              value: filters.user,
-              options: filterOptions.users,
-              onChange: (user) => setFilters((prev) => ({ ...prev, user })),
-            })}
+            {!onlyMine
+              ? renderSearchFilter({
+                  label: t("dashboard.userFilter"),
+                  value: filters.user,
+                  options: filterOptions.users,
+                  onChange: (user) => setFilters((prev) => ({ ...prev, user })),
+                })
+              : null}
             <TextField
               select
               label={t("dashboard.dateFilterMode")}

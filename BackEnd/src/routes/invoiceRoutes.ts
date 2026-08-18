@@ -240,6 +240,16 @@ invoiceRouter.get("/", async (req, res) => {
   }
 });
 
+// Get invoices uploaded by the current user
+invoiceRouter.get("/mine", async (req, res) => {
+  try {
+    const invoices = await invoiceRepository.findByCreatedBy(req.user!.user_id);
+    res.json(await withInvoiceLabels(invoices));
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch invoices" });
+  }
+});
+
 // Get invoice by mark
 invoiceRouter.get("/by-mark/:mark", async (req, res) => {
   try {
@@ -356,7 +366,6 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
           }
         : {}),
       ...(shouldMarkComplete ? { status: "complete" } : {}),
-      createdBy: req.user!.user_id,
     };
     const registryEntries = buildCompanyVatRegistryEntries(
       safeBody,

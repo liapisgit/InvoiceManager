@@ -94,6 +94,13 @@ i18n.use(initReactI18next).init({
           backToDashboard: "Επιστροφή στο dashboard",
           pendingApproval: "Εκκρεμεί έγκριση",
         },
+        myInvoices: {
+          navLabel: "Τα τιμολόγιά μου",
+          allInvoices: "Όλα τα τιμολόγια",
+          title: "Τα τιμολόγιά μου",
+          subtitle:
+            "Δες και φιλτράρισε τα τιμολόγια που έχεις ανεβάσει.",
+        },
         projectTotals: {
           navLabel: "Σύνολα ανά έργο",
           title: "Σύνολα τιμολογίων ανά έργο",
@@ -316,6 +323,12 @@ i18n.use(initReactI18next).init({
           invoiceFallback: "Invoice",
           backToDashboard: "Back to dashboard",
           pendingApproval: "Pending approval",
+        },
+        myInvoices: {
+          navLabel: "My invoices",
+          allInvoices: "All invoices",
+          title: "My invoices",
+          subtitle: "View and filter the invoices you have uploaded.",
         },
         projectTotals: {
           navLabel: "Project totals",

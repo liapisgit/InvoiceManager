@@ -7,7 +7,6 @@ import {
 } from "../schemas/invoiceSchemas";
 import { invoiceRepository } from "../repositories/invoiceRepository";
 import { userRepository } from "../repositories/userRepository";
-import { adminMiddleware } from "../middlewares/adminMiddleware";
 import { config, requireEnv } from "../config/env";
 import type { Invoice } from "../generated/prisma/client";
 import type { AuthPayload } from "../types/express";
@@ -390,17 +389,30 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
 });
 
 
-// Delete invoice
-invoiceRouter.delete("/:id", adminMiddleware, async (req, res) => {
+// Delete an invoice as its uploader or an administrator
+invoiceRouter.delete("/:id", async (req, res) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     if (!id) {
       return res.status(400).json({ error: "Invoice id is required" });
     }
 
+    if (!req.user?.user_id) {
+      return res.status(401).json({ error: "Authentication is required" });
+    }
+
     const existingInvoice = await invoiceRepository.findById(id);
     if (!existingInvoice) {
       return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    if (existingInvoice.createdBy !== req.user.user_id) {
+      const user = await userRepository.findById(req.user.user_id);
+      if (!user?.is_admin) {
+        return res.status(403).json({
+          error: "You can only delete invoices that you uploaded",
+        });
+      }
     }
 
     await triggerDeleteDuplicateWebhook(existingInvoice);

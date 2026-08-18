@@ -34,7 +34,7 @@ import InvoiceFilePreview from "../components/InvoiceFilePreview";
 import AppHeader from "../components/layout/AppHeader";
 import "../App.css";
 import { apiClient } from "../services/apiClient";
-import { clearToken, isAdmin } from "../services/auth";
+import { clearToken, getTokenPayload, isAdmin } from "../services/auth";
 import { PERSONAL_COMPANY } from "../services/catalog";
 
 const DISPLAY_FIELDS = [
@@ -221,6 +221,7 @@ export default function HomePage({ onlyMine = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation();
+  const currentUserId = getTokenPayload()?.user_id;
   const [invoices, setInvoices] = useState([]);
   const [filters, setFilters] = useState(createInitialFilters);
   const [isLoading, setIsLoading] = useState(true);
@@ -851,7 +852,7 @@ export default function HomePage({ onlyMine = false }) {
                         >
                           {t("dashboard.updateInvoice")}
                         </Button>
-                        {isAdmin() ? (
+                        {isAdmin() || invoice.createdBy === currentUserId ? (
                           <Button
                             variant="outlined"
                             color="error"

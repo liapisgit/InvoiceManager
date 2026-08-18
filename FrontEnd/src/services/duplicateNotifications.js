@@ -15,6 +15,7 @@ const normalizeEntries = (value) => {
     .map((entry) => ({
       id: entry.id,
       displayName: String(entry.displayName ?? ""),
+      type: entry.type === "error" ? "error" : "duplicate",
     }));
 };
 

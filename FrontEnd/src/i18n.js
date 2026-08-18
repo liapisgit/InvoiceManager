@@ -134,6 +134,13 @@ i18n.use(initReactI18next).init({
           message: "Το τιμολόγιο που ανέβασες υπάρχει ήδη.",
           messageWithName: 'Το τιμολόγιο "{{name}}" που ανέβασες υπάρχει ήδη.',
         },
+        errorNotification: {
+          title: "Αποτυχία επεξεργασίας τιμολογίου",
+          message:
+            "Παρουσιάστηκε σφάλμα. Παρακαλώ δοκίμασε να ανεβάσεις ξανά το τιμολόγιο.",
+          messageWithName:
+            'Παρουσιάστηκε σφάλμα στο αρχείο "{{name}}". Παρακαλώ δοκίμασε να το ανεβάσεις ξανά.',
+        },
         approvalStatus: {
           APPROVED: "Εγκεκριμένο",
           PENDING: "Εκκρεμεί έγκριση",
@@ -348,6 +355,13 @@ i18n.use(initReactI18next).init({
           title: "Invoice already exists",
           message: "The invoice you uploaded already exists.",
           messageWithName: 'The invoice "{{name}}" you uploaded already exists.',
+        },
+        errorNotification: {
+          title: "Invoice processing failed",
+          message:
+            "An error has occurred. Please try uploading the invoice again.",
+          messageWithName:
+            'An error has occurred with "{{name}}". Please try uploading the invoice again.',
         },
         approvalStatus: {
           APPROVED: "Approved",

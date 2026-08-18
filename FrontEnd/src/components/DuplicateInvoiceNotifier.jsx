@@ -62,6 +62,20 @@ export default function DuplicateInvoiceNotifier() {
               displayName: String(
                 invoice.display_name || entry.displayName || "",
               ),
+              type: "duplicate",
+            });
+          }
+          return;
+        }
+
+        if (invoice?.status === "error") {
+          if (!nextNotifications.some((notice) => notice.id === entry.id)) {
+            nextNotifications.push({
+              id: entry.id,
+              displayName: String(
+                entry.displayName || invoice.display_name || "",
+              ),
+              type: "error",
             });
           }
           return;
@@ -112,6 +126,7 @@ export default function DuplicateInvoiceNotifier() {
   }, [notifications, userId]);
 
   const currentNotification = userId ? notifications[0] : undefined;
+  const isErrorNotification = currentNotification?.type === "error";
 
   return (
     <Snackbar
@@ -122,17 +137,30 @@ export default function DuplicateInvoiceNotifier() {
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
     >
       <Alert
-        severity="warning"
+        severity={isErrorNotification ? "error" : "warning"}
         variant="filled"
         onClose={handleClose}
         sx={{ width: "100%" }}
       >
-        <AlertTitle>{t("duplicateNotification.title")}</AlertTitle>
-        {currentNotification?.displayName
-          ? t("duplicateNotification.messageWithName", {
-              name: currentNotification.displayName,
-            })
-          : t("duplicateNotification.message")}
+        {isErrorNotification ? (
+          <>
+            <AlertTitle>{t("errorNotification.title")}</AlertTitle>
+            {currentNotification?.displayName
+              ? t("errorNotification.messageWithName", {
+                  name: currentNotification.displayName,
+                })
+              : t("errorNotification.message")}
+          </>
+        ) : (
+          <>
+            <AlertTitle>{t("duplicateNotification.title")}</AlertTitle>
+            {currentNotification?.displayName
+              ? t("duplicateNotification.messageWithName", {
+                  name: currentNotification.displayName,
+                })
+              : t("duplicateNotification.message")}
+          </>
+        )}
       </Alert>
     </Snackbar>
   );

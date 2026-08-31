@@ -691,20 +691,6 @@ export default function AdminSettingsPage() {
                         }
                         size="small"
                       />
-                      <TextField
-                        label={t("admin.approverNumber", {
-                          defaultValue: "Approver number",
-                        })}
-                        value={selectedEditingUser.approver_number ?? ""}
-                        onChange={(event) =>
-                          setUserField(
-                            selectedUser.id,
-                            "approver_number",
-                            event.target.value,
-                          )
-                        }
-                        size="small"
-                      />
                       <FormControlLabel
                         control={
                           <Checkbox

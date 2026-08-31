@@ -140,6 +140,7 @@ export default function AdminSettingsPage() {
           phone: user.phone ?? "",
           approver_number: user.approver_number ?? "",
           is_approver: Boolean(user.is_approver),
+          is_admin: Boolean(user.is_admin),
         };
         return next;
       }, {}),
@@ -468,19 +469,6 @@ export default function AdminSettingsPage() {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        checked={companyForm.auto_self_approve}
-                        onChange={(event) =>
-                          setCompanyField("auto_self_approve", event.target.checked)
-                        }
-                      />
-                    }
-                    label={t("admin.autoSelfApprove", {
-                      defaultValue: "Auto self-approve",
-                    })}
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
                         checked={companyForm.is_active}
                         onChange={(event) =>
                           setCompanyField("is_active", event.target.checked)
@@ -705,6 +693,21 @@ export default function AdminSettingsPage() {
                           />
                         }
                         label={t("admin.approver", { defaultValue: "Approver" })}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={Boolean(selectedEditingUser.is_admin)}
+                            onChange={(event) =>
+                              setUserField(
+                                selectedUser.id,
+                                "is_admin",
+                                event.target.checked,
+                              )
+                            }
+                          />
+                        }
+                        label={t("admin.isAdmin", { defaultValue: "Admin" })}
                       />
                       <Button
                         variant="outlined"

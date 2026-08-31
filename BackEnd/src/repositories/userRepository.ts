@@ -35,6 +35,7 @@ export const userRepository = {
       phone?: string | null;
       approver_number?: string | null;
       is_approver?: boolean;
+      is_admin?: boolean;
     },
   ) {
     return dbClient.user.update({

@@ -49,4 +49,5 @@ export const updateUserSchema = z.object({
   phone: optionalTrimmedString,
   approver_number: optionalTrimmedString,
   is_approver: z.boolean().optional(),
+  is_admin: z.boolean().optional(),
 });

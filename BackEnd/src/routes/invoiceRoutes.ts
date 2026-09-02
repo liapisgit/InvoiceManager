@@ -309,6 +309,7 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
     const {
       approval_status: _ignoredApprovalStatus,
       approver_id: submittedApproverId,
+      createdBy: _ignoredCreatedBy,
       ...safeBody
     } = req.body;
     const nextPaymentStatus =
@@ -365,6 +366,9 @@ invoiceRouter.patch("/:id", validate(updateInvoiceSchema), async (req, res) => {
           }
         : {}),
       ...(shouldMarkComplete ? { status: "complete" } : {}),
+      ...(!hasValue(existingInvoice.createdBy)
+        ? { createdBy: req.user!.user_id }
+        : {}),
     };
     const registryEntries = buildCompanyVatRegistryEntries(
       safeBody,

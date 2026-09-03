@@ -55,6 +55,7 @@ export const companyRepository = {
       }),
       dbClient.user.findMany({
         where: {
+          is_active: true,
           AND: [
             { first_name: { not: null } },
             { first_name: { not: "" } },

@@ -11,6 +11,7 @@ export const userRepository = {
 
   async findAll() {
     return dbClient.user.findMany({
+      where: { is_active: true },
       orderBy: [{ first_name: "asc" }, { last_name: "asc" }, { user_name: "asc" }],
       select: {
         id: true,
@@ -21,6 +22,7 @@ export const userRepository = {
         approver_number: true,
         is_approver: true,
         is_admin: true,
+        is_active: true,
         createdAt: true,
         lastUpdatedAt: true,
       },
@@ -50,6 +52,32 @@ export const userRepository = {
         approver_number: true,
         is_approver: true,
         is_admin: true,
+        is_active: true,
+        user_gdrive_folder_id: true,
+        createdAt: true,
+        lastUpdatedAt: true,
+      },
+    });
+  },
+
+  async deactivate(id: string) {
+    return dbClient.user.update({
+      where: { id, is_active: true },
+      data: {
+        is_active: false,
+        is_approver: false,
+        is_admin: false,
+      },
+      select: {
+        id: true,
+        user_name: true,
+        first_name: true,
+        last_name: true,
+        phone: true,
+        approver_number: true,
+        is_approver: true,
+        is_admin: true,
+        is_active: true,
         user_gdrive_folder_id: true,
         createdAt: true,
         lastUpdatedAt: true,
@@ -62,6 +90,7 @@ export const userRepository = {
       where: {
         phone,
         is_approver: true,
+        is_active: true,
         AND: [
           { first_name: { not: null } },
           { first_name: { not: "" } },
@@ -83,6 +112,7 @@ export const userRepository = {
     return dbClient.user.findMany({
       where: {
         is_approver: true,
+        is_active: true,
         AND: [
           { first_name: { not: null } },
           { first_name: { not: "" } },

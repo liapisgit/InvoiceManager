@@ -16,6 +16,7 @@ model User {
   phone         String?
   is_approver   Boolean  @default(false)
   is_admin      Boolean  @default(false)
+  is_active     Boolean  @default(true)
   approver_number String?
   password  String
   user_gdrive_folder_id String?

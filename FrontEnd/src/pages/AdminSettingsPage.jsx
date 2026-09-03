@@ -26,7 +26,7 @@ import { useNavigate } from "react-router-dom";
 
 import AppHeader from "../components/layout/AppHeader";
 import { apiClient } from "../services/apiClient";
-import { clearToken } from "../services/auth";
+import { clearToken, getTokenPayload } from "../services/auth";
 import { fetchAdminCompanies, PERSONAL_COMPANY } from "../services/catalog";
 import "../App.css";
 
@@ -220,6 +220,16 @@ export default function AdminSettingsPage() {
     });
   };
 
+  const openDeleteUserDialog = () => {
+    if (!selectedUser) return;
+    setDeleteDialog({
+      open: true,
+      type: "user",
+      id: selectedUser.id,
+      name: `${getUserLabel(selectedUser)} (${selectedUser.user_name})`,
+    });
+  };
+
   const closeDeleteDialog = () => {
     if (isSaving) return;
     setDeleteDialog({
@@ -238,10 +248,13 @@ export default function AdminSettingsPage() {
       if (deleteDialog.type === "company") {
         await apiClient.delete(`/api/companies/${deleteDialog.id}`);
         resetCompanyForm();
-      } else {
+      } else if (deleteDialog.type === "project") {
         await apiClient.delete(`/api/companies/projects/${deleteDialog.id}`);
         setEditingProjectId("");
         setProjectForm((current) => ({ ...current, name: "" }));
+      } else if (deleteDialog.type === "user") {
+        await apiClient.delete(`/api/users/${deleteDialog.id}`);
+        setSelectedUserId("");
       }
       setDeleteDialog({
         open: false,
@@ -716,6 +729,17 @@ export default function AdminSettingsPage() {
                       >
                         {t("invoiceEdit.submit")}
                       </Button>
+                      <Button
+                        color="error"
+                        variant="outlined"
+                        startIcon={<DeleteOutlineIcon />}
+                        onClick={openDeleteUserDialog}
+                        disabled={
+                          isBusy || selectedUser.id === getTokenPayload()?.user_id
+                        }
+                      >
+                        {t("admin.delete")}
+                      </Button>
                     </Box>
                   </Paper>
                 ) : null}
@@ -733,13 +757,17 @@ export default function AdminSettingsPage() {
           <DialogTitle>
             {deleteDialog.type === "company"
               ? t("admin.deleteCompanyTitle")
-              : t("admin.deleteProjectTitle")}
+              : deleteDialog.type === "user"
+                ? t("admin.deleteUserTitle")
+                : t("admin.deleteProjectTitle")}
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {deleteDialog.type === "company"
                 ? t("admin.confirmDeleteCompany", { name: deleteDialog.name })
-                : t("admin.confirmDeleteProject", { name: deleteDialog.name })}
+                : deleteDialog.type === "user"
+                  ? t("admin.confirmDeleteUser", { name: deleteDialog.name })
+                  : t("admin.confirmDeleteProject", { name: deleteDialog.name })}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

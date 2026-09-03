@@ -19,7 +19,7 @@ const getUserLabel = (user: {
 userRouter.post("/login", validate(userLoginSchema), async (req, res) => {
   const user = await userRepository.findByUserName(req.body.user_name);
 
-  if (!user || user.password !== req.body.password) {
+  if (!user || !user.is_active || user.password !== req.body.password) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
       .json({ error: "Invalid user_name or password" });
@@ -102,6 +102,42 @@ userRouter.patch(
       console.error("Error updating user:", error);
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: "Failed to update user",
+        details: error?.message || "Unknown error",
+      });
+    }
+  },
+);
+
+userRouter.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ error: "User id is required" });
+      }
+      if (id === req.user?.user_id) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          error: "You cannot delete your own account",
+        });
+      }
+      const user = await userRepository.deactivate(id);
+      await triggerCatalogWebhook({
+        entity: "user",
+        action: "deleted",
+        data: user,
+        actor: req.user,
+      });
+      return res.status(StatusCodes.NO_CONTENT).send();
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      if (error?.code === "P2025") {
+        return res.status(StatusCodes.NOT_FOUND).json({ error: "User not found" });
+      }
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        error: "Failed to delete user",
         details: error?.message || "Unknown error",
       });
     }

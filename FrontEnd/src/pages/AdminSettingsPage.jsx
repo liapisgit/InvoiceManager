@@ -19,12 +19,14 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import AppHeader from "../components/layout/AppHeader";
+import PasswordInput from "../components/PasswordInput";
 import { apiClient } from "../services/apiClient";
 import { clearToken, getTokenPayload } from "../services/auth";
 import { fetchAdminCompanies, PERSONAL_COMPANY } from "../services/catalog";
@@ -43,6 +45,17 @@ const emptyCompanyForm = {
 const emptyProjectForm = {
   company_id: "",
   name: "",
+};
+
+const NEW_USER_VALUE = "__new_user__";
+const emptyUserForm = {
+  user_name: "",
+  password: "",
+  first_name: "",
+  last_name: "",
+  phone: "",
+  is_approver: false,
+  is_admin: false,
 };
 
 const normalizeCompanyPayload = (form) => ({
@@ -69,6 +82,7 @@ export default function AdminSettingsPage() {
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingUsers, setEditingUsers] = useState({});
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [newUserForm, setNewUserForm] = useState(emptyUserForm);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -334,8 +348,47 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (
+      !newUserForm.user_name.trim() ||
+      !newUserForm.first_name.trim() ||
+      !newUserForm.last_name.trim() ||
+      newUserForm.password.length < 8
+    ) {
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await apiClient.post("/api/users", {
+        ...newUserForm,
+        user_name: newUserForm.user_name.trim(),
+        first_name: newUserForm.first_name.trim(),
+        last_name: newUserForm.last_name.trim(),
+        phone: newUserForm.phone.trim() || null,
+      });
+      setNewUserForm(emptyUserForm);
+      await loadData();
+      setSelectedUserId(response.data.id);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setErrorMessage(
+        error.response?.data?.error ||
+          t("admin.createUserError", {
+            defaultValue: "Could not create the user.",
+          }),
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const setCompanyField = (field, value) => {
     setCompanyForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const setNewUserField = (field, value) => {
+    setNewUserForm((current) => ({ ...current, [field]: value }));
   };
 
   const setUserField = (userId, field, value) => {
@@ -646,12 +699,134 @@ export default function AdminSettingsPage() {
                   sx={{ mb: 2 }}
                 >
                   <MenuItem value="">-</MenuItem>
+                  <MenuItem value={NEW_USER_VALUE}>
+                    {t("admin.addNewUser", { defaultValue: "Add new user" })}
+                  </MenuItem>
                   {users.map((user) => (
                     <MenuItem key={user.id} value={user.id}>
                       {getUserLabel(user)} ({user.user_name})
                     </MenuItem>
                   ))}
                 </TextField>
+                {selectedUserId === NEW_USER_VALUE ? (
+                  <Paper
+                    elevation={0}
+                    sx={{ p: 2, borderRadius: 2, border: "1px solid #e5e7eb" }}
+                  >
+                    <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                      {t("admin.addNewUser", { defaultValue: "Add new user" })}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(220px, 1fr))",
+                        gap: 2,
+                        alignItems: "center",
+                      }}
+                    >
+                      <TextField
+                        label={t("admin.username", {
+                          defaultValue: "Username",
+                        })}
+                        value={newUserForm.user_name}
+                        onChange={(event) =>
+                          setNewUserField("user_name", event.target.value)
+                        }
+                        size="small"
+                        required
+                        autoComplete="off"
+                      />
+                      <TextField
+                        label={t("admin.firstName", {
+                          defaultValue: "First name",
+                        })}
+                        value={newUserForm.first_name}
+                        onChange={(event) =>
+                          setNewUserField("first_name", event.target.value)
+                        }
+                        size="small"
+                        required
+                      />
+                      <TextField
+                        label={t("admin.lastName", {
+                          defaultValue: "Last name",
+                        })}
+                        value={newUserForm.last_name}
+                        onChange={(event) =>
+                          setNewUserField("last_name", event.target.value)
+                        }
+                        size="small"
+                        required
+                      />
+                      <TextField
+                        label={t("admin.phone", { defaultValue: "Phone" })}
+                        value={newUserForm.phone}
+                        onChange={(event) =>
+                          setNewUserField("phone", event.target.value)
+                        }
+                        size="small"
+                      />
+                      <PasswordInput
+                        label={t("password.initialPassword")}
+                        value={newUserForm.password}
+                        onChange={(value) =>
+                          setNewUserField("password", value)
+                        }
+                        canGenerate
+                        disabled={isBusy}
+                        required
+                        helperText={t("password.minimumLength")}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={newUserForm.is_approver}
+                            onChange={(event) =>
+                              setNewUserField(
+                                "is_approver",
+                                event.target.checked,
+                              )
+                            }
+                          />
+                        }
+                        label={t("admin.approver", {
+                          defaultValue: "Approver",
+                        })}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={newUserForm.is_admin}
+                            onChange={(event) =>
+                              setNewUserField(
+                                "is_admin",
+                                event.target.checked,
+                              )
+                            }
+                          />
+                        }
+                        label={t("admin.isAdmin", { defaultValue: "Admin" })}
+                      />
+                      <Button
+                        variant="contained"
+                        startIcon={<PersonAddIcon />}
+                        onClick={handleCreateUser}
+                        disabled={
+                          isBusy ||
+                          !newUserForm.user_name.trim() ||
+                          !newUserForm.first_name.trim() ||
+                          !newUserForm.last_name.trim() ||
+                          newUserForm.password.length < 8
+                        }
+                      >
+                        {t("admin.createUser", {
+                          defaultValue: "Create user",
+                        })}
+                      </Button>
+                    </Box>
+                  </Paper>
+                ) : null}
                 {selectedUser ? (
                   <Paper
                     elevation={0}

@@ -29,6 +29,42 @@ export const userRepository = {
     });
   },
 
+  async create(data: {
+    user_name: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+    phone?: string | null;
+    is_approver?: boolean;
+    is_admin?: boolean;
+  }) {
+    return dbClient.user.create({
+      data,
+      select: {
+        id: true,
+        user_name: true,
+        first_name: true,
+        last_name: true,
+        phone: true,
+        approver_number: true,
+        is_approver: true,
+        is_admin: true,
+        is_active: true,
+        user_gdrive_folder_id: true,
+        createdAt: true,
+        lastUpdatedAt: true,
+      },
+    });
+  },
+
+  async updatePassword(id: string, password: string) {
+    return dbClient.user.update({
+      where: { id, is_active: true },
+      data: { password },
+      select: { id: true },
+    });
+  },
+
   async update(
     id: string,
     data: {

@@ -14,6 +14,7 @@ import MyInvoicesPage from "./pages/MyInvoicesPage";
 import InvoiceFormPage from "./pages/InvoiceFormPage";
 import ProjectTotalsDashboardPage from "./pages/ProjectTotalsDashboardPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 import AdminRoute from "./components/auth/AdminRoute";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import PublicRoute from "./components/auth/PublicRoute";
@@ -82,6 +83,14 @@ createRoot(document.getElementById("root")).render(
                   <AdminRoute>
                     <AdminSettingsPage />
                   </AdminRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account/password"
+              element={
+                <ProtectedRoute>
+                  <ChangePasswordPage />
                 </ProtectedRoute>
               }
             />

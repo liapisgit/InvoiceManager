@@ -1,8 +1,21 @@
-import { Box, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
+import LockResetIcon from "@mui/icons-material/LockReset";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-export default function AppHeader({ actions, disabled = false }) {
+export default function AppHeader({
+  actions,
+  disabled = false,
+  showPasswordAction = true,
+}) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   const handleLanguageChange = (language) => {
     i18n.changeLanguage(language);
@@ -56,6 +69,17 @@ export default function AppHeader({ actions, disabled = false }) {
           <ToggleButton value="el">EL</ToggleButton>
           <ToggleButton value="en">EN</ToggleButton>
         </ToggleButtonGroup>
+        {showPasswordAction ? (
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/account/password")}
+            disabled={disabled}
+            startIcon={<LockResetIcon />}
+            sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.45)" }}
+          >
+            {t("password.changePassword")}
+          </Button>
+        ) : null}
         {actions}
       </Box>
     </Box>

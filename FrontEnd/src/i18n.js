@@ -62,6 +62,10 @@ i18n.use(initReactI18next).init({
             "Οι εταιρείες με ίδιο έργο χρησιμοποιούν το όνομα της εταιρείας ως έργο.",
           people: "Χρήστες",
           userToEdit: "Χρήστης προς επεξεργασία",
+          addNewUser: "Προσθήκη νέου χρήστη",
+          createUser: "Δημιουργία χρήστη",
+          createUserError: "Δεν ήταν δυνατή η δημιουργία του χρήστη.",
+          username: "Όνομα χρήστη",
           firstName: "Όνομα",
           lastName: "Επώνυμο",
           phone: "Τηλέφωνο",
@@ -77,7 +81,24 @@ i18n.use(initReactI18next).init({
           confirmDeleteProject:
             "Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά το έργο «{{name}}»; Η ενέργεια δεν αναιρείται.",
           confirmDeleteUser:
-            "Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά τον χρήστη «{{name}}»; Η ενέργεια δεν αναιρείται.",
+            "Είστε σίγουροι ότι θέλετε να αφαιρέσετε τον χρήστη «{{name}}» από την εφαρμογή;",
+        },
+        password: {
+          changePassword: "Αλλαγή κωδικού",
+          changeDescription:
+            "Εισαγάγετε τον τρέχοντα κωδικό και επιλέξτε έναν νέο.",
+          currentPassword: "Τρέχων κωδικός",
+          newPassword: "Νέος κωδικός",
+          confirmPassword: "Επιβεβαίωση νέου κωδικού",
+          initialPassword: "Αρχικός κωδικός",
+          minimumLength: "Τουλάχιστον 8 χαρακτήρες.",
+          passwordsDoNotMatch: "Οι κωδικοί δεν ταιριάζουν.",
+          generate: "Δημιουργία",
+          showPassword: "Εμφάνιση κωδικού",
+          hidePassword: "Απόκρυψη κωδικού",
+          savePassword: "Αποθήκευση κωδικού",
+          changeSuccess: "Ο κωδικός άλλαξε επιτυχώς.",
+          changeError: "Δεν ήταν δυνατή η αλλαγή του κωδικού.",
         },
         paymentState: {
           paid: "Πληρωμένο",
@@ -327,6 +348,10 @@ i18n.use(initReactI18next).init({
             "Self-project companies use the company name as the project.",
           people: "People",
           userToEdit: "User to edit",
+          addNewUser: "Add new user",
+          createUser: "Create user",
+          createUserError: "Could not create the user.",
+          username: "Username",
           firstName: "First name",
           lastName: "Last name",
           phone: "Phone",
@@ -342,7 +367,24 @@ i18n.use(initReactI18next).init({
           confirmDeleteProject:
             "Are you sure you want to permanently delete the project \"{{name}}\"? This cannot be undone.",
           confirmDeleteUser:
-            "Are you sure you want to permanently delete the user \"{{name}}\"? This cannot be undone.",
+            "Are you sure you want to remove the user \"{{name}}\" from the application?",
+        },
+        password: {
+          changePassword: "Change password",
+          changeDescription:
+            "Enter your current password and choose a new one.",
+          currentPassword: "Current password",
+          newPassword: "New password",
+          confirmPassword: "Confirm new password",
+          initialPassword: "Initial password",
+          minimumLength: "At least 8 characters.",
+          passwordsDoNotMatch: "Passwords do not match.",
+          generate: "Generate",
+          showPassword: "Show password",
+          hidePassword: "Hide password",
+          savePassword: "Save password",
+          changeSuccess: "Password changed successfully.",
+          changeError: "Could not change password.",
         },
         paymentState: {
           paid: "Paid",

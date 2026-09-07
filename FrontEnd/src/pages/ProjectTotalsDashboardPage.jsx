@@ -13,14 +13,12 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import AppHeader from "../components/layout/AppHeader";
 import "../App.css";
 import { apiClient } from "../services/apiClient";
-import { clearToken } from "../services/auth";
 import { PERSONAL_COMPANY } from "../services/catalog";
 
 const UNASSIGNED_PROJECT_FILTER = "__UNASSIGNED__";
@@ -61,7 +59,6 @@ export default function ProjectTotalsDashboardPage() {
     invoice_date: "",
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const moneyFormatter = useMemo(
@@ -94,17 +91,8 @@ export default function ProjectTotalsDashboardPage() {
     [monthFormatter, t],
   );
 
-  const handleLogout = () => {
-    clearToken();
-    navigate("/login", { replace: true });
-  };
-
-  const loadInvoices = useCallback(async (silent = false) => {
-    if (silent) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
-    }
+  const loadInvoices = useCallback(async () => {
+    setIsLoading(true);
 
     try {
       const response = await apiClient.get("/api/invoices");
@@ -115,7 +103,6 @@ export default function ProjectTotalsDashboardPage() {
       setErrorMessage(t("dashboard.fetchError"));
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   }, [t]);
 
@@ -209,49 +196,20 @@ export default function ProjectTotalsDashboardPage() {
   return (
     <>
       <AppHeader
-        disabled={isLoading || isRefreshing}
+        disabled={isLoading}
+        showPasswordAction={false}
         actions={
-          <>
-            <Button
-              variant="outlined"
-              onClick={() => navigate("/")}
-              startIcon={<ArrowBackIcon />}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("projectTotals.backToInvoices")}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => loadInvoices(true)}
-              startIcon={
-                isRefreshing ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : (
-                  <RefreshIcon />
-                )
-              }
-              disabled={isRefreshing}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("dashboard.refresh")}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleLogout}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("app.logout")}
-            </Button>
-          </>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/")}
+            startIcon={<ArrowBackIcon />}
+            sx={{
+              color: "#fff",
+              borderColor: "rgba(255,255,255,0.45)",
+            }}
+          >
+            {t("dashboard.backToDashboard")}
+          </Button>
         }
       />
 

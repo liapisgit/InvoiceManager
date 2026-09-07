@@ -39,7 +39,7 @@ import {
 import FileUploadSingleImage from "../components/Inputs/FileUploadSingleImage";
 import AppHeader from "../components/layout/AppHeader";
 import { apiClient } from "../services/apiClient";
-import { clearToken, getUserProjectNameFromToken } from "../services/auth";
+import { getUserProjectNameFromToken } from "../services/auth";
 import { trackInvoiceForDuplicateNotification } from "../services/duplicateNotifications";
 import {
   createInvoiceSchema,
@@ -124,11 +124,6 @@ export default function InvoiceFormPage() {
       uploadForm.payment_status &&
       uploadForm.approver_id,
   );
-
-  const handleLogout = () => {
-    clearToken();
-    navigate("/login", { replace: true });
-  };
 
   const handleFormChange = useCallback((index, formData) => {
     setForms((prev) => {
@@ -480,32 +475,20 @@ export default function InvoiceFormPage() {
     <>
       <AppHeader
         disabled={isUiLocked}
+        showPasswordAction={false}
         actions={
-          <>
-            <Button
-              variant="outlined"
-              onClick={() => navigate("/")}
-              disabled={isUiLocked}
-              startIcon={<ArrowBackIcon />}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("dashboard.backToDashboard")}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleLogout}
-              disabled={isUiLocked}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("app.logout")}
-            </Button>
-          </>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/")}
+            disabled={isUiLocked}
+            startIcon={<ArrowBackIcon />}
+            sx={{
+              color: "#fff",
+              borderColor: "rgba(255,255,255,0.45)",
+            }}
+          >
+            {t("dashboard.backToDashboard")}
+          </Button>
         }
       />
 

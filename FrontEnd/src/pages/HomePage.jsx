@@ -24,8 +24,6 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import SettingsIcon from "@mui/icons-material/Settings";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -447,83 +445,50 @@ export default function HomePage({ onlyMine = false }) {
     <>
       <AppHeader
         disabled={isLoading || isRefreshing}
-        actions={
+        onRefresh={() => loadInvoices()}
+        refreshing={isRefreshing}
+        onLogout={handleLogout}
+        primaryAction={
+          <Button
+            variant="contained"
+            onClick={() => navigate("/invoices/new")}
+            startIcon={<AddIcon />}
+            disabled={isLoading}
+            sx={{
+              bgcolor: "#fff",
+              color: "#246d59",
+              px: 1.5,
+              boxShadow: "0 2px 6px rgba(18, 67, 53, 0.16)",
+              "&:hover": { bgcolor: "#f3fffa" },
+            }}
+          >
+            {t("dashboard.newInvoice")}
+          </Button>
+        }
+        navigation={
           <>
             <Button
-              variant="contained"
-              onClick={() => navigate("/invoices/new")}
-              startIcon={<AddIcon />}
-              disabled={isLoading}
-              sx={{
-                bgcolor: "#fff",
-                color: "#2f8f6e",
-                "&:hover": { bgcolor: "#f3fffa" },
-              }}
-            >
-              {t("dashboard.newInvoice")}
-            </Button>
-            <Button
-              variant="outlined"
               onClick={() => navigate(onlyMine ? "/" : "/my-invoices")}
               startIcon={<ReceiptLongIcon />}
               sx={{
                 color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
+                px: 1.25,
+                bgcolor: onlyMine ? "rgba(255,255,255,0.14)" : "transparent",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.12)" },
               }}
             >
               {t(onlyMine ? "myInvoices.allInvoices" : "myInvoices.navLabel")}
             </Button>
             <Button
-              variant="outlined"
               onClick={() => navigate("/dashboard/project-totals")}
               startIcon={<AssessmentIcon />}
               sx={{
                 color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
+                px: 1.25,
+                "&:hover": { bgcolor: "rgba(255,255,255,0.12)" },
               }}
             >
               {t("projectTotals.navLabel")}
-            </Button>
-            {isAdmin() ? (
-              <Button
-                variant="outlined"
-                onClick={() => navigate("/settings")}
-                startIcon={<SettingsIcon />}
-                sx={{
-                  color: "#fff",
-                  borderColor: "rgba(255,255,255,0.45)",
-                }}
-              >
-                {t("admin.navLabel")}
-              </Button>
-            ) : null}
-            <Button
-              variant="outlined"
-              onClick={() => loadInvoices()}
-              startIcon={
-                isRefreshing ? (
-                  <CircularProgress size={16} color="inherit" />
-                ) : (
-                  <RefreshIcon />
-                )
-              }
-              disabled={isRefreshing}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("dashboard.refresh")}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleLogout}
-              sx={{
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {t("app.logout")}
             </Button>
           </>
         }

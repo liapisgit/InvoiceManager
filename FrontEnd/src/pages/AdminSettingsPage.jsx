@@ -21,14 +21,13 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import AppHeader from "../components/layout/AppHeader";
 import PasswordInput from "../components/PasswordInput";
 import { apiClient } from "../services/apiClient";
-import { clearToken, getTokenPayload } from "../services/auth";
+import { getTokenPayload } from "../services/auth";
 import { fetchAdminCompanies, PERSONAL_COMPANY } from "../services/catalog";
 import "../App.css";
 
@@ -160,11 +159,6 @@ export default function AdminSettingsPage() {
       }, {}),
     );
   }, [users]);
-
-  const handleLogout = () => {
-    clearToken();
-    navigate("/login", { replace: true });
-  };
 
   const resetCompanyForm = () => {
     setCompanyForm(emptyCompanyForm);
@@ -407,35 +401,17 @@ export default function AdminSettingsPage() {
     <>
       <AppHeader
         disabled={isBusy}
+        showPasswordAction={false}
         actions={
-          <>
-            <Button
-              variant="outlined"
-              onClick={() => navigate("/")}
-              disabled={isBusy}
-              startIcon={<ArrowBackIcon />}
-              sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.45)" }}
-            >
-              {t("dashboard.backToDashboard")}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={loadData}
-              disabled={isBusy}
-              startIcon={<RefreshIcon />}
-              sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.45)" }}
-            >
-              {t("dashboard.refresh")}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleLogout}
-              disabled={isBusy}
-              sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.45)" }}
-            >
-              {t("app.logout")}
-            </Button>
-          </>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/")}
+            disabled={isBusy}
+            startIcon={<ArrowBackIcon />}
+            sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.45)" }}
+          >
+            {t("dashboard.backToDashboard")}
+          </Button>
         }
       />
 

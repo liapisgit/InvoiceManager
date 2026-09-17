@@ -26,7 +26,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import InvoiceFilePreview from "../components/InvoiceFilePreview";
 import AppHeader from "../components/layout/AppHeader";
@@ -62,6 +66,41 @@ const createInitialFilters = () => ({
   invoice_date_end: "",
   user: "",
 });
+const FILTER_PARAM_KEYS = [
+  "number",
+  "issuer_name",
+  "recipient_name",
+  "project",
+  "date_filter_mode",
+  "invoice_date",
+  "invoice_date_start",
+  "invoice_date_end",
+  "user",
+];
+const createFiltersFromSearchParams = (searchParams) => {
+  const hasSavedFilters = FILTER_PARAM_KEYS.some((key) => searchParams.has(key));
+  if (!hasSavedFilters) return createInitialFilters();
+
+  const filters = Object.fromEntries(
+    FILTER_PARAM_KEYS.map((key) => [key, searchParams.get(key) || ""]),
+  );
+
+  filters.date_filter_mode =
+    filters.date_filter_mode === "period" ? "period" : "month";
+
+  return filters;
+};
+const createFilterSearchParams = (filters) => {
+  const searchParams = new URLSearchParams();
+
+  FILTER_PARAM_KEYS.forEach((key) => {
+    const value = filters[key];
+    if (value) searchParams.set(key, value);
+  });
+  searchParams.set("date_filter_mode", filters.date_filter_mode);
+
+  return searchParams;
+};
 
 const isPresent = (value) => {
   if (typeof value === "boolean") return true;
@@ -218,10 +257,13 @@ const getPaymentChipConfig = (paymentStatus, t) => {
 export default function HomePage({ onlyMine = false }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t, i18n } = useTranslation();
   const currentUserId = getTokenPayload()?.user_id;
   const [invoices, setInvoices] = useState([]);
-  const [filters, setFilters] = useState(createInitialFilters);
+  const [filters, setFilters] = useState(() =>
+    createFiltersFromSearchParams(searchParams),
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -237,6 +279,13 @@ export default function HomePage({ onlyMine = false }) {
     setSuccessMessage(t("upload.success"));
     navigate(location.pathname, { replace: true, state: {} });
   }, [location.pathname, location.state, navigate, t]);
+
+  useEffect(() => {
+    const nextSearchParams = createFilterSearchParams(filters);
+    if (nextSearchParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextSearchParams, { replace: true });
+    }
+  }, [filters, searchParams, setSearchParams]);
 
   const handleLogout = () => {
     clearToken();
@@ -813,7 +862,13 @@ export default function HomePage({ onlyMine = false }) {
                           variant="outlined"
                           size="small"
                           startIcon={<EditIcon />}
-                          onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
+                          onClick={() =>
+                            navigate(`/invoices/${invoice.id}/edit`, {
+                              state: {
+                                returnTo: `${location.pathname}${location.search}`,
+                              },
+                            })
+                          }
                         >
                           {t("dashboard.updateInvoice")}
                         </Button>

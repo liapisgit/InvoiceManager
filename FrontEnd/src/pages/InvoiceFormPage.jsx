@@ -21,7 +21,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import "../App.css";
 import InvoiceForm from "../components/Forms/InvoiceForm";
@@ -63,8 +63,14 @@ const getApprovalStatusForApprover = (approverId) => {
 
 export default function InvoiceFormPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { invoiceId } = useParams();
   const isEditMode = Boolean(invoiceId);
+  const returnTo =
+    typeof location.state?.returnTo === "string" &&
+    location.state.returnTo.startsWith("/")
+      ? location.state.returnTo
+      : "/";
   const [forms, setForms] = useState([{}]);
   const [loadedForms, setLoadedForms] = useState([null]);
   const [formLoadVersions, setFormLoadVersions] = useState([0]);
@@ -479,7 +485,7 @@ export default function InvoiceFormPage() {
         actions={
           <Button
             variant="outlined"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(returnTo)}
             disabled={isUiLocked}
             startIcon={<ArrowBackIcon />}
             sx={{

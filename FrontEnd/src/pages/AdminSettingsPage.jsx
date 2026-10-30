@@ -26,9 +26,11 @@ import { useNavigate } from "react-router-dom";
 
 import AppHeader from "../components/layout/AppHeader";
 import PasswordInput from "../components/PasswordInput";
+import PhoneInput from "../components/PhoneInput";
 import { apiClient } from "../services/apiClient";
 import { getTokenPayload } from "../services/auth";
 import { fetchAdminCompanies, PERSONAL_COMPANY } from "../services/catalog";
+import { isLocalPhoneValid, toFullPhone, toLocalPhone } from "../utils/phone";
 import "../App.css";
 
 const emptyCompanyForm = {
@@ -150,7 +152,7 @@ export default function AdminSettingsPage() {
         next[user.id] = {
           first_name: user.first_name ?? "",
           last_name: user.last_name ?? "",
-          phone: user.phone ?? "",
+          phone: toLocalPhone(user.phone),
           approver_number: user.approver_number ?? "",
           is_approver: Boolean(user.is_approver),
           is_admin: Boolean(user.is_admin),
@@ -332,7 +334,10 @@ export default function AdminSettingsPage() {
   const handleSaveUser = async (userId) => {
     setIsSaving(true);
     try {
-      await apiClient.patch(`/api/users/${userId}`, editingUsers[userId]);
+      await apiClient.patch(`/api/users/${userId}`, {
+        ...editingUsers[userId],
+        phone: toFullPhone(editingUsers[userId].phone),
+      });
       await loadData();
     } catch (error) {
       console.error("Error saving user:", error);
@@ -350,7 +355,8 @@ export default function AdminSettingsPage() {
       !newUserForm.user_name.trim() ||
       !newUserForm.first_name.trim() ||
       !newUserForm.last_name.trim() ||
-      newUserForm.password.length < 8
+      newUserForm.password.length < 8 ||
+      !isLocalPhoneValid(newUserForm.phone)
     ) {
       return;
     }
@@ -362,7 +368,7 @@ export default function AdminSettingsPage() {
         user_name: newUserForm.user_name.trim(),
         first_name: newUserForm.first_name.trim(),
         last_name: newUserForm.last_name.trim(),
-        phone: newUserForm.phone.trim() || null,
+        phone: toFullPhone(newUserForm.phone),
       });
       setNewUserForm(emptyUserForm);
       await loadData();
@@ -738,13 +744,10 @@ export default function AdminSettingsPage() {
                         size="small"
                         required
                       />
-                      <TextField
+                      <PhoneInput
                         label={t("admin.phone", { defaultValue: "Phone" })}
                         value={newUserForm.phone}
-                        onChange={(event) =>
-                          setNewUserField("phone", event.target.value)
-                        }
-                        size="small"
+                        onChange={(value) => setNewUserField("phone", value)}
                       />
                       <PasswordInput
                         label={t("password.initialPassword")}
@@ -796,7 +799,8 @@ export default function AdminSettingsPage() {
                           !newUserForm.user_name.trim() ||
                           !newUserForm.first_name.trim() ||
                           !newUserForm.last_name.trim() ||
-                          newUserForm.password.length < 8
+                          newUserForm.password.length < 8 ||
+                          !isLocalPhoneValid(newUserForm.phone)
                         }
                       >
                         {t("admin.createUser", {
@@ -838,13 +842,10 @@ export default function AdminSettingsPage() {
                         }
                         size="small"
                       />
-                      <TextField
+                      <PhoneInput
                         label={t("admin.phone", { defaultValue: "Phone" })}
                         value={selectedEditingUser.phone ?? ""}
-                        onChange={(event) =>
-                          setUserField(selectedUser.id, "phone", event.target.value)
-                        }
-                        size="small"
+                        onChange={(value) => setUserField(selectedUser.id, "phone", value)}
                       />
                       <FormControlLabel
                         control={
@@ -879,7 +880,7 @@ export default function AdminSettingsPage() {
                       <Button
                         variant="outlined"
                         onClick={() => handleSaveUser(selectedUser.id)}
-                        disabled={isBusy}
+                        disabled={isBusy || !isLocalPhoneValid(selectedEditingUser.phone)}
                       >
                         {t("invoiceEdit.submit")}
                       </Button>

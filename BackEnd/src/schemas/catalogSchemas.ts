@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { phoneSchema } from "./userSchemas";
+
 const emptyToNull = (value: unknown) => {
   if (typeof value !== "string") return value;
   const trimmed = value.trim();
@@ -46,7 +48,7 @@ export const updateProjectSchema = z.object({
 export const updateUserSchema = z.object({
   first_name: optionalTrimmedString,
   last_name: optionalTrimmedString,
-  phone: optionalTrimmedString,
+  phone: phoneSchema,
   approver_number: optionalTrimmedString,
   is_approver: z.boolean().optional(),
   is_admin: z.boolean().optional(),

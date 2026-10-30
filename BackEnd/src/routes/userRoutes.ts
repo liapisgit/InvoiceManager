@@ -25,6 +25,13 @@ const getUserLabel = (user: {
   last_name: string | null;
 }) => `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim();
 
+// Unique violation on the User_phone_active_key index (one active user per phone)
+const isPhoneConflict = (error: any) =>
+  error?.code === "P2002" &&
+  JSON.stringify(error?.meta ?? {}).toLowerCase().includes("phone");
+
+const PHONE_CONFLICT_ERROR = "Another active user already has this phone number";
+
 userRouter.post("/login", validate(userLoginSchema), async (req, res) => {
   const user = await userRepository.findByUserName(req.body.user_name);
   const passwordMatches =
@@ -120,6 +127,11 @@ userRouter.post(
       return res.status(StatusCodes.CREATED).json(user);
     } catch (error: any) {
       console.error("Error creating user:", error);
+      if (isPhoneConflict(error)) {
+        return res
+          .status(StatusCodes.CONFLICT)
+          .json({ error: PHONE_CONFLICT_ERROR });
+      }
       if (error?.code === "P2002") {
         return res
           .status(StatusCodes.CONFLICT)
@@ -192,6 +204,11 @@ userRouter.patch(
       return res.json(user);
     } catch (error: any) {
       console.error("Error updating user:", error);
+      if (isPhoneConflict(error)) {
+        return res
+          .status(StatusCodes.CONFLICT)
+          .json({ error: PHONE_CONFLICT_ERROR });
+      }
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         error: "Failed to update user",
         details: error?.message || "Unknown error",

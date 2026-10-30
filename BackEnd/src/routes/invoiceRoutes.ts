@@ -113,17 +113,19 @@ const withInvoiceLabels = async (invoiceOrInvoices: Invoice | Invoice[]) => {
   const userIds = [
     ...new Set(
       invoices
-        .map((invoice) => invoice.createdBy)
-        .filter((createdBy): createdBy is string => Boolean(createdBy)),
+        .flatMap((invoice) => [invoice.createdBy, invoice.approver_user_id])
+        .filter((userId): userId is string => Boolean(userId)),
     ),
   ];
   const users = userIds.length ? await userRepository.findManyByIds(userIds) : [];
   const userLabels = new Map(
     users.map((user) => [user.id, getStoredUserLabel(user)]),
   );
+  // Invoices without approver_user_id fall back to the phone lookup
   const approverPhones = [
     ...new Set(
       invoices
+        .filter((invoice) => !invoice.approver_user_id)
         .map((invoice) => invoice.approver_id)
         .filter(
           (approverId): approverId is string =>
@@ -149,9 +151,11 @@ const withInvoiceLabels = async (invoiceOrInvoices: Invoice | Invoice[]) => {
       approverLabel:
         invoice.approver_id === SELF_APPROVER_ID
           ? createdByLabel
-          : invoice.approver_id
-            ? approverLabels.get(invoice.approver_id) || invoice.approver_id
-            : "",
+          : invoice.approver_user_id && userLabels.has(invoice.approver_user_id)
+            ? userLabels.get(invoice.approver_user_id)
+            : invoice.approver_id
+              ? approverLabels.get(invoice.approver_id) || invoice.approver_id
+              : "",
     };
   });
 
@@ -168,6 +172,11 @@ const getApproverLabelForWebhook = async (
 ) => {
   if (!invoice.approver_id) return "";
   if (invoice.approver_id === SELF_APPROVER_ID) return getUserLabel(user);
+
+  if (invoice.approver_user_id) {
+    const [approver] = await userRepository.findManyByIds([invoice.approver_user_id]);
+    if (approver) return getStoredUserLabel(approver);
+  }
 
   const [approver] = await userRepository.findManyByPhones([invoice.approver_id]);
   return approver ? getStoredUserLabel(approver) : invoice.approver_id;

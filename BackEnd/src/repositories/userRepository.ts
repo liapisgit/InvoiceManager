@@ -103,6 +103,7 @@ export const userRepository = {
         is_active: false,
         is_approver: false,
         is_admin: false,
+        phone: null,
       },
       select: {
         id: true,

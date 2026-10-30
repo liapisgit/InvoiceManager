@@ -336,7 +336,10 @@ export default function AdminSettingsPage() {
       await loadData();
     } catch (error) {
       console.error("Error saving user:", error);
-      setErrorMessage(t("admin.saveError", { defaultValue: "Could not save changes." }));
+      setErrorMessage(
+        error.response?.data?.error ||
+          t("admin.saveError", { defaultValue: "Could not save changes." }),
+      );
     } finally {
       setIsSaving(false);
     }

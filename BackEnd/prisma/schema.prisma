@@ -60,6 +60,9 @@ model Invoice {
   status         String @default("complete")
   approval_status String?
   approver_id    String?
+  // Filled by the invoice_set_approver_user_id database trigger
+  // (migration 20261030120000_add_invoice_approver_user_id)
+  approver_user_id String?
   createdBy      String?
   createdAt      DateTime @default(now())
   lastUpdatedAt  DateTime @updatedAt

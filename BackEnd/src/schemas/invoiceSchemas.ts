@@ -59,7 +59,10 @@ export const createInvoiceSchema = z.object({
 });
 
 export const updateInvoiceSchema = z.object({
-  invoice_date: z.any().optional(),
+  invoice_date: z.preprocess(
+    (value) => (value === "" || value == null ? null : value),
+    z.coerce.date().nullable(),
+  ).optional(),
   document_type: z.any().optional(),
   mark: z.any().optional(),
   series: z.any().optional(),
